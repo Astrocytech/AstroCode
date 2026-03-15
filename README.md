@@ -18,6 +18,13 @@ AstroCoder is an open-code based AI coding assistant that was forked from OpenCo
 
 While OpenCode does not support local Ollama 14B models out of the box (it lacks automatic context window management), AstroCoder handles this automatically. It calculates and sets the optimal `num_ctx` parameter for Ollama models.
 
+## Features
+
+- **Auto-starts Ollama** - If Ollama isn't running, AstroCoder will start it automatically
+- **Auto-stops Ollama** - When you exit AstroCoder, it stops the Ollama server it started
+- **GPU/CPU indicator** - Shows whether your model is using GPU or CPU
+- **Automatic context size** - Sets correct `num_ctx` for 14B models
+
 ## Prerequisites
 
 1. **Ollama installed and running** - Download from https://ollama.ai

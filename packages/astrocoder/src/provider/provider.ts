@@ -149,6 +149,64 @@ export namespace Provider {
     // No longer caching, kept for API compatibility
   }
 
+  let ollamaStarted = false
+  let ollamaWasAlreadyRunning = false
+
+  export async function ensureOllamaRunning(): Promise<boolean> {
+    const apiBase = Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"
+    const url = apiBase.endsWith("/v1") ? apiBase : `${apiBase}/v1`
+
+    try {
+      const res = await fetch(`${url}/models`, { method: "GET" }).catch(() => null)
+      if (res) {
+        ollamaWasAlreadyRunning = true
+        ollamaStarted = true
+        return true
+      }
+    } catch {
+      // Ollama not running
+    }
+
+    log.info("ollama-not-running-attempting-start")
+
+    try {
+      const proc = Bun.spawn(["ollama", "serve"], {
+        stdout: "ignore",
+        stderr: "ignore",
+        detached: true,
+      })
+      proc.unref()
+
+      for (let i = 0; i < 30; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        try {
+          const res = await fetch(`${url}/models`, { method: "GET" }).catch(() => null)
+          if (res) {
+            ollamaStarted = true
+            log.info("ollama-started-automatically")
+            return true
+          }
+        } catch {
+          // keep waiting
+        }
+      }
+    } catch (err) {
+      log.error("failed-to-start-ollama", { error: String(err) })
+    }
+
+    return false
+  }
+
+  export async function stopOllamaIfStarted(): Promise<void> {
+    if (!ollamaStarted || ollamaWasAlreadyRunning) return
+
+    log.info("stopping-ollama-started-by-astrocoder")
+    try {
+      await BunProc.run(["pkill", "-f", "ollama serve"])
+    } catch {}
+    ollamaStarted = false
+  }
+
   const BUNDLED_PROVIDERS: Record<string, (options: any) => SDK> = {
     "@ai-sdk/openai-compatible": createOpenAICompatible,
   }
@@ -197,6 +255,7 @@ export namespace Provider {
       }
     },
     ollama: async () => {
+      await ensureOllamaRunning()
       const apiBase = Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"
       const apiKey = Env.get("OLLAMA_API_KEY") || "not-needed"
       return {

@@ -126,6 +126,10 @@ export function tui(input: {
 
     const onExit = async () => {
       unguard?.()
+      try {
+        const { Provider } = await import("@/provider/provider")
+        await Provider.stopOllamaIfStarted()
+      } catch {}
       resolve()
     }
 

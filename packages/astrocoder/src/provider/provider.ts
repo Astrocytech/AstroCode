@@ -97,28 +97,13 @@ export namespace Provider {
   }
 
   async function getGpuStatus(): Promise<"GPU" | "CPU" | ""> {
-    for (let attempt = 0; attempt < 3; attempt++) {
-      if (attempt > 0) {
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-      }
-
-      try {
-        const hasNvidiaGpu = await checkNvidiaGpu()
-        if (!hasNvidiaGpu) return "CPU"
-
-        const res = await fetch(`${Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"}/api/tags`, {
-          method: "GET",
-          headers: { Authorization: "Bearer not-needed" },
-        }).catch(() => null)
-
-        if (!res) continue
-
-        return "GPU"
-      } catch {
-        continue
-      }
+    try {
+      const hasNvidiaGpu = await checkNvidiaGpu()
+      if (hasNvidiaGpu) return "GPU"
+      return "CPU"
+    } catch {
+      return "CPU"
     }
-    return "CPU"
   }
 
   export async function isGpuAvailable(): Promise<boolean> {
@@ -138,6 +123,9 @@ export namespace Provider {
   let ollamaWasAlreadyRunning = false
 
   export async function ensureOllamaRunning(): Promise<boolean> {
+    if (ollamaStarted) return true
+    if (ollamaWasAlreadyRunning) return true
+
     const apiBase = Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"
     const url = apiBase.endsWith("/v1") ? apiBase : `${apiBase}/v1`
 
@@ -146,13 +134,14 @@ export namespace Provider {
       if (res) {
         ollamaWasAlreadyRunning = true
         ollamaStarted = true
+        console.log("[AstroCoder] Ollama already running")
         return true
       }
     } catch {
       // Ollama not running
     }
 
-    log.info("ollama-not-running-attempting-start")
+    console.log("[AstroCoder] Starting Ollama automatically...")
 
     try {
       const proc = Bun.spawn(["ollama", "serve"], {
@@ -168,7 +157,7 @@ export namespace Provider {
           const res = await fetch(`${url}/models`, { method: "GET" }).catch(() => null)
           if (res) {
             ollamaStarted = true
-            log.info("ollama-started-automatically")
+            console.log("[AstroCoder] Ollama started successfully!")
             return true
           }
         } catch {

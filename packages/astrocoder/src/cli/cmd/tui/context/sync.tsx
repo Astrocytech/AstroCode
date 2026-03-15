@@ -80,6 +80,7 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
         all: [],
         default: {},
         connected: [],
+        gpu: "" as "" | "GPU" | "CPU",
       },
       provider_auth: {},
       config: {},

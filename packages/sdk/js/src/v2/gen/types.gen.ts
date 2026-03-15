@@ -3948,6 +3948,7 @@ export type ProviderListResponses = {
       [key: string]: string
     }
     connected: Array<string>
+    gpu: "GPU" | "CPU" | ""
   }
 }
 
@@ -4053,6 +4054,27 @@ export type ProviderOauthCallbackResponses = {
 }
 
 export type ProviderOauthCallbackResponse = ProviderOauthCallbackResponses[keyof ProviderOauthCallbackResponses]
+
+export type ProviderGpuData = {
+  body?: never
+  path?: never
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/provider/gpu"
+}
+
+export type ProviderGpuResponses = {
+  /**
+   * GPU status
+   */
+  200: {
+    status: "GPU" | "CPU" | ""
+  }
+}
+
+export type ProviderGpuResponse = ProviderGpuResponses[keyof ProviderGpuResponses]
 
 export type FindTextData = {
   body?: never

@@ -87,6 +87,98 @@ export namespace Provider {
     return Math.ceil(contextLength * 1.25) + extraTokens
   }
 
+  let cachedGpuStatus: "loading" | "available" | "unavailable" | null = null
+  let gpuCheckDone = false
+
+  async function checkNvidiaGpu(): Promise<boolean> {
+    try {
+      const result = await BunProc.run(["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"])
+      return result.stdout.toString().trim().length > 0
+    } catch {
+      return false
+    }
+  }
+
+  async function checkOllamaGpuMemory(): Promise<boolean> {
+    try {
+      const result = await BunProc.run([
+        "nvidia-smi",
+        "--query-compute-apps=pid,used_memory",
+        "--format=csv,noheader,nounits",
+      ])
+      const output = result.stdout.toString().trim()
+      if (!output) return false
+      const lines = output.split("\n").filter((line) => line.trim().length > 0)
+      return lines.length > 0
+    } catch {
+      return false
+    }
+  }
+
+  async function getGpuStatus(): Promise<"available" | "unavailable"> {
+    if (cachedGpuStatus === "loading") {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+      return getGpuStatus()
+    }
+
+    if (gpuCheckDone && cachedGpuStatus) return cachedGpuStatus as "available" | "unavailable"
+
+    gpuCheckDone = true
+    cachedGpuStatus = "loading"
+
+    try {
+      const hasNvidiaGpu = await checkNvidiaGpu()
+      if (!hasNvidiaGpu) {
+        cachedGpuStatus = "unavailable"
+        return cachedGpuStatus
+      }
+
+      const res = await fetch(`${Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"}/api/tags`, {
+        method: "GET",
+        headers: { Authorization: "Bearer not-needed" },
+      }).catch(() => null)
+
+      if (!res) {
+        cachedGpuStatus = "unavailable"
+        return cachedGpuStatus
+      }
+
+      const data = await res.json().catch(() => null)
+      if (!data || !data.models || data.models.length === 0) {
+        cachedGpuStatus = "unavailable"
+        return cachedGpuStatus
+      }
+
+      const usingGpuMemory = await checkOllamaGpuMemory()
+      if (!usingGpuMemory) {
+        cachedGpuStatus = "unavailable"
+        return cachedGpuStatus
+      }
+
+      cachedGpuStatus = "available"
+      return cachedGpuStatus
+    } catch {
+      cachedGpuStatus = "unavailable"
+      return cachedGpuStatus
+    }
+  }
+
+  export async function isGpuAvailable(): Promise<boolean> {
+    const status = await getGpuStatus()
+    return status === "available"
+  }
+
+  export function getGpuDisplay(): string {
+    if (cachedGpuStatus === "available") return "GPU"
+    if (cachedGpuStatus === "unavailable") return "CPU"
+    return ""
+  }
+
+  export function clearGpuCache(): void {
+    cachedGpuStatus = null
+    gpuCheckDone = false
+  }
+
   const BUNDLED_PROVIDERS: Record<string, (options: any) => SDK> = {
     "@ai-sdk/openai-compatible": createOpenAICompatible,
   }

@@ -82,6 +82,7 @@ import type {
   ProjectUpdateErrors,
   ProjectUpdateResponses,
   ProviderAuthResponses,
+  ProviderGpuResponses,
   ProviderListResponses,
   ProviderOauthAuthorizeErrors,
   ProviderOauthAuthorizeResponses,
@@ -2630,6 +2631,36 @@ export class Provider extends HeyApiClient {
     )
     return (options?.client ?? this.client).get<ProviderAuthResponses, unknown, ThrowOnError>({
       url: "/provider/auth",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Get GPU status
+   *
+   * Get the current GPU availability status for Ollama.
+   */
+  public gpu<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).get<ProviderGpuResponses, unknown, ThrowOnError>({
+      url: "/provider/gpu",
       ...options,
       ...params,
     })

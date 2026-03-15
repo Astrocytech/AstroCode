@@ -28,6 +28,7 @@ export const ProviderRoutes = lazy(() =>
                     all: ModelsDev.Provider.array(),
                     default: z.record(z.string(), z.string()),
                     connected: z.array(z.string()),
+                    gpu: z.enum(["GPU", "CPU", ""]),
                   }),
                 ),
               },
@@ -57,6 +58,7 @@ export const ProviderRoutes = lazy(() =>
           all: Object.values(providers),
           default: mapValues(providers, (item) => Provider.sort(Object.values(item.models))[0].id),
           connected: Object.keys(connected),
+          gpu: Provider.getGpuDisplay(),
         })
       },
     )
@@ -161,6 +163,32 @@ export const ProviderRoutes = lazy(() =>
           code,
         })
         return c.json(true)
+      },
+    )
+    .get(
+      "/gpu",
+      describeRoute({
+        summary: "Get GPU status",
+        description: "Get the current GPU availability status for Ollama.",
+        operationId: "provider.gpu",
+        responses: {
+          200: {
+            description: "GPU status",
+            content: {
+              "application/json": {
+                schema: resolver(
+                  z.object({
+                    status: z.enum(["GPU", "CPU", ""]),
+                  }),
+                ),
+              },
+            },
+          },
+        },
+      }),
+      async (c) => {
+        const status = Provider.getGpuDisplay()
+        return c.json({ status })
       },
     ),
 )

@@ -1022,6 +1022,12 @@ export function Prompt(props: PromptProps) {
                     {local.model.parsed().model}
                   </text>
                   <text fg={theme.textMuted}>{local.model.parsed().provider}</text>
+                  <Show when={sync.data.provider_next.gpu}>
+                    <text fg={theme.textMuted}>·</text>
+                    <text fg={sync.data.provider_next.gpu === "GPU" ? theme.success : theme.textMuted}>
+                      {sync.data.provider_next.gpu}
+                    </text>
+                  </Show>
                   <Show when={showVariant()}>
                     <text fg={theme.textMuted}>·</text>
                     <text>

@@ -54,11 +54,12 @@ export const ProviderRoutes = lazy(() =>
           mapValues(filteredProviders, (x) => Provider.fromModelsDevProvider(x)),
           connected,
         )
+        const gpu = await Provider.getGpuDisplay()
         return c.json({
           all: Object.values(providers),
           default: mapValues(providers, (item) => Provider.sort(Object.values(item.models))[0].id),
           connected: Object.keys(connected),
-          gpu: Provider.getGpuDisplay(),
+          gpu,
         })
       },
     )
@@ -187,7 +188,7 @@ export const ProviderRoutes = lazy(() =>
         },
       }),
       async (c) => {
-        const status = Provider.getGpuDisplay()
+        const status = await Provider.getGpuDisplay()
         return c.json({ status })
       },
     ),

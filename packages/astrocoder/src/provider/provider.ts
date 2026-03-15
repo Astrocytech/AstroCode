@@ -21,6 +21,7 @@ import { Filesystem } from "../util/filesystem"
 
 // Direct imports for bundled providers
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
+import type { LanguageModelV2 } from "@ai-sdk/provider"
 import { ProviderTransform } from "./transform"
 import { Installation } from "../installation"
 import { ModelID, ProviderID } from "./schema"

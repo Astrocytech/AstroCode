@@ -1561,12 +1561,12 @@ export namespace ACP {
 
     if (specified && !providers.length) return specified
 
-    const opencodeProvider = providers.find((p) => p.id === "opencode")
-    if (opencodeProvider) {
-      if (opencodeProvider.models["big-pickle"]) {
-        return { providerID: ProviderID.opencode, modelID: ModelID.make("big-pickle") }
+    const astrocoderProvider = providers.find((p) => p.id === "astrocoder")
+    if (astrocoderProvider) {
+      if (astrocoderProvider.models["big-pickle"]) {
+        return { providerID: ProviderID.astrocoder, modelID: ModelID.make("big-pickle") }
       }
-      const [best] = Provider.sort(Object.values(opencodeProvider.models))
+      const [best] = Provider.sort(Object.values(astrocoderProvider.models))
       if (best) {
         return {
           providerID: ProviderID.make(best.providerID),
@@ -1586,7 +1586,7 @@ export namespace ACP {
 
     if (specified) return specified
 
-    return { providerID: ProviderID.opencode, modelID: ModelID.make("big-pickle") }
+    return { providerID: ProviderID.ollama, modelID: ModelID.make("llama3.1") }
   }
 
   function parseUri(

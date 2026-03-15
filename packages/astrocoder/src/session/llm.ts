@@ -206,16 +206,16 @@ export namespace LLM {
       maxOutputTokens,
       abortSignal: input.abort,
       headers: {
-        ...(input.model.providerID.startsWith("opencode")
+        ...(input.model.providerID.startsWith("astrocoder")
           ? {
-              "x-opencode-project": Instance.project.id,
-              "x-opencode-session": input.sessionID,
-              "x-opencode-request": input.user.id,
-              "x-opencode-client": Flag.OPENCODE_CLIENT,
+              "x-astrocoder-project": Instance.project.id,
+              "x-astrocoder-session": input.sessionID,
+              "x-astrocoder-request": input.user.id,
+              "x-astrocoder-client": Flag.OPENCODE_CLIENT,
             }
           : input.model.providerID !== "anthropic"
             ? {
-                "User-Agent": `opencode/${Installation.VERSION}`,
+                "User-Agent": `astrocoder/${Installation.VERSION}`,
               }
             : undefined),
         ...input.model.headers,

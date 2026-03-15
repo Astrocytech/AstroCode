@@ -373,7 +373,7 @@ export namespace Provider {
         temperature: model.temperature,
         reasoning: model.reasoning,
         attachment: model.attachment,
-        toolcall: model.tool_call,
+        toolcall: isOllamaModel(model.id) ? false : model.tool_call,
         input: {
           text: model.modalities?.input?.includes("text") ?? false,
           audio: model.modalities?.input?.includes("audio") ?? false,

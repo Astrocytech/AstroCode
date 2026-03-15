@@ -159,6 +159,10 @@ export const TuiThreadCommand = cmd({
         process.off("uncaughtException", error)
         process.off("unhandledRejection", error)
         process.off("SIGUSR2", reload)
+        try {
+          const { Provider } = await import("@/provider/provider")
+          await Provider.stopOllamaIfStarted()
+        } catch {}
         await withTimeout(client.call("shutdown", undefined), 5000).catch((error) => {
           Log.Default.warn("worker shutdown failed", {
             error: error instanceof Error ? error.message : String(error),
@@ -166,6 +170,9 @@ export const TuiThreadCommand = cmd({
         })
         worker.terminate()
       }
+
+      process.on("SIGINT", stop)
+      process.on("SIGTERM", stop)
 
       const prompt = await input(args.prompt)
       const config = await Instance.provide({

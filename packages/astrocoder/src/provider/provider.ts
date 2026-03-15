@@ -180,7 +180,10 @@ export namespace Provider {
 
     log.info("stopping-ollama-started-by-astrocoder")
     try {
-      await BunProc.run(["pkill", "-f", "ollama serve"])
+      await BunProc.run(["pkill", "-f", "ollama"])
+    } catch {}
+    try {
+      await BunProc.run(["killall", "ollama"])
     } catch {}
     ollamaStarted = false
   }

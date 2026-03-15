@@ -96,22 +96,6 @@ export namespace Provider {
     }
   }
 
-  async function checkOllamaGpuMemory(): Promise<boolean> {
-    try {
-      const result = await BunProc.run([
-        "nvidia-smi",
-        "--query-compute-apps=pid,used_memory",
-        "--format=csv,noheader,nounits",
-      ])
-      const output = result.stdout.toString().trim()
-      if (!output) return false
-      const lines = output.split("\n").filter((line) => line.trim().length > 0)
-      return lines.length > 0
-    } catch {
-      return false
-    }
-  }
-
   async function getGpuStatus(): Promise<"GPU" | "CPU" | ""> {
     try {
       const hasNvidiaGpu = await checkNvidiaGpu()
@@ -123,12 +107,6 @@ export namespace Provider {
       }).catch(() => null)
 
       if (!res) return "CPU"
-
-      const data = await res.json().catch(() => null)
-      if (!data || !data.models || data.models.length === 0) return "CPU"
-
-      const usingGpuMemory = await checkOllamaGpuMemory()
-      if (!usingGpuMemory) return "CPU"
 
       return "GPU"
     } catch {

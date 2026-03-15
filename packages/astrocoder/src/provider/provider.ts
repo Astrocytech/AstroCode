@@ -97,21 +97,28 @@ export namespace Provider {
   }
 
   async function getGpuStatus(): Promise<"GPU" | "CPU" | ""> {
-    try {
-      const hasNvidiaGpu = await checkNvidiaGpu()
-      if (!hasNvidiaGpu) return "CPU"
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      }
 
-      const res = await fetch(`${Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"}/api/tags`, {
-        method: "GET",
-        headers: { Authorization: "Bearer not-needed" },
-      }).catch(() => null)
+      try {
+        const hasNvidiaGpu = await checkNvidiaGpu()
+        if (!hasNvidiaGpu) return "CPU"
 
-      if (!res) return "CPU"
+        const res = await fetch(`${Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"}/api/tags`, {
+          method: "GET",
+          headers: { Authorization: "Bearer not-needed" },
+        }).catch(() => null)
 
-      return "GPU"
-    } catch {
-      return "CPU"
+        if (!res) continue
+
+        return "GPU"
+      } catch {
+        continue
+      }
     }
+    return "CPU"
   }
 
   export async function isGpuAvailable(): Promise<boolean> {

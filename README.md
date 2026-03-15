@@ -36,7 +36,26 @@ ollama list
 
 ## Quick Start
 
-### Option 1: No Config Required (Recommended)
+### Option 1: Automated Installation (Recommended)
+
+Run the installation script to install all dependencies and build:
+
+```bash
+./install.sh
+```
+
+This will:
+1. Check prerequisites (bun, git, ollama)
+2. Install dependencies
+3. Build AstroCoder
+
+Then run with:
+```bash
+cd packages/astrocoder
+./dist/astrocoder-linux-x64/bin/opencode
+```
+
+### Option 2: Manual Build
 
 Just run AstroCoder - it will automatically detect and use your running Ollama instance:
 
@@ -55,6 +74,7 @@ That's it! AstroCoder will:
 2. Auto-detect your installed models
 3. Use the first available model
 4. Automatically set the correct context size (`num_ctx`) for 14B models
+5. Show GPU/CPU indicator next to the model name (green = GPU, muted = CPU)
 
 ### Option 2: Specify a Model
 

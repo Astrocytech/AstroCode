@@ -111,20 +111,18 @@ export namespace Provider {
     return status === "GPU"
   }
 
-  export async function getGpuDisplay(): Promise<string> {
-    return await getGpuStatus()
-  }
-
   export function clearGpuCache(): void {
     // No longer caching, kept for API compatibility
   }
 
   let ollamaStarted = false
-  let ollamaWasAlreadyRunning = false
+  let ollamaStartedByUs = false
+  export async function getGpuDisplay(): Promise<string> {
+    return await getGpuStatus()
+  }
 
   export async function ensureOllamaRunning(): Promise<boolean> {
     if (ollamaStarted) return true
-    if (ollamaWasAlreadyRunning) return true
 
     const apiBase = Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"
     const url = apiBase.endsWith("/v1") ? apiBase : `${apiBase}/v1`
@@ -132,7 +130,7 @@ export namespace Provider {
     try {
       const res = await fetch(`${url}/models`, { method: "GET" }).catch(() => null)
       if (res) {
-        ollamaWasAlreadyRunning = true
+        console.log("[AstroCoder] Ollama already running - using existing instance")
         ollamaStarted = true
         console.log("[AstroCoder] Ollama already running")
         return true
@@ -157,24 +155,29 @@ export namespace Provider {
           const res = await fetch(`${url}/models`, { method: "GET" }).catch(() => null)
           if (res) {
             ollamaStarted = true
-            console.log("[AstroCoder] Ollama started successfully!")
+            ollamaStartedByUs = true
+            log.info("ollama-started-automatically")
+            console.log("[AstroCoder] Ollama ready!")
             return true
           }
         } catch {
           // keep waiting
         }
+        console.log("[AstroCoder] Waiting for Ollama...")
       }
     } catch (err) {
       log.error("failed-to-start-ollama", { error: String(err) })
+      console.log("[AstroCoder] Failed to start Ollama:", err)
     }
 
     return false
   }
 
   export async function stopOllamaIfStarted(): Promise<void> {
-    if (!ollamaStarted || ollamaWasAlreadyRunning) return
+    if (!ollamaStarted) return
 
     log.info("stopping-ollama-started-by-astrocoder")
+    console.log("[AstroCoder] Stopping Ollama server...")
     try {
       await BunProc.run(["pkill", "-f", "ollama"])
     } catch {}

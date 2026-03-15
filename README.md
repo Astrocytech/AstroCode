@@ -20,9 +20,9 @@ While OpenCode does not support local Ollama 14B models out of the box (it lacks
 
 ## Features
 
-- **Auto-starts Ollama** - If Ollama isn't running, AstroCoder will start it automatically
-- **Auto-stops Ollama** - When you exit AstroCoder, it stops the Ollama server it started
-- **GPU/CPU indicator** - Shows whether your model is using GPU or CPU
+- **Auto-starts Ollama** - If Ollama isn't running, AstroCoder will start it automatically. If Ollama is already running, AstroCoder will stop it first and start a fresh instance
+- **Auto-stops Ollama** - When you exit AstroCoder (Ctrl+C), it stops the Ollama server
+- **GPU/CPU indicator** - Shows whether your model is using GPU or CPU (appears during inference)
 - **Automatic context size** - Sets correct `num_ctx` for 14B models
 
 ## Prerequisites
@@ -77,11 +77,12 @@ bun run build
 ```
 
 That's it! AstroCoder will:
-1. Find your running Ollama at http://127.0.0.1:11434
-2. Auto-detect your installed models
-3. Use the first available model
-4. Automatically set the correct context size (`num_ctx`) for 14B models
-5. Show GPU/CPU indicator next to the model name (green = GPU, muted = CPU)
+1. Stop any existing Ollama server and start a fresh instance
+2. Find your running Ollama at http://127.0.0.1:11434
+3. Auto-detect your installed models
+4. Use the first available model
+5. Automatically set the correct context size (`num_ctx`) for 14B models
+6. Show GPU/CPU indicator next to the model name (green = GPU, muted = CPU) during inference
 
 ### Option 2: Specify a Model
 

@@ -21,10 +21,15 @@ const Title = (props: { session: Accessor<Session> }) => {
 
 const ContextInfo = (props: { context: Accessor<string | undefined>; cost: Accessor<string> }) => {
   const { theme } = useTheme()
+  const sync = useSync()
+  const gpuStatus = createMemo(() => sync.data.provider_next.gpu || "-")
   return (
     <Show when={props.context()}>
       <text fg={theme.textMuted} wrapMode="none" flexShrink={0}>
-        {props.context()} ({props.cost()})
+        {props.context()} ({props.cost()}){" "}
+        <text fg={gpuStatus() === "GPU" ? theme.success : gpuStatus() === "CPU" ? theme.warning : theme.textMuted}>
+          {gpuStatus()}
+        </text>
       </text>
     </Show>
   )

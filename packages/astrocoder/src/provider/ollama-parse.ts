@@ -13,8 +13,10 @@ export interface FileEdit {
 }
 
 export async function resolveFilePath(filePath: string, cwd: string, attachedFiles: string[] = []): Promise<string> {
+  logger.info("resolveFilePath", { filePath, cwd, attachedFiles })
   // If absolute path, use it
   if (path.isAbsolute(filePath)) {
+    logger.info("Using absolute path", { filePath })
     return filePath
   }
 
@@ -22,18 +24,22 @@ export async function resolveFilePath(filePath: string, cwd: string, attachedFil
   const relativePath = path.resolve(cwd, filePath)
   try {
     await readFile(relativePath, "utf-8")
+    logger.info("Found file relative to cwd", { relativePath })
     return relativePath
   } catch {
     // File doesn't exist relative to CWD, try to find it among attached files
     const fileName = path.basename(filePath)
+    logger.info("Searching attached files", { fileName, attachedFiles })
     for (const attached of attachedFiles) {
       if (path.basename(attached) === fileName) {
+        logger.info("Found matching attached file", { attached })
         return attached
       }
     }
   }
 
   // Fallback to relative path (will likely fail but we return it for display)
+  logger.info("Fallback to relative path", { relativePath })
   return relativePath
 }
 
@@ -53,6 +59,11 @@ export async function parseOllamaResponse(
   let match
   while ((match = diffBlockRegex.exec(content)) !== null) {
     const filePath = match[1].trim()
+    // Filter out obvious non-paths like "Edit filename.py"
+    if (/^[A-Z][a-z]+ /.test(filePath)) {
+      logger.info("Skipping non-path match", { filePath })
+      continue
+    }
     const fullPath = await resolveFilePath(filePath, cwd, attachedFiles)
     matches.push({
       type: "diff",
@@ -65,6 +76,11 @@ export async function parseOllamaResponse(
 
   while ((match = fileBlockRegex.exec(content)) !== null) {
     const filePath = match[1].trim()
+    // Filter out obvious non-paths like "Edit filename.py"
+    if (/^[A-Z][a-z]+ /.test(filePath)) {
+      logger.info("Skipping non-path match", { filePath })
+      continue
+    }
     const fullPath = await resolveFilePath(filePath, cwd, attachedFiles)
     
     // Skip if this range was already matched by diffBlockRegex

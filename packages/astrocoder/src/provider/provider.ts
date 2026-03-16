@@ -101,7 +101,7 @@ export namespace Provider {
 
   async function hasNvidiaGpu(): Promise<boolean> {
     try {
-      const result = await BunProc.run(["nvidia-smi", "-L"])
+      const result = await BunProc.run(["sh", "-c", "nvidia-smi -L"])
       const output = result.stdout.toString()
       const hasGpu = output.includes("GPU")
       console.log("[AstroCoder] GPU check: output:", output.substring(0, 100), "hasGpu:", hasGpu)

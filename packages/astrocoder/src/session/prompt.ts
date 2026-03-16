@@ -565,6 +565,7 @@ export namespace SessionPrompt {
         messages: msgs,
         agent,
         session,
+        providerID: lastUser?.model?.providerID,
       })
 
       const processor = SessionProcessor.create({
@@ -1333,7 +1334,12 @@ export namespace SessionPrompt {
     }
   }
 
-  async function insertReminders(input: { messages: MessageV2.WithParts[]; agent: Agent.Info; session: Session.Info }) {
+  async function insertReminders(input: { messages: MessageV2.WithParts[]; agent: Agent.Info; session: Session.Info; providerID?: string }) {
+    // Skip plan mode for Ollama models - they use Aider-style
+    if (input.providerID === "ollama") {
+      return input.messages
+    }
+
     const userMessage = input.messages.findLast((msg) => msg.info.role === "user")
     if (!userMessage) return input.messages
 

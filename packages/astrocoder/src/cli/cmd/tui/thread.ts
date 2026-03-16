@@ -180,11 +180,6 @@ export const TuiThreadCommand = cmd({
         fn: () => TuiConfig.get(),
       })
 
-      console.log("Starting Ollama server...")
-      const { Provider } = await import("@/provider/provider")
-      await Provider.ensureOllamaRunning()
-      console.log("Ollama server ready")
-
       const network = await resolveNetworkOptions(args)
       const external =
         process.argv.includes("--port") ||

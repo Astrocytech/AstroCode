@@ -38,8 +38,8 @@ export class McpOAuthProvider implements OAuthClientProvider {
   get clientMetadata(): OAuthClientMetadata {
     return {
       redirect_uris: [this.redirectUrl],
-      client_name: "AstroCode",
-      client_uri: "https://github.com/Astrocytech/AstroCode",
+      client_name: "AstroCoder",
+      client_uri: "https://github.com/Astrocytech/AstroCoder",
       grant_types: ["authorization_code", "refresh_token"],
       response_types: ["code"],
       token_endpoint_auth_method: this.config.clientSecret ? "client_secret_post" : "none",

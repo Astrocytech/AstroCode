@@ -269,14 +269,14 @@ function App() {
     if (!terminalTitleEnabled() || Flag.OPENCODE_DISABLE_TERMINAL_TITLE) return
 
     if (route.data.type === "home") {
-      renderer.setTerminalTitle("AstroCode")
+      renderer.setTerminalTitle("AstroCoder")
       return
     }
 
     if (route.data.type === "session") {
       const session = sync.session.get(route.data.sessionID)
       if (!session || SessionApi.isDefaultTitle(session.title)) {
-        renderer.setTerminalTitle("AstroCode")
+        renderer.setTerminalTitle("AstroCoder")
         return
       }
 
@@ -728,7 +728,7 @@ function App() {
     toast.show({
       variant: "info",
       title: "Update Available",
-      message: `AstroCode v${evt.properties.version} is available. Run 'astrocoder upgrade' to update manually.`,
+      message: `AstroCoder v${evt.properties.version} is available. Run 'astrocoder upgrade' to update manually.`,
       duration: 10000,
     })
   })
@@ -783,7 +783,7 @@ function ErrorComponent(props: {
   })
   const [copied, setCopied] = createSignal(false)
 
-  const issueURL = new URL("https://github.com/Astrocytech/AstroCode/issues/new")
+  const issueURL = new URL("https://github.com/Astrocytech/AstroCoder/issues/new")
 
   // Choose safe fallback colors per mode since theme context may not be available
   const isLight = props.mode === "light"

@@ -323,8 +323,8 @@ export const GithubInstallCommand = cmd({
             if (installation) return s.stop("GitHub app already installed")
 
             // Open browser
-            // Note: AstroCode does not have its own GitHub app - users need to create their own
-            const url = "https://github.com/Astrocytech/AstroCode"
+            // Note: AstroCoder does not have its own GitHub app - users need to create their own
+            const url = "https://github.com/Astrocytech/AstroCoder"
             const command =
               process.platform === "darwin"
                 ? `open "${url}"`

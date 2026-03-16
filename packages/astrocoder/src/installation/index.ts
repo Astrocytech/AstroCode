@@ -25,7 +25,7 @@ export namespace Installation {
   }
 
   async function upgradeCurl(target: string) {
-    throw new Error("curl upgrade not supported for AstroCode")
+    throw new Error("curl upgrade not supported for AstroCoder")
   }
 
   export type Method = Awaited<ReturnType<typeof method>>
@@ -143,7 +143,7 @@ export namespace Installation {
 
   export async function upgrade(method: Method, target: string) {
     if (method === "curl") {
-      throw new Error("curl upgrade not supported for AstroCode")
+      throw new Error("curl upgrade not supported for AstroCoder")
     }
 
     type Result = { code: number; stdout: Buffer; stderr: Buffer }
@@ -253,14 +253,14 @@ export namespace Installation {
     }
 
     if (detectedMethod === "choco") {
-      throw new Error("Chocolatey not supported for AstroCode")
+      throw new Error("Chocolatey not supported for AstroCoder")
     }
 
     if (detectedMethod === "scoop") {
-      throw new Error("Scoop not supported for AstroCode")
+      throw new Error("Scoop not supported for AstroCoder")
     }
 
-    return fetch("https://api.github.com/repos/Astrocytech/AstroCode/releases/latest")
+    return fetch("https://api.github.com/repos/Astrocytech/AstroCoder/releases/latest")
       .then((res) => {
         if (!res.ok) throw new Error(res.statusText)
         return res.json()

@@ -132,9 +132,9 @@ export namespace Provider {
   async function getGpuStatus(): Promise<"GPU" | "CPU" | ""> {
     try {
       const hasGpu = await hasNvidiaGpu()
-      return hasGpu ? "GPU" : "CPU"
+      return hasGpu ? "GPU" : ""
     } catch {
-      return "CPU"
+      return ""
     }
   }
 

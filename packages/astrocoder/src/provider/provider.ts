@@ -91,18 +91,36 @@ export namespace Provider {
   async function checkNvidiaGpu(): Promise<boolean> {
     try {
       const result = await BunProc.run(["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"])
-      return result.stdout.toString().trim().length > 0
+      const output = result.stdout.toString().trim()
+      // Must have actual GPU name, not just empty
+      return output.length > 0 && !output.includes("No devices")
+    } catch {
+      return false
+    }
+  }
+
+  async function isOllamaUsingGpu(): Promise<boolean> {
+    try {
+      // Check if ollama process is using GPU via nvidia-smi
+      const result = await BunProc.run([
+        "nvidia-smi",
+        "--query-compute-apps=pid,process_name",
+        "--format=csv,noheader",
+      ])
+      const output = result.stdout.toString()
+      return output.includes("ollama")
     } catch {
       return false
     }
   }
 
   async function getOllamaContextLength(): Promise<number> {
+    const apiBase = Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"
     const envContext = Env.get("OLLAMA_CONTEXT_LENGTH")
     if (envContext) return parseInt(envContext, 10)
     // Try to get context from running ollama
     try {
-      const res = await fetch("http://127.0.0.1:11434/api/tags")
+      const res = await fetch(`${apiBase}/api/tags`, { signal: AbortSignal.timeout(3000) })
       if (res.ok) {
         const data = await res.json()
         const model = data.models?.[0]
@@ -121,16 +139,26 @@ export namespace Provider {
       const hasNvidiaGpu = await checkNvidiaGpu()
       if (!hasNvidiaGpu) return "CPU"
 
-      // If nvidia GPU exists, assume GPU mode when ollama is running
-      // Ollama uses CUDA by default when available
-      try {
-        const res = await fetch("http://127.0.0.1:11434/api/tags")
-        if (res.ok) return "GPU"
-      } catch {
-        // ollama not running, but GPU is available
+      // Check if ollama is actually using GPU via nvidia-smi
+      const ollamaUsingGpu = await isOllamaUsingGpu()
+      if (ollamaUsingGpu) {
+        return "GPU"
       }
 
-      return "GPU" // Has nvidia GPU available
+      // Fallback: check if ollama API is accessible
+      const apiBase = Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"
+      try {
+        const res = await fetch(`${apiBase}/api/tags`, { signal: AbortSignal.timeout(3000) })
+        if (res.ok) {
+          // Ollama is running - GPU likely available
+          return "GPU"
+        }
+      } catch {
+        // ignore
+      }
+
+      // Has nvidia GPU, assume GPU mode is available when ollama starts
+      return "GPU"
     } catch {
       return "CPU"
     }
@@ -154,11 +182,11 @@ export namespace Provider {
   export async function ensureOllamaRunning(): Promise<boolean> {
     if (ollamaStarted) return true
 
-    const apiBase = "http://127.0.0.1:11434"
+    const apiBase = Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"
     const url = apiBase.endsWith("/v1") ? apiBase : `${apiBase}/v1`
 
     try {
-      const res = await fetch(`${url}/models`, { method: "GET" }).catch(() => null)
+      const res = await fetch(`${url}/models`, { method: "GET", signal: AbortSignal.timeout(5000) }).catch(() => null)
       if (res) {
         console.log("[AstroCoder] Ollama already running - using existing instance")
         ollamaStarted = true
@@ -273,7 +301,7 @@ export namespace Provider {
       // Fetch available models from local ollama server
       let localModels: any[] = []
       try {
-        const res = await fetch(`${apiBase}/api/tags`)
+        const res = await fetch(`${apiBase}/api/tags`, { signal: AbortSignal.timeout(5000) })
         if (res.ok) {
           const data = await res.json()
           localModels = data.models ?? []
@@ -282,23 +310,33 @@ export namespace Provider {
         // ignore - models will be empty
       }
 
-      // Build models from local ollama - prefix with ollama/ for proper detection
+      // Build models from local ollama
       const models: Record<string, any> = {}
       for (const m of localModels) {
-        const name = m.name
-        const modelKey = `ollama/${name}`
+        const fullName = m.name // e.g., "registry.ollama.ai/library/qwen2.5-coder-14b-local:latest"
+        
+        // Extract just the model name (e.g., "qwen2.5-coder-14b-local")
+        let modelName = fullName
+        if (fullName.includes("/library/")) {
+          modelName = fullName.split("/library/")[1]
+        }
+        if (modelName.endsWith(":latest")) {
+          modelName = modelName.replace(":latest", "")
+        }
+        
+        const modelKey = `ollama/${modelName}`
         const contextLength = m.model_info?.context_length || 8192
 
         models[modelKey] = {
           id: modelKey,
           providerID: "ollama",
           api: {
-            id: name, // Use original name for API
+            id: modelName, // Use cleaned name for API
             url: "",
             npm: "@ai-sdk/openai-compatible",
           },
-          name,
-          family: name.split(":")[0],
+          name: modelName,
+          family: modelName.split(":")[0],
           release_date: "",
           attachment: false,
           reasoning: false,

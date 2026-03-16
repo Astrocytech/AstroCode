@@ -82,8 +82,11 @@ export async function parseOllamaResponse(
   // Sort matches by start index for cleaning
   const sortedMatches = [...matches].sort((a, b) => a.start - b.start)
   
+  logger.info("parseOllamaResponse found matches", { count: sortedMatches.length })
+  
   // Populate edits array
   for (const m of sortedMatches) {
+    logger.info("Adding edit", { path: m.path, type: m.type, contentLength: m.content.length })
     edits.push({
       path: m.path,
       content: m.content,
@@ -104,8 +107,10 @@ export async function parseOllamaResponse(
 }
 
 export async function applyOllamaEdits(edits: FileEdit[]): Promise<void> {
+  logger.info("applyOllamaEdits start", { count: edits.length })
   for (const edit of edits) {
     try {
+      logger.info("Processing edit", { path: edit.path, isDiff: edit.isDiff, contentLength: edit.content.length })
       if (edit.isDiff) {
         // Apply diff to existing file
         await applyDiff(edit.path, edit.content)
@@ -120,6 +125,7 @@ export async function applyOllamaEdits(edits: FileEdit[]): Promise<void> {
       // Don't throw - let other edits continue
     }
   }
+  logger.info("applyOllamaEdits end")
 }
 
 async function applyDiff(filePath: string, diffContent: string): Promise<void> {

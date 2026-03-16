@@ -753,6 +753,11 @@ export namespace SessionPrompt {
     using _ = log.time("resolveTools")
     const tools: Record<string, AITool> = {}
 
+    // Skip tools entirely if model doesn't support them
+    if (input.model.capabilities.toolcall === false) {
+      return tools
+    }
+
     const context = (args: any, options: ToolCallOptions): Tool.Context => ({
       sessionID: input.session.id,
       abort: options.abortSignal!,

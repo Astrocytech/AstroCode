@@ -83,9 +83,12 @@ export const ConfigRoutes = lazy(() =>
       async (c) => {
         using _ = log.time("providers")
         const providers = await Provider.list().then((x) => mapValues(x, (item) => item))
+        const ollamaProviders = Object.fromEntries(
+          Object.entries(providers).filter(([id]) => id === "ollama" || id.startsWith("ollama/")),
+        )
         return c.json({
-          providers: Object.values(providers),
-          default: mapValues(providers, (item) => Provider.sort(Object.values(item.models))[0].id),
+          providers: Object.values(ollamaProviders),
+          default: mapValues(ollamaProviders, (item) => Provider.sort(Object.values(item.models))[0].id),
         })
       },
     ),

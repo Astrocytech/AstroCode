@@ -79,7 +79,8 @@ export namespace Provider {
     })
   }
 
-  function isOllamaModel(modelID: string): boolean {
+  function isOllamaModel(modelID: string, providerID?: string): boolean {
+    if (providerID === "ollama") return true
     return modelID.startsWith("ollama/") || modelID.startsWith("ollama_chat/")
   }
 
@@ -96,11 +97,40 @@ export namespace Provider {
     }
   }
 
+  async function getOllamaContextLength(): Promise<number> {
+    const envContext = Env.get("OLLAMA_CONTEXT_LENGTH")
+    if (envContext) return parseInt(envContext, 10)
+    // Try to get context from running ollama
+    try {
+      const res = await fetch("http://127.0.0.1:11434/api/tags")
+      if (res.ok) {
+        const data = await res.json()
+        const model = data.models?.[0]
+        if (model?.model_info?.context_length) {
+          return model.model_info.context_length
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return 8192 // default
+  }
+
   async function getGpuStatus(): Promise<"GPU" | "CPU" | ""> {
     try {
       const hasNvidiaGpu = await checkNvidiaGpu()
-      if (hasNvidiaGpu) return "GPU"
-      return "CPU"
+      if (!hasNvidiaGpu) return "CPU"
+
+      // If nvidia GPU exists, assume GPU mode when ollama is running
+      // Ollama uses CUDA by default when available
+      try {
+        const res = await fetch("http://127.0.0.1:11434/api/tags")
+        if (res.ok) return "GPU"
+      } catch {
+        // ollama not running, but GPU is available
+      }
+
+      return "GPU" // Has nvidia GPU available
     } catch {
       return "CPU"
     }
@@ -124,7 +154,7 @@ export namespace Provider {
   export async function ensureOllamaRunning(): Promise<boolean> {
     if (ollamaStarted) return true
 
-    const apiBase = Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"
+    const apiBase = "http://127.0.0.1:11434"
     const url = apiBase.endsWith("/v1") ? apiBase : `${apiBase}/v1`
 
     try {
@@ -198,6 +228,7 @@ export namespace Provider {
     getModel?: CustomModelLoader
     vars?: CustomVarsLoader
     options?: Record<string, any>
+    models?: Record<string, any>
   }>
 
   const CUSTOM_LOADERS: Record<string, CustomLoader> = {
@@ -234,16 +265,69 @@ export namespace Provider {
         options: hasKey ? {} : { apiKey: "public" },
       }
     },
-    ollama: async () => {
+    ollama: async (input) => {
       await ensureOllamaRunning()
       const apiBase = Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"
       const apiKey = Env.get("OLLAMA_API_KEY") || "not-needed"
+
+      // Fetch available models from local ollama server
+      let localModels: any[] = []
+      try {
+        const res = await fetch(`${apiBase}/api/tags`)
+        if (res.ok) {
+          const data = await res.json()
+          localModels = data.models ?? []
+        }
+      } catch {
+        // ignore - models will be empty
+      }
+
+      // Build models from local ollama - prefix with ollama/ for proper detection
+      const models: Record<string, any> = {}
+      for (const m of localModels) {
+        const name = m.name
+        const modelKey = `ollama/${name}`
+        const contextLength = m.model_info?.context_length || 8192
+
+        models[modelKey] = {
+          id: modelKey,
+          providerID: "ollama",
+          api: {
+            id: name, // Use original name for API
+            url: "",
+            npm: "@ai-sdk/openai-compatible",
+          },
+          name,
+          family: name.split(":")[0],
+          release_date: "",
+          attachment: false,
+          reasoning: false,
+          temperature: true,
+          tool_call: false, // Disable tools by default for local models
+          cost: { input: 0, output: 0, cache: { read: 0, write: 0 } },
+          limit: { context: contextLength, output: 4096 },
+          options: { num_ctx: calculateOllamaContext(contextLength) },
+          headers: {},
+          status: "active",
+          capabilities: {
+            temperature: true,
+            reasoning: false,
+            attachment: false,
+            toolcall: false,
+            input: { text: true, audio: false, image: false, video: false, pdf: false },
+            output: { text: true, audio: false, image: false, video: false, pdf: false },
+            interleaved: false,
+          },
+        }
+      }
+
       return {
         autoload: true,
         options: {
           baseURL: apiBase.endsWith("/v1") ? apiBase : `${apiBase}/v1`,
           apiKey,
         },
+        models,
       }
     },
   }
@@ -375,7 +459,7 @@ export namespace Provider {
         temperature: model.temperature,
         reasoning: model.reasoning,
         attachment: model.attachment,
-        toolcall: isOllamaModel(model.id) ? false : model.tool_call,
+        toolcall: isOllamaModel(model.id, provider.id) ? false : model.tool_call,
         input: {
           text: model.modalities?.input?.includes("text") ?? false,
           audio: model.modalities?.input?.includes("audio") ?? false,
@@ -438,6 +522,16 @@ export namespace Provider {
     const sdk = new Map<string, SDK>()
 
     log.info("init")
+
+    // Add Ollama provider manually since models come from local server
+    ;(database as any)["ollama"] = {
+      id: ProviderID.ollama,
+      name: "Ollama",
+      env: [],
+      models: {},
+      source: "custom",
+      options: {},
+    }
 
     const configProviders = Object.entries(config.provider ?? {})
 
@@ -506,7 +600,7 @@ export namespace Provider {
             temperature: model.temperature ?? existingModel?.capabilities.temperature ?? false,
             reasoning: model.reasoning ?? existingModel?.capabilities.reasoning ?? false,
             attachment: model.attachment ?? existingModel?.capabilities.attachment ?? false,
-            toolcall: isOllamaModel(modelID) ? false : (model.tool_call ?? existingModel?.capabilities.toolcall ?? true),
+            toolcall: isOllamaModel(modelID, providerID) ? false : (model.tool_call ?? existingModel?.capabilities.toolcall ?? true),
             input: {
               text: model.modalities?.input?.includes("text") ?? existingModel?.capabilities.input.text ?? true,
               audio: model.modalities?.input?.includes("audio") ?? existingModel?.capabilities.input.audio ?? false,
@@ -636,7 +730,10 @@ export namespace Provider {
         if (result.getModel) modelLoaders[providerID] = result.getModel
         if (result.vars) varsLoaders[providerID] = result.vars
         const opts = result.options ?? {}
-        const patch: Partial<Info> = providers[providerID] ? { options: opts } : { source: "custom", options: opts }
+        const models = result.models
+        const patch: Partial<Info> = providers[providerID]
+          ? { ...(models ? { models } : {}), options: opts }
+          : { source: "custom", ...(models ? { models } : {}), options: opts }
         mergeProvider(providerID, patch)
       }
     }
@@ -992,19 +1089,22 @@ export namespace Provider {
     if (cfg.model) return parseModel(cfg.model)
 
     const providers = await list()
+    const ollamaProviders = Object.fromEntries(
+      Object.entries(providers).filter(([id]) => id === "ollama" || id.startsWith("ollama/")),
+    )
     const recent = (await Filesystem.readJson<{ recent?: { providerID: ProviderID; modelID: ModelID }[] }>(
       path.join(Global.Path.state, "model.json"),
     )
       .then((x) => (Array.isArray(x.recent) ? x.recent : []))
       .catch(() => [])) as { providerID: ProviderID; modelID: ModelID }[]
     for (const entry of recent) {
-      const provider = providers[entry.providerID]
+      const provider = ollamaProviders[entry.providerID]
       if (!provider) continue
       if (!provider.models[entry.modelID]) continue
       return { providerID: entry.providerID, modelID: entry.modelID }
     }
 
-    const provider = Object.values(providers).find((p) => !cfg.provider || Object.keys(cfg.provider).includes(p.id))
+    const provider = Object.values(ollamaProviders).find((p) => !cfg.provider || Object.keys(cfg.provider).includes(p.id))
     if (!provider) throw new Error("no providers found")
     const [model] = sort(Object.values(provider.models))
     if (!model) throw new Error("no models found")

@@ -123,8 +123,6 @@ If you need to customize Ollama settings:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `OLLAMA_API_BASE` | http://127.0.0.1:11434 | Ollama server URL |
-| `OLLAMA_API_KEY` | not-needed | API key (usually not needed) |
 | `OLLAMA_CONTEXT_LENGTH` | 4096 | Default context length |
 
 ## Troubleshooting

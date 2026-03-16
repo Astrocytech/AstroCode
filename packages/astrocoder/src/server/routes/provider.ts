@@ -50,18 +50,22 @@ export const ProviderRoutes = lazy(() =>
         }
 
         const connected = await Provider.list()
-        const providers = Object.assign(
+        const allConnected = Object.assign(
           mapValues(filteredProviders, (x) => Provider.fromModelsDevProvider(x)),
           connected,
+        )
+
+        const ollamaConnected = Object.fromEntries(
+          Object.entries(allConnected).filter(([id]) => id === "ollama" || id.startsWith("ollama/")),
         )
 
         await Provider.ensureOllamaRunning()
         const gpu = await Provider.getGpuDisplay()
 
         return c.json({
-          all: Object.values(providers),
-          default: mapValues(providers, (item) => Provider.sort(Object.values(item.models))[0].id),
-          connected: Object.keys(connected),
+          all: Object.values(ollamaConnected),
+          default: mapValues(ollamaConnected, (item) => Provider.sort(Object.values(item.models))[0].id),
+          connected: Object.keys(ollamaConnected),
           gpu,
         })
       },

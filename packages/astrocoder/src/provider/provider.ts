@@ -99,7 +99,7 @@ export namespace Provider {
     }
   }
 
-  async function isOllamaUsingGpu(): Promise<boolean> {
+  async function hasNvidiaGpu(): Promise<boolean> {
     try {
       const result = await BunProc.run(["nvidia-smi", "-L"])
       return result.stdout.toString().includes("GPU")
@@ -127,9 +127,8 @@ export namespace Provider {
 
   async function getGpuStatus(): Promise<"GPU" | "CPU" | ""> {
     try {
-      const hasNvidiaGpu = await isOllamaUsingGpu()
-      if (hasNvidiaGpu) return "GPU"
-      return "CPU"
+      const hasGpu = await hasNvidiaGpu()
+      return hasGpu ? "GPU" : "CPU"
     } catch {
       return "CPU"
     }
@@ -312,7 +311,7 @@ export namespace Provider {
           attachment: false,
           reasoning: false,
           temperature: true,
-          tool_call: false,
+          tool_call: true,
           cost: { input: 0, output: 0, cache: { read: 0, write: 0 } },
           limit: { context: contextLength, output: 4096 },
           options: { num_ctx: calculateOllamaContext(contextLength) },
@@ -322,7 +321,7 @@ export namespace Provider {
             temperature: true,
             reasoning: false,
             attachment: false,
-            toolcall: false,
+            toolcall: true,
             input: { text: true, audio: false, image: false, video: false, pdf: false },
             output: { text: true, audio: false, image: false, video: false, pdf: false },
             interleaved: false,

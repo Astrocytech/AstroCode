@@ -341,7 +341,7 @@ export namespace Provider {
           attachment: false,
           reasoning: false,
           temperature: true,
-          tool_call: false, // Disable tools by default for local models
+          tool_call: true, // Enable tools for local models
           cost: { input: 0, output: 0, cache: { read: 0, write: 0 } },
           limit: { context: contextLength, output: 4096 },
           options: { num_ctx: calculateOllamaContext(contextLength) },
@@ -351,7 +351,7 @@ export namespace Provider {
             temperature: true,
             reasoning: false,
             attachment: false,
-            toolcall: false,
+            toolcall: true,
             input: { text: true, audio: false, image: false, video: false, pdf: false },
             output: { text: true, audio: false, image: false, video: false, pdf: false },
             interleaved: false,

@@ -218,7 +218,7 @@ function normalizePath(input?: string) {
   return input
 }
 
-export const RunCommand = cmd({
+export const command = cmd({
   command: "run [message..]",
   describe: "run astrocoder with a message",
   builder: (yargs: Argv) => {
@@ -324,19 +324,19 @@ export const RunCommand = cmd({
     if (args.file) {
       const list = Array.isArray(args.file) ? args.file : [args.file]
 
-      for (const filePath of list) {
-        const resolvedPath = path.resolve(process.cwd(), filePath)
-        if (!(await Filesystem.exists(resolvedPath))) {
-          UI.error(`File not found: ${filePath}`)
+      for (const p of list) {
+        const resolved = path.resolve(process.cwd(), p)
+        if (!(await Filesystem.exists(resolved))) {
+          UI.error(`File not found: ${p}`)
           process.exit(1)
         }
 
-        const mime = (await Filesystem.isDir(resolvedPath)) ? "application/x-directory" : "text/plain"
+        const mime = (await Filesystem.isDir(resolved)) ? "application/x-directory" : "text/plain"
 
         files.push({
           type: "file",
-          url: pathToFileURL(resolvedPath).href,
-          filename: path.basename(resolvedPath),
+          url: pathToFileURL(resolved).href,
+          filename: path.basename(resolved),
           mime,
         })
       }
@@ -379,25 +379,25 @@ export const RunCommand = cmd({
     }
 
     async function session(sdk: OpencodeClient) {
-      const baseID = args.continue ? (await sdk.session.list()).data?.find((s) => !s.parentID)?.id : args.session
+      const id = args.continue ? (await sdk.session.list()).data?.find((s) => !s.parentID)?.id : args.session
 
-      if (baseID && args.fork) {
-        const forked = await sdk.session.fork({ sessionID: baseID })
+      if (id && args.fork) {
+        const forked = await sdk.session.fork({ sessionID: id })
         return forked.data?.id
       }
 
-      if (baseID) return baseID
+      if (id) return id
 
       const name = title()
       const result = await sdk.session.create({ title: name, permission: rules })
       return result.data?.id
     }
 
-    async function share(sdk: OpencodeClient, sessionID: string) {
+    async function share(sdk: OpencodeClient, id: string) {
       const cfg = await sdk.config.get()
       if (!cfg.data) return
       if (cfg.data.share !== "auto" && !Flag.OPENCODE_AUTO_SHARE && !args.share) return
-      const res = await sdk.session.share({ sessionID }).catch((error) => {
+      const res = await sdk.session.share({ sessionID: id }).catch((error) => {
         if (error instanceof Error && error.message.includes("disabled")) {
           UI.println(UI.Style.TEXT_DANGER_BOLD + "!  " + error.message)
         }
@@ -432,7 +432,7 @@ export const RunCommand = cmd({
 
       function emit(type: string, data: Record<string, unknown>) {
         if (args.format === "json") {
-          process.stdout.write(JSON.stringify({ type, timestamp: Date.now(), sessionID, ...data }) + EOL)
+          process.stdout.write(JSON.stringify({ type, timestamp: Date.now(), sessionID: id, ...data }) + EOL)
           return true
         }
         return false
@@ -459,7 +459,7 @@ export const RunCommand = cmd({
 
           if (event.type === "message.part.updated") {
             const part = event.properties.part
-            if (part.sessionID !== sessionID) continue
+            if (part.sessionID !== id) continue
 
             if (part.type === "tool" && (part.state.status === "completed" || part.state.status === "error")) {
               if (emit("tool_use", { part })) continue
@@ -523,7 +523,7 @@ export const RunCommand = cmd({
 
           if (event.type === "session.error") {
             const props = event.properties
-            if (props.sessionID !== sessionID || !props.error) continue
+            if (props.sessionID !== id || !props.error) continue
             let err = String(props.error.name)
             if ("data" in props.error && props.error.data && "message" in props.error.data) {
               err = String(props.error.data.message)
@@ -535,7 +535,7 @@ export const RunCommand = cmd({
 
           if (
             event.type === "session.status" &&
-            event.properties.sessionID === sessionID &&
+            event.properties.sessionID === id &&
             event.properties.status.type === "idle"
           ) {
             break
@@ -543,7 +543,7 @@ export const RunCommand = cmd({
 
           if (event.type === "permission.asked") {
             const permission = event.properties
-            if (permission.sessionID !== sessionID) continue
+            if (permission.sessionID !== id) continue
             UI.println(
               UI.Style.TEXT_WARNING_BOLD + "!",
               UI.Style.TEXT_NORMAL +
@@ -619,12 +619,12 @@ export const RunCommand = cmd({
         return args.agent
       })()
 
-      const sessionID = await session(sdk)
-      if (!sessionID) {
+      const id = await session(sdk)
+      if (!id) {
         UI.error("Session not found")
         process.exit(1)
       }
-      await share(sdk, sessionID)
+      await share(sdk, id)
 
       loop().catch((e) => {
         console.error(e)
@@ -633,23 +633,23 @@ export const RunCommand = cmd({
 
       if (args.command) {
         await sdk.session.command({
-          sessionID,
+          sessionID: id,
           agent,
           model: args.model,
           command: args.command,
           arguments: message,
           variant: args.variant,
         })
-      } else {
-        const model = args.model ? Provider.parseModel(args.model) : undefined
-        await sdk.session.prompt({
-          sessionID,
-          agent,
-          model,
-          variant: args.variant,
-          parts: [...files, { type: "text", text: message }],
-        })
+        return
       }
+      const model = args.model ? Provider.parseModel(args.model) : undefined
+      await sdk.session.prompt({
+        sessionID: id,
+        agent,
+        model,
+        variant: args.variant,
+        parts: [...files, { type: "text", text: message }],
+      })
     }
 
     if (args.attach) {
@@ -665,11 +665,11 @@ export const RunCommand = cmd({
     }
 
     await bootstrap(process.cwd(), async () => {
-      const fetchFn = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const fn = (async (input: RequestInfo | URL, init?: RequestInit) => {
         const request = new Request(input, init)
         return Server.Default().fetch(request)
       }) as typeof globalThis.fetch
-      const sdk = createOpencodeClient({ baseUrl: "http://opencode.internal", fetch: fetchFn })
+      const sdk = createOpencodeClient({ baseUrl: "http://opencode.internal", fetch: fn })
       await execute(sdk)
     })
   },

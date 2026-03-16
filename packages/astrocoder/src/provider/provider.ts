@@ -26,7 +26,7 @@ import { ProviderTransform } from "./transform"
 import { Installation } from "../installation"
 import { ModelID, ProviderID } from "./schema"
 
-const DEFAULT_CHUNK_TIMEOUT = 300_000
+const timeout = 300_000
 
 export namespace Provider {
   const log = Log.create({ service: "provider" })
@@ -99,25 +99,12 @@ export namespace Provider {
     }
   }
 
-  async function hasNvidiaGpu(): Promise<boolean> {
-    try {
-      const result = await BunProc.run(["sh", "-c", "nvidia-smi -L"])
-      const output = result.stdout.toString()
-      const hasGpu = output.includes("GPU")
-      console.log("[AstroCoder] GPU check: output:", output.substring(0, 100), "hasGpu:", hasGpu)
-      return hasGpu
-    } catch (err) {
-      console.log("[AstroCoder] GPU check failed:", err)
-      return false
-    }
-  }
-
   async function getOllamaContextLength(): Promise<number> {
-    const apiBase = Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"
-    const envContext = Env.get("OLLAMA_CONTEXT_LENGTH")
-    if (envContext) return parseInt(envContext, 10)
+    const base = Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"
+    const env = Env.get("OLLAMA_CONTEXT_LENGTH")
+    if (env) return parseInt(env, 10)
     try {
-      const res = await fetch(`${apiBase}/api/tags`, { signal: AbortSignal.timeout(3000) })
+      const res = await fetch(`${base}/api/tags`, { signal: AbortSignal.timeout(3000) })
       if (res.ok) {
         const data = await res.json()
         const model = data.models?.[0]
@@ -131,8 +118,8 @@ export namespace Provider {
 
   async function getGpuStatus(): Promise<"GPU" | "CPU" | ""> {
     try {
-      const hasGpu = await hasNvidiaGpu()
-      return hasGpu ? "GPU" : ""
+      const gpu = await checkNvidiaGpu()
+      return gpu ? "GPU" : ""
     } catch {
       return ""
     }
@@ -156,8 +143,8 @@ export namespace Provider {
   export async function ensureOllamaRunning(): Promise<boolean> {
     if (ollamaStarted) return true
 
-    const apiBase = Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"
-    const url = apiBase.endsWith("/v1") ? apiBase : `${apiBase}/v1`
+    const base = Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"
+    const url = base.endsWith("/v1") ? base : `${base}/v1`
 
     try {
       const res = await fetch(`${url}/models`, { method: "GET", signal: AbortSignal.timeout(5000) }).catch(() => null)
@@ -219,7 +206,7 @@ export namespace Provider {
     ollamaStarted = false
   }
 
-  const BUNDLED_PROVIDERS: Record<string, (options: any) => SDK> = {
+  const bundled: Record<string, (options: any) => SDK> = {
     "@ai-sdk/openai-compatible": createOpenAICompatible,
   }
 
@@ -233,7 +220,7 @@ export namespace Provider {
     models?: Record<string, any>
   }>
 
-  const CUSTOM_LOADERS: Record<string, CustomLoader> = {
+  const custom: Record<string, CustomLoader> = {
     async anthropic() {
       return {
         autoload: false,
@@ -246,7 +233,7 @@ export namespace Provider {
       }
     },
     async opencode(input) {
-      const hasKey = await (async () => {
+      const key = await (async () => {
         const env = Env.all()
         if (input.env.some((item) => env[item])) return true
         if (await Auth.get(input.id)) return true
@@ -255,7 +242,7 @@ export namespace Provider {
         return false
       })()
 
-      if (!hasKey) {
+      if (!key) {
         for (const [key, value] of Object.entries(input.models)) {
           if (value.cost.input === 0) continue
           delete input.models[key]
@@ -264,21 +251,21 @@ export namespace Provider {
 
       return {
         autoload: Object.keys(input.models).length > 0,
-        options: hasKey ? {} : { apiKey: "public" },
+        options: key ? {} : { apiKey: "public" },
       }
     },
     ollama: async (input) => {
       await ensureOllamaRunning()
-      const apiBase = Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"
-      const apiKey = Env.get("OLLAMA_API_KEY") || "not-needed"
+      const base = Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"
+      const key = Env.get("OLLAMA_API_KEY") || "not-needed"
 
       // Fetch available models from local ollama server
-      let localModels: any[] = []
+      let local: any[] = []
       try {
-        const res = await fetch(`${apiBase}/api/tags`, { signal: AbortSignal.timeout(5000) })
+        const res = await fetch(`${base}/api/tags`, { signal: AbortSignal.timeout(5000) })
         if (res.ok) {
           const data = await res.json()
-          localModels = data.models ?? []
+          local = data.models ?? []
         }
       } catch {
         // ignore - models will be empty
@@ -286,23 +273,23 @@ export namespace Provider {
 
       // Build models from local ollama
       const models: Record<string, any> = {}
-      for (const m of localModels) {
-        const fullName = m.name // e.g., "registry.ollama.ai/library/qwen2.5-coder-14b-local:latest"
+      for (const m of local) {
+        const name = m.name // e.g., "registry.ollama.ai/library/qwen2.5-coder-14b-local:latest"
         
         // Extract just the model name (e.g., "qwen2.5-coder-14b-local")
-        let modelName = fullName
-        if (fullName.includes("/library/")) {
-          modelName = fullName.split("/library/")[1]
+        let modelName = name
+        if (name.includes("/library/")) {
+          modelName = name.split("/library/")[1]
         }
         if (modelName.endsWith(":latest")) {
           modelName = modelName.replace(":latest", "")
         }
         
-        const modelKey = `ollama/${modelName}`
-        const contextLength = m.model_info?.context_length || 8192
+        const key = `ollama/${modelName}`
+        const context = m.model_info?.context_length || 8192
 
-        models[modelKey] = {
-          id: modelKey,
+        models[key] = {
+          id: key,
           providerID: "ollama",
           api: {
             id: modelName, // Use cleaned name for API
@@ -317,8 +304,8 @@ export namespace Provider {
           temperature: true,
           tool_call: false,
           cost: { input: 0, output: 0, cache: { read: 0, write: 0 } },
-          limit: { context: contextLength, output: 4096 },
-          options: { num_ctx: calculateOllamaContext(contextLength) },
+          limit: { context: context, output: 4096 },
+          options: { num_ctx: calculateOllamaContext(context) },
           headers: {},
           status: "active",
           capabilities: {
@@ -336,8 +323,8 @@ export namespace Provider {
       return {
         autoload: true,
         options: {
-          baseURL: apiBase.endsWith("/v1") ? apiBase : `${apiBase}/v1`,
-          apiKey,
+          baseURL: base.endsWith("/v1") ? base : `${base}/v1`,
+          apiKey: key,
         },
         models,
       }
@@ -511,8 +498,8 @@ export namespace Provider {
   const state = Instance.state(async () => {
     using _ = log.time("state")
     const config = await Config.get()
-    const modelsDev = await ModelsDev.get()
-    const database = mapValues(modelsDev, fromModelsDevProvider)
+    const dev = await ModelsDev.get()
+    const database = mapValues(dev, fromModelsDevProvider)
 
     const disabled = new Set(config.disabled_providers ?? [])
     const enabled = config.enabled_providers ? new Set(config.enabled_providers) : null
@@ -525,10 +512,10 @@ export namespace Provider {
 
     const providers: { [providerID: string]: Info } = {}
     const languages = new Map<string, LanguageModelV2>()
-    const modelLoaders: {
+    const loaders: {
       [providerID: string]: CustomModelLoader
     } = {}
-    const varsLoaders: {
+    const vars: {
       [providerID: string]: CustomVarsLoader
     } = {}
     const sdk = new Map<string, SDK>()
@@ -545,16 +532,16 @@ export namespace Provider {
       options: {},
     }
 
-    const configProviders = Object.entries(config.provider ?? {})
+    const providersConfig = Object.entries(config.provider ?? {})
 
     // Add GitHub Copilot Enterprise provider that inherits from GitHub Copilot
     if (database["github-copilot"]) {
-      const githubCopilot = database["github-copilot"]
+      const copilot = database["github-copilot"]
       database["github-copilot-enterprise"] = {
-        ...githubCopilot,
+        ...copilot,
         id: ProviderID.githubCopilotEnterprise,
         name: "GitHub Copilot Enterprise",
-        models: mapValues(githubCopilot.models, (model) => ({
+        models: mapValues(copilot.models, (model) => ({
           ...model,
           providerID: ProviderID.githubCopilotEnterprise,
         })),
@@ -575,7 +562,7 @@ export namespace Provider {
     }
 
     // extend database from config
-    for (const [providerID, provider] of configProviders) {
+    for (const [providerID, provider] of providersConfig) {
       const existing = database[providerID]
       const parsed: Info = {
         id: ProviderID.make(providerID),
@@ -587,86 +574,86 @@ export namespace Provider {
       }
 
       for (const [modelID, model] of Object.entries(provider.models ?? {})) {
-        const existingModel = parsed.models[model.id ?? modelID]
+        const existing = parsed.models[model.id ?? modelID]
         const name = iife(() => {
           if (model.name) return model.name
           if (model.id && model.id !== modelID) return modelID
-          return existingModel?.name ?? modelID
+          return existing?.name ?? modelID
         })
-        const parsedModel: Model = {
+        const modelObj: Model = {
           id: ModelID.make(modelID),
           api: {
-            id: model.id ?? existingModel?.api.id ?? modelID,
+            id: model.id ?? existing?.api.id ?? modelID,
             npm:
               model.provider?.npm ??
               provider.npm ??
-              existingModel?.api.npm ??
-              modelsDev[providerID]?.npm ??
+              existing?.api.npm ??
+              dev[providerID]?.npm ??
               "@ai-sdk/openai-compatible",
-            url: model.provider?.api ?? provider?.api ?? existingModel?.api.url ?? modelsDev[providerID]?.api,
+            url: model.provider?.api ?? provider?.api ?? existing?.api.url ?? dev[providerID]?.api,
           },
-          status: model.status ?? existingModel?.status ?? "active",
+          status: model.status ?? existing?.status ?? "active",
           name,
           providerID: ProviderID.make(providerID),
           capabilities: {
-            temperature: model.temperature ?? existingModel?.capabilities.temperature ?? false,
-            reasoning: model.reasoning ?? existingModel?.capabilities.reasoning ?? false,
-            attachment: model.attachment ?? existingModel?.capabilities.attachment ?? false,
-            toolcall: isOllamaModel(modelID, providerID) ? false : (model.tool_call ?? existingModel?.capabilities.toolcall ?? true),
+            temperature: model.temperature ?? existing?.capabilities.temperature ?? false,
+            reasoning: model.reasoning ?? existing?.capabilities.reasoning ?? false,
+            attachment: model.attachment ?? existing?.capabilities.attachment ?? false,
+            toolcall: isOllamaModel(modelID, providerID) ? false : (model.tool_call ?? existing?.capabilities.toolcall ?? true),
             input: {
-              text: model.modalities?.input?.includes("text") ?? existingModel?.capabilities.input.text ?? true,
-              audio: model.modalities?.input?.includes("audio") ?? existingModel?.capabilities.input.audio ?? false,
-              image: model.modalities?.input?.includes("image") ?? existingModel?.capabilities.input.image ?? false,
-              video: model.modalities?.input?.includes("video") ?? existingModel?.capabilities.input.video ?? false,
-              pdf: model.modalities?.input?.includes("pdf") ?? existingModel?.capabilities.input.pdf ?? false,
+              text: model.modalities?.input?.includes("text") ?? existing?.capabilities.input.text ?? true,
+              audio: model.modalities?.input?.includes("audio") ?? existing?.capabilities.input.audio ?? false,
+              image: model.modalities?.input?.includes("image") ?? existing?.capabilities.input.image ?? false,
+              video: model.modalities?.input?.includes("video") ?? existing?.capabilities.input.video ?? false,
+              pdf: model.modalities?.input?.includes("pdf") ?? existing?.capabilities.input.pdf ?? false,
             },
             output: {
-              text: model.modalities?.output?.includes("text") ?? existingModel?.capabilities.output.text ?? true,
-              audio: model.modalities?.output?.includes("audio") ?? existingModel?.capabilities.output.audio ?? false,
-              image: model.modalities?.output?.includes("image") ?? existingModel?.capabilities.output.image ?? false,
-              video: model.modalities?.output?.includes("video") ?? existingModel?.capabilities.output.video ?? false,
-              pdf: model.modalities?.output?.includes("pdf") ?? existingModel?.capabilities.output.pdf ?? false,
+              text: model.modalities?.output?.includes("text") ?? existing?.capabilities.output.text ?? true,
+              audio: model.modalities?.output?.includes("audio") ?? existing?.capabilities.output.audio ?? false,
+              image: model.modalities?.output?.includes("image") ?? existing?.capabilities.output.image ?? false,
+              video: model.modalities?.output?.includes("video") ?? existing?.capabilities.output.video ?? false,
+              pdf: model.modalities?.output?.includes("pdf") ?? existing?.capabilities.output.pdf ?? false,
             },
             interleaved: model.interleaved ?? false,
           },
           cost: {
-            input: model?.cost?.input ?? existingModel?.cost?.input ?? 0,
-            output: model?.cost?.output ?? existingModel?.cost?.output ?? 0,
+            input: model?.cost?.input ?? existing?.cost?.input ?? 0,
+            output: model?.cost?.output ?? existing?.cost?.output ?? 0,
             cache: {
-              read: model?.cost?.cache_read ?? existingModel?.cost?.cache.read ?? 0,
-              write: model?.cost?.cache_write ?? existingModel?.cost?.cache.write ?? 0,
+              read: model?.cost?.cache_read ?? existing?.cost?.cache.read ?? 0,
+              write: model?.cost?.cache_write ?? existing?.cost?.cache.write ?? 0,
             },
           },
-          options: mergeDeep(existingModel?.options ?? {}, model.options ?? {}),
+          options: mergeDeep(existing?.options ?? {}, model.options ?? {}),
           limit: {
-            context: model.limit?.context ?? existingModel?.limit?.context ?? 0,
-            output: model.limit?.output ?? existingModel?.limit?.output ?? 0,
+            context: model.limit?.context ?? existing?.limit?.context ?? 0,
+            output: model.limit?.output ?? existing?.limit?.output ?? 0,
           },
-          headers: mergeDeep(existingModel?.headers ?? {}, model.headers ?? {}),
-          family: model.family ?? existingModel?.family ?? "",
-          release_date: model.release_date ?? existingModel?.release_date ?? "",
+          headers: mergeDeep(existing?.headers ?? {}, model.headers ?? {}),
+          family: model.family ?? existing?.family ?? "",
+          release_date: model.release_date ?? existing?.release_date ?? "",
           variants: {},
         }
-        const merged = mergeDeep(ProviderTransform.variants(parsedModel), model.variants ?? {})
-        parsedModel.variants = mapValues(
+        const merged = mergeDeep(ProviderTransform.variants(modelObj), model.variants ?? {})
+        modelObj.variants = mapValues(
           pickBy(merged, (v) => !v.disabled),
           (v) => omit(v, ["disabled"]),
         )
-        parsed.models[modelID] = parsedModel
+        parsed.models[modelID] = modelObj
       }
       database[providerID] = parsed
     }
 
     // load env
-    const env = Env.all()
+    const envVars = Env.all()
     for (const [id, provider] of Object.entries(database)) {
       const providerID = ProviderID.make(id)
       if (disabled.has(providerID)) continue
-      const apiKey = provider.env.map((item) => env[item]).find(Boolean)
-      if (!apiKey) continue
+      const key = provider.env.map((item) => envVars[item]).find(Boolean)
+      if (!key) continue
       mergeProvider(providerID, {
         source: "env",
-        key: provider.env.length === 1 ? apiKey : undefined,
+        key: provider.env.length === 1 ? key : undefined,
       })
     }
 
@@ -688,17 +675,17 @@ export namespace Provider {
       if (disabled.has(providerID)) continue
 
       // For github-copilot plugin, check if auth exists for either github-copilot or github-copilot-enterprise
-      let hasAuth = false
+      let authExists = false
       const auth = await Auth.get(providerID)
-      if (auth) hasAuth = true
+      if (auth) authExists = true
 
       // Special handling for github-copilot: also check for enterprise auth
-      if (providerID === ProviderID.githubCopilot && !hasAuth) {
+      if (providerID === ProviderID.githubCopilot && !authExists) {
         const enterpriseAuth = await Auth.get("github-copilot-enterprise")
-        if (enterpriseAuth) hasAuth = true
+        if (enterpriseAuth) authExists = true
       }
 
-      if (!hasAuth) continue
+      if (!authExists) continue
       if (!plugin.auth.loader) continue
 
       // Load for the main provider if auth exists
@@ -729,7 +716,7 @@ export namespace Provider {
       }
     }
 
-    for (const [id, fn] of Object.entries(CUSTOM_LOADERS)) {
+    for (const [id, fn] of Object.entries(custom)) {
       const providerID = ProviderID.make(id)
       if (disabled.has(providerID)) continue
       const data = database[providerID]
@@ -739,8 +726,8 @@ export namespace Provider {
       }
       const result = await fn(data)
       if (result && (result.autoload || providers[providerID])) {
-        if (result.getModel) modelLoaders[providerID] = result.getModel
-        if (result.vars) varsLoaders[providerID] = result.vars
+        if (result.getModel) loaders[providerID] = result.getModel
+        if (result.vars) vars[providerID] = result.vars
         const opts = result.options ?? {}
         const models = result.models
         const patch: Partial<Info> = providers[providerID]
@@ -751,7 +738,7 @@ export namespace Provider {
     }
 
     // load config
-    for (const [id, provider] of configProviders) {
+    for (const [id, provider] of providersConfig) {
       const providerID = ProviderID.make(id)
       const partial: Partial<Info> = { source: "config" }
       if (provider.env) partial.env = provider.env
@@ -809,8 +796,8 @@ export namespace Provider {
       models: languages,
       providers,
       sdk,
-      modelLoaders,
-      varsLoaders,
+      loaders,
+      vars,
     }
   })
 
@@ -836,15 +823,15 @@ export namespace Provider {
       }
 
       if (model.providerID === "ollama" || isOllamaModel(model.id)) {
-        const envContext = Env.get("OLLAMA_CONTEXT_LENGTH")
-        const contextLength = model.limit.context || (envContext ? parseInt(envContext, 10) : 4096)
+        const env = Env.get("OLLAMA_CONTEXT_LENGTH")
+        const context = model.limit.context || (env ? parseInt(env, 10) : 4096)
         if (!options["num_ctx"]) {
-          options["num_ctx"] = calculateOllamaContext(contextLength)
+          options["num_ctx"] = calculateOllamaContext(context)
         }
         log.info("ollama-context", { modelId: model.id, numCtx: options["num_ctx"] })
       }
 
-      const baseURL = iife(() => {
+      const url = iife(() => {
         let url =
           typeof options["baseURL"] === "string" && options["baseURL"] !== "" ? options["baseURL"] : model.api.url
         if (!url) return
@@ -852,10 +839,10 @@ export namespace Provider {
         // some models/providers have variable urls, ex: "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
         // We track this in models.dev, and then when we are resolving the baseURL
         // we need to string replace that literal: "${AZURE_RESOURCE_NAME}"
-        const loader = s.varsLoaders[model.providerID]
+        const loader = s.vars[model.providerID]
         if (loader) {
-          const vars = loader(options)
-          for (const [key, value] of Object.entries(vars)) {
+          const v = loader(options)
+          for (const [key, value] of Object.entries(v)) {
             const field = "${" + key + "}"
             url = url.replaceAll(field, value)
           }
@@ -868,7 +855,7 @@ export namespace Provider {
         return url
       })
 
-      if (baseURL !== undefined) options["baseURL"] = baseURL
+      if (url !== undefined) options["baseURL"] = url
       if (options["apiKey"] === undefined && provider.key) options["apiKey"] = provider.key
       if (model.headers)
         options["headers"] = {
@@ -880,19 +867,19 @@ export namespace Provider {
       const existing = s.sdk.get(key)
       if (existing) return existing
 
-      const customFetch = options["fetch"]
-      const chunkTimeout = options["chunkTimeout"] || DEFAULT_CHUNK_TIMEOUT
+      const custom = options["fetch"]
+      const chunk = options["chunkTimeout"] || timeout
       delete options["chunkTimeout"]
 
       options["fetch"] = async (input: any, init?: BunFetchRequestInit) => {
         // Preserve custom fetch if it exists, wrap it with timeout logic
-        const fetchFn = customFetch ?? fetch
+        const fetchFn = custom ?? fetch
         const opts = init ?? {}
-        const chunkAbortCtl = typeof chunkTimeout === "number" && chunkTimeout > 0 ? new AbortController() : undefined
+        const ctl = typeof chunk === "number" && chunk > 0 ? new AbortController() : undefined
         const signals: AbortSignal[] = []
 
         if (opts.signal) signals.push(opts.signal)
-        if (chunkAbortCtl) signals.push(chunkAbortCtl.signal)
+        if (ctl) signals.push(ctl.signal)
         if (options["timeout"] !== undefined && options["timeout"] !== null && options["timeout"] !== false)
           signals.push(AbortSignal.timeout(options["timeout"]))
 
@@ -905,8 +892,8 @@ export namespace Provider {
         // IDs are only re-attached for Azure with store=true
         if (model.api.npm === "@ai-sdk/openai" && opts.body && opts.method === "POST") {
           const body = JSON.parse(opts.body as string)
-          const isAzure = model.providerID.includes("azure")
-          const keepIds = isAzure && body.store === true
+          const azure = model.providerID.includes("azure")
+          const keepIds = azure && body.store === true
           if (!keepIds && Array.isArray(body.input)) {
             for (const item of body.input) {
               if ("id" in item) {
@@ -923,14 +910,14 @@ export namespace Provider {
           timeout: false,
         })
 
-        if (!chunkAbortCtl) return res
-        return wrapSSE(res, chunkTimeout, chunkAbortCtl)
+        if (!ctl) return res
+        return wrapSSE(res, chunk, ctl)
       }
 
-      const bundledFn = BUNDLED_PROVIDERS[model.api.npm]
-      if (bundledFn) {
+      const fn = bundled[model.api.npm]
+      if (fn) {
         log.info("using bundled provider", { providerID: model.providerID, pkg: model.api.npm })
-        const loaded = bundledFn({
+        const loaded = fn({
           name: model.providerID,
           ...options,
         })
@@ -948,8 +935,8 @@ export namespace Provider {
 
       const mod = await import(installedPath)
 
-      const fn = mod[Object.keys(mod).find((key) => key.startsWith("create"))!]
-      const loaded = fn({
+      const creator = mod[Object.keys(mod).find((key) => key.startsWith("create"))!]
+      const loaded = creator({
         name: model.providerID,
         ...options,
       })
@@ -993,8 +980,8 @@ export namespace Provider {
     const sdk = await getSDK(model)
 
     try {
-      const language = s.modelLoaders[model.providerID]
-        ? await s.modelLoaders[model.providerID](sdk, model.api.id, provider.options)
+      const language = s.loaders[model.providerID]
+        ? await s.loaders[model.providerID](sdk, model.api.id, provider.options)
         : sdk.languageModel(model.api.id)
       s.models.set(key, language)
       return language
@@ -1054,31 +1041,31 @@ export namespace Provider {
       }
       for (const item of priority) {
         if (providerID === ProviderID.amazonBedrock) {
-          const crossRegionPrefixes = ["global.", "us.", "eu."]
+          const prefixes = ["global.", "us.", "eu."]
           const candidates = Object.keys(provider.models).filter((m) => m.includes(item))
 
           // Model selection priority:
           // 1. global. prefix (works everywhere)
           // 2. User's region prefix (us., eu.)
           // 3. Unprefixed model
-          const globalMatch = candidates.find((m) => m.startsWith("global."))
-          if (globalMatch) return getModel(providerID, ModelID.make(globalMatch))
+          const match = candidates.find((m) => m.startsWith("global."))
+          if (match) return getModel(providerID, ModelID.make(match))
 
           const region = provider.options?.region
           if (region) {
-            const regionPrefix = region.split("-")[0]
-            if (regionPrefix === "us" || regionPrefix === "eu") {
-              const regionalMatch = candidates.find((m) => m.startsWith(`${regionPrefix}.`))
-              if (regionalMatch) return getModel(providerID, ModelID.make(regionalMatch))
+            const prefix = region.split("-")[0]
+            if (prefix === "us" || prefix === "eu") {
+              const match = candidates.find((m) => m.startsWith(`${prefix}.`))
+              if (match) return getModel(providerID, ModelID.make(match))
             }
           }
 
-          const unprefixed = candidates.find((m) => !crossRegionPrefixes.some((p) => m.startsWith(p)))
+          const unprefixed = candidates.find((m) => !prefixes.some((p) => m.startsWith(p)))
           if (unprefixed) return getModel(providerID, ModelID.make(unprefixed))
-        } else {
-          for (const model of Object.keys(provider.models)) {
-            if (model.includes(item)) return getModel(providerID, ModelID.make(model))
-          }
+          return
+        }
+        for (const model of Object.keys(provider.models)) {
+          if (model.includes(item)) return getModel(providerID, ModelID.make(model))
         }
       }
     }
@@ -1101,7 +1088,7 @@ export namespace Provider {
     if (cfg.model) return parseModel(cfg.model)
 
     const providers = await list()
-    const ollamaProviders = Object.fromEntries(
+    const ollama = Object.fromEntries(
       Object.entries(providers).filter(([id]) => id === "ollama" || id.startsWith("ollama/")),
     )
     const recent = (await Filesystem.readJson<{ recent?: { providerID: ProviderID; modelID: ModelID }[] }>(
@@ -1110,13 +1097,13 @@ export namespace Provider {
       .then((x) => (Array.isArray(x.recent) ? x.recent : []))
       .catch(() => [])) as { providerID: ProviderID; modelID: ModelID }[]
     for (const entry of recent) {
-      const provider = ollamaProviders[entry.providerID]
+      const provider = ollama[entry.providerID]
       if (!provider) continue
       if (!provider.models[entry.modelID]) continue
       return { providerID: entry.providerID, modelID: entry.modelID }
     }
 
-    const provider = Object.values(ollamaProviders).find((p) => !cfg.provider || Object.keys(cfg.provider).includes(p.id))
+    const provider = Object.values(ollama).find((p) => !cfg.provider || Object.keys(cfg.provider).includes(p.id))
     if (!provider) throw new Error("no providers found")
     const [model] = sort(Object.values(provider.models))
     if (!model) throw new Error("no models found")

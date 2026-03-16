@@ -5,13 +5,6 @@ import { readFile, writeFile } from "fs/promises"
 import { applyPatch, createTwoFilesPatch, parsePatch } from "diff"
 
 const logger = Log.create({ service: "ollama.parse" })
-// Paths to exclude from Aider-style editing
-const EXCLUDED_PATHS = ["Aider_code", "node_modules", ".git", "dist", "build", "coverage", ".next", ".turbo"]
-
-function isPathExcluded(filePath: string): boolean {
-  const normalized = filePath.toLowerCase()
-  return EXCLUDED_PATHS.some(excluded => normalized.includes(excluded.toLowerCase()))
-}
 
 export interface FileEdit {
   path: string
@@ -35,15 +28,6 @@ export async function resolveFilePath(filePath: string, cwd: string, attachedFil
     }
   }
 
-  // Check in Aider_code directory (sibling to AstroCode)
-  const aiderCodePath = path.resolve(cwd, "../../../Aider_code", filePath)
-  try {
-    await readFile(aiderCodePath, "utf-8")
-    return aiderCodePath
-  } catch {
-    // File doesn't exist in Aider_code
-  }
-
   // If not found in attached files, check relative to CWD
   const relativePath = path.resolve(cwd, filePath)
   try {
@@ -53,8 +37,8 @@ export async function resolveFilePath(filePath: string, cwd: string, attachedFil
     // File doesn't exist relative to CWD
   }
 
-  // Fallback to Aider_code path even if file doesn't exist yet
-  return aiderCodePath
+  // Fallback to relative path (will likely fail but we return it for display)
+  return relativePath
 }
 
 export async function parseOllamaResponse(
@@ -73,11 +57,6 @@ export async function parseOllamaResponse(
   let match
   while ((match = diffBlockRegex.exec(content)) !== null) {
     const filePath = match[1].trim()
-    // Skip excluded paths
-    if (isPathExcluded(filePath)) {
-      logger.info("Skipping excluded path", { filePath })
-      continue
-    }
     // Filter out obvious non-paths like "Edit filename.py"
     if (/^[A-Z][a-z]+ /.test(filePath)) {
       logger.info("Skipping non-path match", { filePath })
@@ -95,11 +74,6 @@ export async function parseOllamaResponse(
 
   while ((match = fileBlockRegex.exec(content)) !== null) {
     const filePath = match[1].trim()
-    // Skip excluded paths
-    if (isPathExcluded(filePath)) {
-      logger.info("Skipping excluded path", { filePath })
-      continue
-    }
     // Filter out obvious non-paths like "Edit filename.py"
     if (/^[A-Z][a-z]+ /.test(filePath)) {
       logger.info("Skipping non-path match", { filePath })
@@ -335,4 +309,4 @@ export function extractCodeBlocks(content: string): string[] {
   }
   
   return blocks
-}
+}test

@@ -24,12 +24,12 @@ export function createChildStoreManager(input: {
   translate: (key: string, vars?: Record<string, string | number>) => string
 }) {
   const children: Record<string, [Store<State>, SetStoreFunction<State>]> = {}
-  const vcsCache = new Map<string, VcsCache>()
+  const cache = new Map<string, VcsCache>()
   const metaCache = new Map<string, MetaCache>()
   const iconCache = new Map<string, IconCache>()
   const lifecycle = new Map<string, DirState>()
   const pins = new Map<string, number>()
-  const ownerPins = new WeakMap<object, Set<string>>()
+  const owner = new WeakMap<object, Set<string>>()
   const disposers = new Map<string, () => void>()
 
   const mark = (directory: string) => {
@@ -57,21 +57,21 @@ export function createChildStoreManager(input: {
 
   const pinned = (directory: string) => (pins.get(directory) ?? 0) > 0
 
-  const pinForOwner = (directory: string) => {
+  const pinOwner = (directory: string) => {
     const current = getOwner()
     if (!current) return
     if (current === input.owner) return
     const key = current as object
-    const set = ownerPins.get(key)
+    const set = owner.get(key)
     if (set?.has(directory)) return
     if (set) set.add(directory)
-    if (!set) ownerPins.set(key, new Set([directory]))
+    if (!set) owner.set(key, new Set([directory]))
     pin(directory)
     onCleanup(() => {
-      const set = ownerPins.get(key)
+      const set = owner.get(key)
       if (set) {
         set.delete(directory)
-        if (set.size === 0) ownerPins.delete(key)
+        if (set.size === 0) owner.delete(key)
       }
       unpin(directory)
     })
@@ -90,7 +90,7 @@ export function createChildStoreManager(input: {
       return false
     }
 
-    vcsCache.delete(directory)
+    cache.delete(directory)
     metaCache.delete(directory)
     iconCache.delete(directory)
     lifecycle.delete(directory)
@@ -131,8 +131,8 @@ export function createChildStoreManager(input: {
         ),
       )
       if (!vcs) throw new Error(input.translate("error.childStore.persistedCacheCreateFailed"))
-      const vcsStore = vcs[0]
-      vcsCache.set(directory, { store: vcsStore, setStore: vcs[1], ready: vcs[3] })
+      const store = vcs[0]
+      cache.set(directory, { store: store, setStore: vcs[1], ready: vcs[3] })
 
       const meta = runWithOwner(input.owner, () =>
         persisted(
@@ -154,12 +154,12 @@ export function createChildStoreManager(input: {
 
       const init = () =>
         createRoot((dispose) => {
-          const initialMeta = meta[0].value
-          const initialIcon = icon[0].value
+          const metaVal = meta[0].value
+          const iconVal = icon[0].value
           const child = createStore<State>({
             project: "",
-            projectMeta: initialMeta,
-            icon: initialIcon,
+            projectMeta: metaVal,
+            icon: iconVal,
             provider: { all: [], connected: [], default: {}, gpu: "" },
             config: {},
             path: { state: "", config: "", worktree: "", directory: "", home: "" },
@@ -175,7 +175,7 @@ export function createChildStoreManager(input: {
             question: {},
             mcp: {},
             lsp: [],
-            vcs: vcsStore.value,
+            vcs: store.value,
             limit: 5,
             message: {},
             part: {},
@@ -191,39 +191,39 @@ export function createChildStoreManager(input: {
             })
           }
 
-          onPersistedInit(vcs[2], () => {
-            const cached = vcsStore.value
-            if (!cached?.branch) return
-            child[1]("vcs", (value) => value ?? cached)
-          })
+           onPersistedInit(vcs[2], () => {
+             const cached = store.value
+             if (!cached?.branch) return
+             child[1]("vcs", (value) => value ?? cached)
+           })
 
-          onPersistedInit(meta[2], () => {
-            if (child[0].projectMeta !== initialMeta) return
-            child[1]("projectMeta", meta[0].value)
-          })
+           onPersistedInit(meta[2], () => {
+             if (child[0].projectMeta !== metaVal) return
+             child[1]("projectMeta", meta[0].value)
+           })
 
-          onPersistedInit(icon[2], () => {
-            if (child[0].icon !== initialIcon) return
-            child[1]("icon", icon[0].value)
-          })
+           onPersistedInit(icon[2], () => {
+             if (child[0].icon !== iconVal) return
+             child[1]("icon", icon[0].value)
+           })
         })
 
       runWithOwner(input.owner, init)
     }
     mark(directory)
-    const childStore = children[directory]
-    if (!childStore) throw new Error(input.translate("error.childStore.storeCreateFailed"))
-    return childStore
+    const store = children[directory]
+    if (!store) throw new Error(input.translate("error.childStore.storeCreateFailed"))
+    return store
   }
 
   function child(directory: string, options: ChildOptions = {}) {
-    const childStore = ensureChild(directory)
-    pinForOwner(directory)
-    const shouldBootstrap = options.bootstrap ?? true
-    if (shouldBootstrap && childStore[0].status === "loading") {
+    const store = ensureChild(directory)
+    pinOwner(directory)
+    const bootstrap = options.bootstrap ?? true
+    if (bootstrap && store[0].status === "loading") {
       input.onBootstrap(directory)
     }
-    return childStore
+    return store
   }
 
   function projectMeta(directory: string, patch: ProjectMeta) {
@@ -264,7 +264,7 @@ export function createChildStoreManager(input: {
     pinned,
     disposeDirectory,
     runEviction,
-    vcsCache,
+    vcsCache: cache,
     metaCache,
     iconCache,
   }

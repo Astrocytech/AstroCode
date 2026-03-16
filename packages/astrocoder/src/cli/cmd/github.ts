@@ -225,8 +225,7 @@ export const GithubInstallCommand = cmd({
           function printNextSteps() {
             let step2
             if (provider === "amazon-bedrock") {
-              step2 =
-                "Configure OIDC in AWS - https://docs.github.com/en/actions/how-tos/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services"
+              step2 = "Configure OIDC in AWS for GitHub Actions"
             } else {
               step2 = [
                 `    2. Add the following secrets in org or repo (${app.owner}/${app.repo}) settings`,
@@ -243,8 +242,6 @@ export const GithubInstallCommand = cmd({
                 step2,
                 "",
                 "    3. Go to a GitHub issue and comment `/oc summarize` to see the agent in action",
-                "",
-                "   Learn more about the GitHub agent - https://opencode.ai/docs/github/#usage-examples",
               ].join("\n"),
             )
           }
@@ -326,7 +323,8 @@ export const GithubInstallCommand = cmd({
             if (installation) return s.stop("GitHub app already installed")
 
             // Open browser
-            const url = "https://github.com/apps/opencode-agent"
+            // Note: AstroCode does not have its own GitHub app - users need to create their own
+            const url = "https://github.com/Astrocytech/AstroCode"
             const command =
               process.platform === "darwin"
                 ? `open "${url}"`
@@ -362,11 +360,7 @@ export const GithubInstallCommand = cmd({
             s.stop("Installed GitHub app")
 
             async function getInstallation() {
-              return await fetch(
-                `https://api.opencode.ai/get_github_app_installation?owner=${app.owner}&repo=${app.repo}`,
-              )
-                .then((res) => res.json())
-                .then((data) => data.installation)
+              return undefined
             }
           }
 
@@ -476,14 +470,12 @@ export const GithubRunCommand = cmd({
           ? (payload as IssueCommentEvent | IssuesEvent).issue.number
           : (payload as PullRequestEvent | PullRequestReviewCommentEvent).pull_request.number
       const runUrl = `/${owner}/${repo}/actions/runs/${runId}`
-      const shareBaseUrl = isMock ? "https://dev.opencode.ai" : "https://opencode.ai"
 
       let appToken: string
       let octoRest: Octokit
       let octoGraph: typeof graphql
       let gitConfig: string
       let session: { id: SessionID; title: string; version: string }
-      let shareId: string | undefined
       let exitCode = 0
       type PromptFiles = Awaited<ReturnType<typeof getUserPrompt>>["promptFiles"]
       const triggerCommentId = isCommentEvent
@@ -556,12 +548,6 @@ export const GithubRunCommand = cmd({
           ],
         })
         subscribeSessionEvents()
-        shareId = await (async () => {
-          if (share === false) return
-          if (!share && repoData.data.private) return
-          await Session.share(session.id)
-          return session.id.slice(-8)
-        })()
         console.log("opencode session", session.id)
 
         // Handle event types:
@@ -620,7 +606,7 @@ export const GithubRunCommand = cmd({
               const summary = await summarize(response)
               await pushToLocalBranch(summary, uncommittedChanges)
             }
-            const hasShared = prData.comments.nodes.some((c) => c.body.includes(`${shareBaseUrl}/s/${shareId}`))
+            const hasShared = false
             await createComment(`${response}${footer({ image: !hasShared })}`)
             await removeReaction(commentType)
           }
@@ -638,7 +624,7 @@ export const GithubRunCommand = cmd({
               const summary = await summarize(response)
               await pushToForkBranch(summary, prData, uncommittedChanges)
             }
-            const hasShared = prData.comments.nodes.some((c) => c.body.includes(`${shareBaseUrl}/s/${shareId}`))
+            const hasShared = false
             await createComment(`${response}${footer({ image: !hasShared })}`)
             await removeReaction(commentType)
           }
@@ -735,7 +721,7 @@ export const GithubRunCommand = cmd({
 
       function normalizeOidcBaseUrl(): string {
         const value = process.env["OIDC_BASE_URL"]
-        if (!value) return "https://api.opencode.ai"
+        if (!value) return ""
         return value.replace(/\/+$/, "")
       }
 
@@ -1397,16 +1383,10 @@ export const GithubRunCommand = cmd({
 
       function footer(opts?: { image?: boolean }) {
         const image = (() => {
-          if (!shareId) return ""
           if (!opts?.image) return ""
-
-          const titleAlt = encodeURIComponent(session.title.substring(0, 50))
-          const title64 = Buffer.from(session.title.substring(0, 700), "utf8").toString("base64")
-
-          return `<a href="${shareBaseUrl}/s/${shareId}"><img width="200" alt="${titleAlt}" src="https://social-cards.sst.dev/opencode-share/${title64}.png?model=${providerID}/${modelID}&version=${session.version}&id=${shareId}" /></a>\n`
+          return ""
         })()
-        const shareUrl = shareId ? `[opencode session](${shareBaseUrl}/s/${shareId})&nbsp;&nbsp;|&nbsp;&nbsp;` : ""
-        return `\n\n${image}${shareUrl}[github run](${runUrl})`
+        return `\n\n${image}[github run](${runUrl})`
       }
 
       async function fetchRepo() {

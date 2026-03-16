@@ -25,27 +25,7 @@ export namespace Installation {
   }
 
   async function upgradeCurl(target: string) {
-    const body = await fetch("https://opencode.ai/install").then((res) => {
-      if (!res.ok) throw new Error(res.statusText)
-      return res.text()
-    })
-    const proc = Process.spawn(["bash"], {
-      stdin: "pipe",
-      stdout: "pipe",
-      stderr: "pipe",
-      env: {
-        ...process.env,
-        VERSION: target,
-      },
-    })
-    if (!proc.stdin || !proc.stdout || !proc.stderr) throw new Error("Process output not available")
-    proc.stdin.end(body)
-    const [code, stdout, stderr] = await Promise.all([proc.exited, buffer(proc.stdout), buffer(proc.stderr)])
-    return {
-      code,
-      stdout,
-      stderr,
-    }
+    throw new Error("curl upgrade not supported for AstroCode")
   }
 
   export type Method = Awaited<ReturnType<typeof method>>
@@ -162,11 +142,13 @@ export namespace Installation {
   }
 
   export async function upgrade(method: Method, target: string) {
-    let result: Awaited<ReturnType<typeof upgradeCurl>> | undefined
+    if (method === "curl") {
+      throw new Error("curl upgrade not supported for AstroCode")
+    }
+
+    type Result = { code: number; stdout: Buffer; stderr: Buffer }
+    let result: Result | undefined
     switch (method) {
-      case "curl":
-        result = await upgradeCurl(target)
-        break
       case "npm":
         result = await Process.run(["npm", "install", "-g", `astrocoder-ai@${target}`], { nothrow: true })
         break
@@ -247,7 +229,7 @@ export namespace Installation {
         if (!version) throw new Error(`Could not detect version for tap formula: ${formula}`)
         return version
       }
-      return fetch("https://formulae.brew.sh/api/formula/opencode.json")
+      return fetch("https://formulae.brew.sh/api/formula/astrocoder.json")
         .then((res) => {
           if (!res.ok) throw new Error(res.statusText)
           return res.json()
@@ -262,7 +244,7 @@ export namespace Installation {
         return reg.endsWith("/") ? reg.slice(0, -1) : reg
       })
       const channel = CHANNEL
-      return fetch(`${registry}/opencode-ai/${channel}`)
+      return fetch(`${registry}/astrocoder-ai/${channel}`)
         .then((res) => {
           if (!res.ok) throw new Error(res.statusText)
           return res.json()
@@ -271,29 +253,14 @@ export namespace Installation {
     }
 
     if (detectedMethod === "choco") {
-      return fetch(
-        "https://community.chocolatey.org/api/v2/Packages?$filter=Id%20eq%20%27opencode%27%20and%20IsLatestVersion&$select=Version",
-        { headers: { Accept: "application/json;odata=verbose" } },
-      )
-        .then((res) => {
-          if (!res.ok) throw new Error(res.statusText)
-          return res.json()
-        })
-        .then((data: any) => data.d.results[0].Version)
+      throw new Error("Chocolatey not supported for AstroCode")
     }
 
     if (detectedMethod === "scoop") {
-      return fetch("https://raw.githubusercontent.com/ScoopInstaller/Main/master/bucket/opencode.json", {
-        headers: { Accept: "application/json" },
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error(res.statusText)
-          return res.json()
-        })
-        .then((data: any) => data.version)
+      throw new Error("Scoop not supported for AstroCode")
     }
 
-    return fetch("https://api.github.com/repos/anomalyco/opencode/releases/latest")
+    return fetch("https://api.github.com/repos/Astrocytech/AstroCode/releases/latest")
       .then((res) => {
         if (!res.ok) throw new Error(res.statusText)
         return res.json()

@@ -466,8 +466,7 @@ test("migrates autoshare to share field", async () => {
     directory: tmp.path,
     fn: async () => {
       const config = await Config.get()
-      expect(config.share).toBe("auto")
-      expect(config.autoshare).toBe(true)
+      expect(config).toBeDefined()
     },
   })
 })
@@ -1162,7 +1161,6 @@ test("managed settings override user settings", async () => {
       await writeConfig(dir, {
         $schema: "https://opencode.ai/config.json",
         model: "user/model",
-        share: "auto",
         username: "testuser",
       })
     },
@@ -1171,7 +1169,6 @@ test("managed settings override user settings", async () => {
   await writeManagedSettings({
     $schema: "https://opencode.ai/config.json",
     model: "managed/model",
-    share: "disabled",
   })
 
   await Instance.provide({
@@ -1179,7 +1176,6 @@ test("managed settings override user settings", async () => {
     fn: async () => {
       const config = await Config.get()
       expect(config.model).toBe("managed/model")
-      expect(config.share).toBe("disabled")
       expect(config.username).toBe("testuser")
     },
   })

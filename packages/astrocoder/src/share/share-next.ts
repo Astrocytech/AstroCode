@@ -47,7 +47,7 @@ export namespace ShareNext {
 
     const active = Account.active()
     if (!active?.active_org_id) {
-      const baseUrl = await Config.get().then((x) => x.enterprise?.url ?? "https://opncd.ai")
+      const baseUrl = await Config.get().then((x) => x.enterprise?.url ?? "")
       return { headers, api: legacyApi, baseUrl }
     }
 
@@ -61,7 +61,7 @@ export namespace ShareNext {
     return { headers, api: consoleApi, baseUrl: active.url }
   }
 
-  const disabled = process.env["OPENCODE_DISABLE_SHARE"] === "true" || process.env["OPENCODE_DISABLE_SHARE"] === "1"
+  const disabled = true
 
   export async function init() {
     if (disabled) return

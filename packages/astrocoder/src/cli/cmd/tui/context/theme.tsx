@@ -24,7 +24,7 @@ import nightowl from "./theme/nightowl.json" with { type: "json" }
 import nord from "./theme/nord.json" with { type: "json" }
 import osakaJade from "./theme/osaka-jade.json" with { type: "json" }
 import onedark from "./theme/one-dark.json" with { type: "json" }
-import opencode from "./theme/opencode.json" with { type: "json" }
+import astrocoder from "./theme/astrocoder.json" with { type: "json" }
 import orng from "./theme/orng.json" with { type: "json" }
 import lucentOrng from "./theme/lucent-orng.json" with { type: "json" }
 import palenight from "./theme/palenight.json" with { type: "json" }
@@ -35,7 +35,6 @@ import tokyonight from "./theme/tokyonight.json" with { type: "json" }
 import vercel from "./theme/vercel.json" with { type: "json" }
 import vesper from "./theme/vesper.json" with { type: "json" }
 import zenburn from "./theme/zenburn.json" with { type: "json" }
-import carbonfox from "./theme/carbonfox.json" with { type: "json" }
 import { useKV } from "./kv"
 import { useRenderer } from "@opentui/solid"
 import { createStore, produce } from "solid-js/store"
@@ -160,7 +159,7 @@ export const DEFAULT_THEMES: Record<string, ThemeJson> = {
   nord,
   ["one-dark"]: onedark,
   ["osaka-jade"]: osakaJade,
-  opencode,
+  astrocoder,
   orng,
   ["lucent-orng"]: lucentOrng,
   palenight,
@@ -171,7 +170,6 @@ export const DEFAULT_THEMES: Record<string, ThemeJson> = {
   vesper,
   vercel,
   zenburn,
-  carbonfox,
 }
 
 function resolveTheme(theme: ThemeJson, mode: "dark" | "light") {
@@ -285,7 +283,7 @@ export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
     const [store, setStore] = createStore({
       themes: DEFAULT_THEMES,
       mode: kv.get("theme_mode", props.mode),
-      active: (config.theme ?? kv.get("theme", "opencode")) as string,
+      active: (config.theme ?? kv.get("theme", "astrocoder")) as string,
       ready: false,
     })
 
@@ -305,7 +303,7 @@ export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
           )
         })
         .catch(() => {
-          setStore("active", "opencode")
+          setStore("active", "astrocoder")
         })
         .finally(() => {
           if (store.active !== "system") {
@@ -328,7 +326,7 @@ export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
             if (store.active === "system") {
               setStore(
                 produce((draft) => {
-                  draft.active = "opencode"
+                  draft.active = "astrocoder"
                   draft.ready = true
                 }),
               )
@@ -353,7 +351,7 @@ export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
     })
 
     const values = createMemo(() => {
-      return resolveTheme(store.themes[store.active] ?? store.themes.opencode, store.mode)
+      return resolveTheme(store.themes[store.active] ?? store.themes.astrocoder, store.mode)
     })
 
     const syntax = createMemo(() => generateSyntax(values()))
@@ -397,7 +395,7 @@ async function getCustomThemes() {
     Global.Path.config,
     ...(await Array.fromAsync(
       Filesystem.up({
-        targets: [".opencode"],
+        targets: [".astrocoder"],
         start: process.cwd(),
       }),
     )),

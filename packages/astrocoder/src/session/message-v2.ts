@@ -101,6 +101,15 @@ export namespace MessageV2 {
   })
   export type PatchPart = z.infer<typeof PatchPart>
 
+  export const EditPart = PartBase.extend({
+    type: z.literal("edit"),
+    filePath: z.string(),
+    diff: z.string(),
+  }).meta({
+    ref: "EditPart",
+  })
+  export type EditPart = z.infer<typeof EditPart>
+
   export const TextPart = PartBase.extend({
     type: z.literal("text"),
     text: z.string(),
@@ -381,6 +390,7 @@ export namespace MessageV2 {
       ReasoningPart,
       FilePart,
       ToolPart,
+      EditPart,
       StepStartPart,
       StepFinishPart,
       SnapshotPart,

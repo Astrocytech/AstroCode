@@ -18,6 +18,10 @@ import { Instance } from "@/project/instance"
 import { Question } from "@/question"
 import { PartID } from "./schema"
 import type { SessionID, MessageID } from "./schema"
+import { readFile, writeFile } from "fs/promises"
+import { createTwoFilesPatch } from "diff"
+import { fileURLToPath } from "url"
+import type { FileEdit } from "@/provider/ollama-parse"
 
 export namespace SessionProcessor {
   const DOOM_LOOP_THRESHOLD = 3
@@ -421,16 +425,92 @@ export namespace SessionProcessor {
           input.assistantMessage.time.completed = Date.now()
           await Session.updateMessage(input.assistantMessage)
 
-          // Aider-style: Parse and apply code blocks for Ollama models
+           // Aider-style: Parse and apply code blocks for Ollama models
           if (input.model.providerID === "ollama") {
             try {
               const p = await MessageV2.parts(input.assistantMessage.id)
               const textContent = p.filter((part) => part.type === "text").map((part) => part.text).join("\n")
+              
+              // Find all attached files in the session to help with path resolution
+              const sessionMessages = await Session.messages({ sessionID: input.sessionID })
+              const attachedFiles: string[] = []
+              for (const msg of sessionMessages) {
+                const parts = await MessageV2.parts(msg.info.id)
+                for (const part of parts) {
+                  if (part.type === "file" && part.url.startsWith("file:")) {
+                    attachedFiles.push(fileURLToPath(part.url))
+                  }
+                }
+              }
+              
               if (textContent) {
-                const edits = await parseOllamaResponse(textContent, Instance.directory)
+                const { edits, cleanedContent } = await parseOllamaResponse(
+                  textContent,
+                  Instance.directory || process.cwd(),
+                  attachedFiles,
+                )
+                
                 if (edits.length > 0) {
                   log.info("Aider-style: applying edits from model response", { count: edits.length })
-                  await applyOllamaEdits(edits)
+
+                  // Programmatically generate diffs for full file replacements BEFORE writing them
+                  for (const edit of edits) {
+                    if (!edit.isDiff) {
+                      try {
+                        const existing = await readFile(edit.path, "utf-8").catch(() => "")
+                        const diff = createTwoFilesPatch(
+                          edit.path,
+                          edit.path,
+                          existing,
+                          edit.content,
+                          "original",
+                          "modified",
+                        )
+                        // Extract just the diff lines (skip the header)
+                        const lines = diff.split("\n").slice(4).join("\n")
+                        if (lines.trim()) {
+                          // Show the diff in UI by adding an EditPart
+                          await Session.updatePart({
+                            id: PartID.ascending(),
+                            messageID: input.assistantMessage.id,
+                            sessionID: input.sessionID,
+                            type: "edit",
+                            filePath: edit.path,
+                            diff: lines,
+                          })
+                        }
+                      } catch (err) {
+                        log.warn("Failed to generate programmatic diff", { path: edit.path, error: err })
+                      }
+                    } else {
+                      // If it's already a diff, we still want to show it in the UI as an EditPart
+                      await Session.updatePart({
+                        id: PartID.ascending(),
+                        messageID: input.assistantMessage.id,
+                        sessionID: input.sessionID,
+                        type: "edit",
+                        filePath: edit.path,
+                        diff: edit.content,
+                      })
+                    }
+                  }
+
+                  // Apply the edits (writes to disk)
+                  try {
+                    await applyOllamaEdits(edits)
+                  } catch (err) {
+                    log.error("Failed to apply some edits", { error: err })
+                  }
+
+                  // Clean up the original text parts by removing the diff blocks
+                  for (const part of p) {
+                    if (part.type === "text") {
+                      await Session.updatePart({
+                        ...part,
+                        text: cleanedContent,
+                      })
+                    }
+                  }
                 }
               }
             } catch (err) {

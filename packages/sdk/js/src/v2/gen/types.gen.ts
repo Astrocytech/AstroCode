@@ -574,6 +574,15 @@ export type PatchPart = {
   files: Array<string>
 }
 
+export type EditPart = {
+  id: string
+  sessionID: string
+  messageID: string
+  type: "edit"
+  filePath: string
+  diff: string
+}
+
 export type AgentPart = {
   id: string
   sessionID: string
@@ -618,6 +627,7 @@ export type Part =
   | StepFinishPart
   | SnapshotPart
   | PatchPart
+  | EditPart
   | AgentPart
   | RetryPart
   | CompactionPart

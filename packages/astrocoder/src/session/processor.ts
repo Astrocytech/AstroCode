@@ -13,6 +13,8 @@ import { LLM } from "./llm"
 import { Config } from "@/config/config"
 import { SessionCompaction } from "./compaction"
 import { PermissionNext } from "@/permission/next"
+import { parseOllamaResponse, applyOllamaEdits } from "@/provider/ollama-parse"
+import { Instance } from "@/project/instance"
 import { Question } from "@/question"
 import { PartID } from "./schema"
 import type { SessionID, MessageID } from "./schema"
@@ -418,6 +420,24 @@ export namespace SessionProcessor {
           }
           input.assistantMessage.time.completed = Date.now()
           await Session.updateMessage(input.assistantMessage)
+
+          // Aider-style: Parse and apply code blocks for Ollama models
+          if (input.model.providerID === "ollama") {
+            try {
+              const p = await MessageV2.parts(input.assistantMessage.id)
+              const textContent = p.filter((part) => part.type === "text").map((part) => part.text).join("\n")
+              if (textContent) {
+                const edits = await parseOllamaResponse(textContent, Instance.directory)
+                if (edits.length > 0) {
+                  log.info("Aider-style: applying edits from model response", { count: edits.length })
+                  await applyOllamaEdits(edits)
+                }
+              }
+            } catch (err) {
+              log.error("Aider-style parse/apply failed", { error: err })
+            }
+          }
+
           if (needsCompaction) return "compact"
           if (blocked) return "stop"
           if (input.assistantMessage.error) return "stop"

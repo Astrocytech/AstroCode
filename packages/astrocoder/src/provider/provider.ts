@@ -102,8 +102,12 @@ export namespace Provider {
   async function hasNvidiaGpu(): Promise<boolean> {
     try {
       const result = await BunProc.run(["nvidia-smi", "-L"])
-      return result.stdout.toString().includes("GPU")
-    } catch {
+      const output = result.stdout.toString()
+      const hasGpu = output.includes("GPU")
+      console.log("[AstroCoder] GPU check: output:", output.substring(0, 100), "hasGpu:", hasGpu)
+      return hasGpu
+    } catch (err) {
+      console.log("[AstroCoder] GPU check failed:", err)
       return false
     }
   }
@@ -311,7 +315,7 @@ export namespace Provider {
           attachment: false,
           reasoning: false,
           temperature: true,
-          tool_call: true,
+          tool_call: false,
           cost: { input: 0, output: 0, cache: { read: 0, write: 0 } },
           limit: { context: contextLength, output: 4096 },
           options: { num_ctx: calculateOllamaContext(contextLength) },
@@ -321,7 +325,7 @@ export namespace Provider {
             temperature: true,
             reasoning: false,
             attachment: false,
-            toolcall: true,
+            toolcall: false,
             input: { text: true, audio: false, image: false, video: false, pdf: false },
             output: { text: true, audio: false, image: false, video: false, pdf: false },
             interleaved: false,

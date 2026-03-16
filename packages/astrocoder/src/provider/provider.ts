@@ -101,14 +101,8 @@ export namespace Provider {
 
   async function isOllamaUsingGpu(): Promise<boolean> {
     try {
-      // Check if ollama process is using GPU via nvidia-smi
-      const result = await BunProc.run([
-        "nvidia-smi",
-        "--query-compute-apps=pid,process_name",
-        "--format=csv,noheader",
-      ])
-      const output = result.stdout.toString()
-      return output.includes("ollama")
+      const result = await BunProc.run(["nvidia-smi", "-L"])
+      return result.stdout.toString().includes("GPU")
     } catch {
       return false
     }
@@ -118,7 +112,6 @@ export namespace Provider {
     const apiBase = Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"
     const envContext = Env.get("OLLAMA_CONTEXT_LENGTH")
     if (envContext) return parseInt(envContext, 10)
-    // Try to get context from running ollama
     try {
       const res = await fetch(`${apiBase}/api/tags`, { signal: AbortSignal.timeout(3000) })
       if (res.ok) {
@@ -128,37 +121,15 @@ export namespace Provider {
           return model.model_info.context_length
         }
       }
-    } catch {
-      // ignore
-    }
-    return 8192 // default
+    } catch {}
+    return 8192
   }
 
   async function getGpuStatus(): Promise<"GPU" | "CPU" | ""> {
     try {
-      const hasNvidiaGpu = await checkNvidiaGpu()
-      if (!hasNvidiaGpu) return "CPU"
-
-      // Check if ollama is actually using GPU via nvidia-smi
-      const ollamaUsingGpu = await isOllamaUsingGpu()
-      if (ollamaUsingGpu) {
-        return "GPU"
-      }
-
-      // Fallback: check if ollama API is accessible
-      const apiBase = Env.get("OLLAMA_API_BASE") || "http://127.0.0.1:11434"
-      try {
-        const res = await fetch(`${apiBase}/api/tags`, { signal: AbortSignal.timeout(3000) })
-        if (res.ok) {
-          // Ollama is running - GPU likely available
-          return "GPU"
-        }
-      } catch {
-        // ignore
-      }
-
-      // Has nvidia GPU, assume GPU mode is available when ollama starts
-      return "GPU"
+      const hasNvidiaGpu = await isOllamaUsingGpu()
+      if (hasNvidiaGpu) return "GPU"
+      return "CPU"
     } catch {
       return "CPU"
     }
@@ -341,7 +312,7 @@ export namespace Provider {
           attachment: false,
           reasoning: false,
           temperature: true,
-          tool_call: true, // Enable tools for local models
+          tool_call: false,
           cost: { input: 0, output: 0, cache: { read: 0, write: 0 } },
           limit: { context: contextLength, output: 4096 },
           options: { num_ctx: calculateOllamaContext(contextLength) },
@@ -351,7 +322,7 @@ export namespace Provider {
             temperature: true,
             reasoning: false,
             attachment: false,
-            toolcall: true,
+            toolcall: false,
             input: { text: true, audio: false, image: false, video: false, pdf: false },
             output: { text: true, audio: false, image: false, video: false, pdf: false },
             interleaved: false,

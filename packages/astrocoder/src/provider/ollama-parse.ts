@@ -13,33 +13,29 @@ export interface FileEdit {
 }
 
 export async function resolveFilePath(filePath: string, cwd: string, attachedFiles: string[] = []): Promise<string> {
-  logger.info("resolveFilePath", { filePath, cwd, attachedFiles })
   // If absolute path, use it
   if (path.isAbsolute(filePath)) {
-    logger.info("Using absolute path", { filePath })
     return filePath
   }
 
-  // If it's a relative path that exists relative to CWD, use it
-  const relativePath = path.resolve(cwd, filePath)
-  try {
-    await readFile(relativePath, "utf-8")
-    logger.info("Found file relative to cwd", { relativePath })
-    return relativePath
-  } catch {
-    // File doesn't exist relative to CWD, try to find it among attached files
-    const fileName = path.basename(filePath)
-    logger.info("Searching attached files", { fileName, attachedFiles })
-    for (const attached of attachedFiles) {
-      if (path.basename(attached) === fileName) {
-        logger.info("Found matching attached file", { attached })
-        return attached
-      }
+  // Check attached files first (by basename)
+  const fileName = path.basename(filePath)
+  for (const attached of attachedFiles) {
+    if (path.basename(attached) === fileName) {
+      return attached
     }
   }
 
+  // If not found in attached files, check relative to CWD
+  const relativePath = path.resolve(cwd, filePath)
+  try {
+    await readFile(relativePath, "utf-8")
+    return relativePath
+  } catch {
+    // File doesn't exist relative to CWD
+  }
+
   // Fallback to relative path (will likely fail but we return it for display)
-  logger.info("Fallback to relative path", { relativePath })
   return relativePath
 }
 
@@ -98,11 +94,8 @@ export async function parseOllamaResponse(
   // Sort matches by start index for cleaning
   const sortedMatches = [...matches].sort((a, b) => a.start - b.start)
   
-  logger.info("parseOllamaResponse found matches", { count: sortedMatches.length })
-  
   // Populate edits array
   for (const m of sortedMatches) {
-    logger.info("Adding edit", { path: m.path, type: m.type, contentLength: m.content.length })
     edits.push({
       path: m.path,
       content: m.content,
@@ -123,10 +116,8 @@ export async function parseOllamaResponse(
 }
 
 export async function applyOllamaEdits(edits: FileEdit[]): Promise<void> {
-  logger.info("applyOllamaEdits start", { count: edits.length })
   for (const edit of edits) {
     try {
-      logger.info("Processing edit", { path: edit.path, isDiff: edit.isDiff, contentLength: edit.content.length })
       if (edit.isDiff) {
         // Apply diff to existing file
         await applyDiff(edit.path, edit.content)
@@ -141,7 +132,6 @@ export async function applyOllamaEdits(edits: FileEdit[]): Promise<void> {
       // Don't throw - let other edits continue
     }
   }
-  logger.info("applyOllamaEdits end")
 }
 
 async function applyDiff(filePath: string, diffContent: string): Promise<void> {

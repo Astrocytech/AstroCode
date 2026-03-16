@@ -10,6 +10,8 @@ export interface FileEdit {
   path: string
   content: string
   isDiff: boolean
+  originalContent?: string
+  generatedDiff?: string
 }
 
 export async function resolveFilePath(filePath: string, cwd: string, attachedFiles: string[] = []): Promise<string> {
@@ -94,13 +96,47 @@ export async function parseOllamaResponse(
   // Sort matches by start index for cleaning
   const sortedMatches = [...matches].sort((a, b) => a.start - b.start)
   
-  // Populate edits array
+  // Populate edits array with original content and generated diff
   for (const m of sortedMatches) {
-    edits.push({
+    const edit: FileEdit = {
       path: m.path,
       content: m.content,
       isDiff: m.type === "diff",
-    })
+    }
+    
+    // Read original content for generating diff
+    try {
+      edit.originalContent = await readFile(m.path, "utf-8")
+    } catch {
+      // File doesn't exist, treat as new file
+      edit.originalContent = ""
+    }
+    
+    // If it's a file block (full file replacement), generate a diff from original to new
+    if (m.type === "file") {
+      try {
+        const diff = createTwoFilesPatch(
+          m.path,
+          m.path,
+          edit.originalContent,
+          m.content,
+          "original",
+          "modified",
+        )
+        // Extract just the diff lines (skip the header)
+        const lines = diff.split("\n").slice(4).join("\n")
+        if (lines.trim()) {
+          edit.generatedDiff = lines
+        }
+      } catch (err) {
+        logger.warn("Failed to generate diff for file", { path: m.path, error: err })
+      }
+    } else {
+      // It's already a diff, use it as-is
+      edit.generatedDiff = m.content
+    }
+    
+    edits.push(edit)
   }
 
   // Build cleaned content by replacing blocks from end to start to keep indices valid

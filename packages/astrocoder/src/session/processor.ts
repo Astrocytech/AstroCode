@@ -453,44 +453,17 @@ export namespace SessionProcessor {
                 if (edits.length > 0) {
                   log.info("Aider-style: applying edits from model response", { count: edits.length })
 
-                  // Programmatically generate diffs for full file replacements BEFORE writing them
+                  // Show diffs in UI (generated from original/new content or from model)
                   for (const edit of edits) {
-                    if (!edit.isDiff) {
-                      try {
-                        const existing = await readFile(edit.path, "utf-8").catch(() => "")
-                        const diff = createTwoFilesPatch(
-                          edit.path,
-                          edit.path,
-                          existing,
-                          edit.content,
-                          "original",
-                          "modified",
-                        )
-                        // Extract just the diff lines (skip the header)
-                        const lines = diff.split("\n").slice(4).join("\n")
-                        if (lines.trim()) {
-                          // Show the diff in UI by adding an EditPart
-                          await Session.updatePart({
-                            id: PartID.ascending(),
-                            messageID: input.assistantMessage.id,
-                            sessionID: input.sessionID,
-                            type: "edit",
-                            filePath: edit.path,
-                            diff: lines,
-                          })
-                        }
-                      } catch (err) {
-                        log.warn("Failed to generate programmatic diff", { path: edit.path, error: err })
-                      }
-                    } else {
-                      // If it's already a diff, we still want to show it in the UI as an EditPart
+                    if (edit.generatedDiff) {
+                      // Show the generated diff in UI
                       await Session.updatePart({
                         id: PartID.ascending(),
                         messageID: input.assistantMessage.id,
                         sessionID: input.sessionID,
                         type: "edit",
                         filePath: edit.path,
-                        diff: edit.content,
+                        diff: edit.generatedDiff,
                       })
                     }
                   }

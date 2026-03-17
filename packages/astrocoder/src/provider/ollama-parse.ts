@@ -1,7 +1,7 @@
 import { Filesystem } from "@/util/filesystem"
 import { Log } from "@/util/log"
 import path from "path"
-import { readFile, writeFile } from "fs/promises"
+import { readFile, writeFile, stat } from "fs/promises"
 import { applyPatch, createTwoFilesPatch, parsePatch } from "diff"
 
 const logger = Log.create({ service: "ollama.parse" })
@@ -244,12 +244,31 @@ export interface BashResult {
 
 export async function executeOllamaBash(commands: BashCommand[], cwd: string): Promise<BashResult[]> {
   const results: BashResult[] = []
+  let workingDir = cwd
   
   for (const { command } of commands) {
     try {
-      logger.info("Executing bash command", { command, cwd })
+      logger.info("Executing bash command", { command, cwd: workingDir })
+      
+      // Handle cd commands to update working directory
+      const cdMatch = command.match(/^cd\s+(\S+)/)
+      if (cdMatch) {
+        const newDir = path.resolve(workingDir, cdMatch[1])
+        try {
+          const st = await stat(newDir)
+          if (st.isDirectory()) {
+            workingDir = newDir
+            results.push({ command, stdout: `Changed directory to: ${newDir}`, stderr: "", exitCode: 0 })
+            continue
+          }
+        } catch {
+          results.push({ command, stdout: "", stderr: `Directory not found: ${newDir}`, exitCode: 1 })
+          continue
+        }
+      }
+      
       const proc = Bun.spawn(["/bin/bash", "-c", command], {
-        cwd,
+        cwd: workingDir,
         stdout: "pipe",
         stderr: "pipe",
       })

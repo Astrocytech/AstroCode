@@ -25,6 +25,25 @@ def main():
     print("Hello")
 ```
 
+## CREATING NEW PROJECTS
+
+To scaffold a new project, use bash commands to set up the project structure:
+
+1. First, use bash to create the project (e.g., npm create vite, npx create-next-app)
+2. Then, edit individual files as needed
+
+Example for creating a new React project:
+```
+$ bash
+```bash
+npm create vite@latest my-project -- --template react
+cd my-project
+npm install
+```
+```
+
+Then you can edit files in the new project.
+
 ## BASH COMMANDS
 
 When you need to run shell commands (like npm install, git status, etc.), use this format:
@@ -47,6 +66,16 @@ Response:
 ```
 $ bash
 ```bash
+npm install
+```
+
+User: "create a new React project"
+Response:
+```
+$ bash
+```bash
+npm create vite@latest my-app -- --template react
+cd my-app
 npm install
 ```
 

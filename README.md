@@ -64,11 +64,21 @@ cd packages/astrocoder
 
 ### Option 2: Manual Build
 
-Just run AstroCoder - it will automatically detect and use your running Ollama instance:
+After cloning, install dependencies and run:
 
 ```bash
 cd packages/astrocoder
 
+# Install dependencies (required after fresh clone)
+bun install
+
+# Run directly (dev mode)
+bun run src/index.ts
+```
+
+Or build and run the binary:
+
+```bash
 # Build first (only needed once)
 bun run build
 

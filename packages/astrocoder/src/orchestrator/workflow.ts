@@ -109,18 +109,33 @@ Reply ONLY 'CONTINUE' or 'DONE'.`
     this.log("STEP 2: Architect")
 
     const prompt = `
-Given task: "${userPrompt}"
+Task: "${userPrompt}"
 
-Output the exact commands needed. Be specific:
-- Use exact file paths from the task
-- cp for copy, python for running scripts
-- Example: cp /path/to/file.txt /destination/
+Generate a Python script to complete this task.
+Output ONLY the raw script content, no markdown, no explanations.
+Start with #!/usr/bin/env python3`
 
-Format one command per line starting with *:
-* cp /source/file.py /dest/
-* python /dest/file.py`
-
-    const plan = await this.callOllama(prompt)
+    const scriptContent = await this.callOllama(prompt)
+    
+    // Strip markdown but keep actual code
+    let cleanContent = scriptContent
+      .replace(/```python\n?/g, '')   // Remove opening ```
+      .replace(/```\n?/g, '')           // Remove closing ```
+      .replace(/^```.*$/gm, '')          // Remove lines that are just ```
+      .trim()
+    
+    // If it starts with comments, find the first real code line
+    const lines = cleanContent.split('\n')
+    const codeStartIndex = lines.findIndex(l => l.startsWith('#!/') || l.startsWith('import ') || l.startsWith('from '))
+    if (codeStartIndex > 0) {
+      cleanContent = lines.slice(codeStartIndex).join('\n')
+    }
+    
+    // Use base64 to safely transfer content
+    const base64Content = Buffer.from(cleanContent).toString('base64')
+    const plan = `* python3 -c "import base64; open('/home/njonji/Desktop/IZBR/generated.py','w').write(base64.b64decode('${base64Content}'.encode()).decode())"
+* python3 /home/njonji/Desktop/IZBR/generated.py`
+    
     this.log("  -> Plan generated")
     return plan
   }

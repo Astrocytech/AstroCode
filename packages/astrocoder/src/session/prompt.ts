@@ -169,7 +169,7 @@ export namespace SessionPrompt {
       .join(" ") ?? ""
 
     // Check if this is a shell task that should use workflow engine
-    const shellKeywords = ["copy", "run", "execute", "move", "delete", "create", "install", "build", "compile", "go to", "navigate to", "make sure", "find", "locate", "search"]
+    const shellKeywords = ["copy", "run", "execute", "move", "delete", "create", "install", "build", "compile", "go to", "go into", "navigate to", "make sure", "find", "locate", "search", "refactor", "edit", "modify", "change"]
     const isShellTask = shellKeywords.some(k => userText.toLowerCase().includes(k))
 
     if (isShellTask && userText.length > 0) {

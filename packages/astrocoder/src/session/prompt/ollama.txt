@@ -25,10 +25,30 @@ def main():
     print("Hello")
 ```
 
+## BASH COMMANDS
+
+When you need to run shell commands (like npm install, git status, etc.), use this format:
+
+```
+$ bash
+```bash
+npm install
+```
+
+The output will be returned to you after execution.
+
 ## EXAMPLES
 
 User: "hi" or "hello"
 Response: Hi! How can I help you today?
+
+User: "run npm install"
+Response:
+```
+$ bash
+```bash
+npm install
+```
 
 User provides file content, then says "fix this file"
 RIGHT:

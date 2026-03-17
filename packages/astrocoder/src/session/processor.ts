@@ -13,7 +13,7 @@ import { LLM } from "./llm"
 import { Config } from "@/config/config"
 import { SessionCompaction } from "./compaction"
 import { PermissionNext } from "@/permission/next"
-import { parseOllamaResponse, applyOllamaEdits } from "@/provider/ollama-parse"
+import { parseOllamaResponse, applyOllamaEdits, executeOllamaBash } from "@/provider/ollama-parse"
 import { Instance } from "@/project/instance"
 import { Question } from "@/question"
 import { PartID } from "./schema"
@@ -444,11 +444,31 @@ export namespace SessionProcessor {
               }
               
               if (textContent) {
-                const { edits, cleanedContent } = await parseOllamaResponse(
+                const { edits, cleanedContent, bashCommands } = await parseOllamaResponse(
                   textContent,
                   Instance.directory || process.cwd(),
                   attachedFiles,
                 )
+                
+                // Execute bash commands if any detected
+                if (bashCommands.length > 0) {
+                  log.info("Aider-style: executing bash commands from model response", { count: bashCommands.length })
+                  
+                  const cwd = Instance.directory || process.cwd()
+                  const results = await executeOllamaBash(bashCommands, cwd)
+                  
+                  // Add bash results to the conversation
+                  for (const result of results) {
+                    const output = result.stdout + (result.stderr ? `\nStderr: ${result.stderr}` : '')
+                    await Session.updatePart({
+                      id: PartID.ascending(),
+                      messageID: input.assistantMessage.id,
+                      sessionID: input.sessionID,
+                      type: "text",
+                      text: `Executed: ${result.command}\nExit code: ${result.exitCode}\nOutput:\n${output || '(no output)'}`,
+                    })
+                  }
+                }
                 
                 if (edits.length > 0) {
                   log.info("Aider-style: applying edits from model response", { count: edits.length })

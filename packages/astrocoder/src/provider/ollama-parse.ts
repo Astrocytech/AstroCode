@@ -21,6 +21,11 @@ export interface FileEdit {
   generatedDiff?: string
 }
 
+export interface BashCommand {
+  command: string
+  description?: string
+}
+
 export async function resolveFilePath(filePath: string, cwd: string, attachedFiles: string[] = []): Promise<string> {
   // If absolute path, use it
   if (path.isAbsolute(filePath)) {
@@ -61,8 +66,32 @@ export async function parseOllamaResponse(
   content: string,
   cwd: string,
   attachedFiles: string[] = [],
-): Promise<{ edits: FileEdit[]; cleanedContent: string }> {
+): Promise<{ edits: FileEdit[]; cleanedContent: string; bashCommands: BashCommand[] }> {
   const edits: FileEdit[] = []
+  const bashCommands: BashCommand[] = []
+  
+  // Regex for bash commands in special format: $ bash\n```bash\ncommand\n```
+  const bashBlockRegex = /\$ ?bash\n```(?:bash|sh|shell)?\n([\s\S]*?)```/gi
+  
+  let bashMatch
+  while ((bashMatch = bashBlockRegex.exec(content)) !== null) {
+    const command = bashMatch[1].trim()
+    if (command) {
+      bashCommands.push({ command })
+      logger.info("Detected bash command", { command })
+    }
+  }
+  
+  // Also try to detect inline bash commands like: `$ npm install` or `run: npm install`
+  const inlineBashRegex = /(?:^|\n)(?:\$|run:|execute:)\s*([^\n]+)/gm
+  let inlineMatch
+  while ((inlineMatch = inlineBashRegex.exec(content)) !== null) {
+    const command = inlineMatch[1].trim()
+    if (command && !bashCommands.some(b => b.command === command)) {
+      bashCommands.push({ command })
+      logger.info("Detected inline bash command", { command })
+    }
+  }
   
   // Regex for both diff and code blocks with filenames
   const diffBlockRegex = /([^\n]+\.(?:ts|tsx|js|jsx|py|json|md|txt|sh|yaml|yml|html|css|sql|go|rs|java|c|cpp|h))(?:\n|)```diff\n([\s\S]*?)```/g
@@ -184,7 +213,7 @@ export async function parseOllamaResponse(
     cleanedContent = cleanedContent.slice(0, m.start) + summary + cleanedContent.slice(m.end)
   }
 
-  return { edits, cleanedContent }
+  return { edits, cleanedContent, bashCommands }
 }
 
 export async function applyOllamaEdits(edits: FileEdit[]): Promise<void> {
@@ -204,6 +233,50 @@ export async function applyOllamaEdits(edits: FileEdit[]): Promise<void> {
       // Don't throw - let other edits continue
     }
   }
+}
+
+export interface BashResult {
+  command: string
+  stdout: string
+  stderr: string
+  exitCode: number
+}
+
+export async function executeOllamaBash(commands: BashCommand[], cwd: string): Promise<BashResult[]> {
+  const results: BashResult[] = []
+  
+  for (const { command } of commands) {
+    try {
+      logger.info("Executing bash command", { command, cwd })
+      const proc = Bun.spawn(["/bin/bash", "-c", command], {
+        cwd,
+        stdout: "pipe",
+        stderr: "pipe",
+      })
+      
+      const [stdoutBuf, stderrBuf] = await Promise.all([
+        proc.stdout,
+        proc.stderr,
+      ])
+      
+      const stdout = await new Response(stdoutBuf).text()
+      const stderr = await new Response(stderrBuf).text()
+      const exitCode = await proc.exited
+      
+      results.push({ command, stdout, stderr, exitCode })
+      logger.info("Bash command completed", { command, exitCode })
+    } catch (err) {
+      logger.error("Failed to execute bash", { command, error: err })
+      results.push({
+        command,
+        stdout: "",
+        stderr: String(err),
+        exitCode: 1,
+      })
+    }
+  }
+  
+  return results
 }
 
 async function applyDiff(filePath: string, diffContent: string): Promise<void> {

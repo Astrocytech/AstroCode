@@ -28,6 +28,9 @@ import { MCP } from "../mcp"
 import { LSP } from "../lsp"
 import { ReadTool } from "../tool/read"
 import { FileTime } from "../file/time"
+import { WorkflowEngine } from "../orchestrator/workflow"
+
+const log = Log.create({ service: "session.prompt" })
 import { Flag } from "../flag/flag"
 import { ulid } from "ulid"
 import { spawn } from "child_process"
@@ -159,6 +162,51 @@ export namespace SessionPrompt {
   export type PromptInput = z.infer<typeof PromptInput>
 
   export const prompt = fn(PromptInput, async (input) => {
+    // Extract user text from input parts
+    const userText = input.parts
+      ?.filter(p => p.type === "text")
+      .map(p => (p as any).text)
+      .join(" ") ?? ""
+
+    // Check if this is a shell task that should use workflow engine
+    const shellKeywords = ["copy", "run", "execute", "move", "delete", "create", "install", "build", "compile", "go to", "navigate to", "make sure", "find", "locate", "search"]
+    const isShellTask = shellKeywords.some(k => userText.toLowerCase().includes(k))
+
+    if (isShellTask && userText.length > 0) {
+      log.info("Using workflow engine for shell task", { text: userText.slice(0, 50) })
+      try {
+        const engine = new WorkflowEngine()
+        const result = await engine.run(userText)
+
+        // Create assistant message with workflow result
+        const assistantMsg = MessageV2.Assistant.parse({
+          id: MessageID.ascending(),
+          sessionID: input.sessionID,
+          role: "assistant",
+          model: input.model ?? { providerID: "ollama", modelID: "llama3.1:8b-instruct-q4_K_M" },
+          agent: "workflow",
+          created: Date.now(),
+        })
+
+        const resultPart = MessageV2.TextPart.parse({
+          id: PartID.ascending(),
+          messageID: assistantMsg.info.id,
+          sessionID: input.sessionID,
+          type: "text",
+          text: result.finalSummary,
+          synthetic: true,
+        })
+
+        await Session.add({ ...assistantMsg.info, parentID: message.info.id })
+        await MessageV2.addParts(assistantMsg.info.id, [resultPart])
+
+        return [{ info: assistantMsg, parts: [resultPart] }]
+      } catch (err) {
+        log.error("Workflow failed", { error: err })
+        // Fall through to normal processing
+      }
+    }
+
     const session = await Session.get(input.sessionID)
     await SessionRevert.cleanup(session)
 

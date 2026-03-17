@@ -125,6 +125,10 @@ export class WorkflowEngine {
     const maxAttempts = 5
 
     const targetPath = this.extractTargetPath(userPrompt)
+    
+    const isCommandTask = /^(run|execute|install|list|check|show|get|create\s+dir|delete|remove|copy|move|start|stop|kill)/i.test(userPrompt) && 
+      !/create\s+.*file|save|write/i.test(userPrompt)
+    
     let targetDir = PROJECT_ROOT
     let targetFile = null
     
@@ -151,12 +155,20 @@ export class WorkflowEngine {
         ? `\nPrevious attempts failed:\n${this.history.join('\n')}\n\n`
         : ""
 
-      const dirInstruction = targetDir !== PROJECT_ROOT 
+      const dirInstruction = targetDir !== PROJECT_ROOT && !isCommandTask
         ? `\nIMPORTANT: Create files in this exact directory: ${targetDir}\nUse: os.makedirs("${targetDir}", exist_ok=True) before writing files.\n`
         : ""
 
-      const prompt = `${fileContents}
-${context}${dirInstruction}TASK: ${userPrompt}
+      let promptPart = ""
+      if (isCommandTask) {
+        promptPart = `TASK: ${userPrompt}
+
+Execute this task using Python subprocess or os.system. 
+For example: subprocess.run(["ls", "-la", "${targetDir || '/home/njonji/Desktop/ASTROCYTECH/AstroCode'}"], shell=True)
+Use subprocess.run with shell=True for shell commands.
+Output ONLY the code in a python code block. No explanation.`
+      } else {
+        promptPart = `TASK: ${userPrompt}
 
 Write Python code to accomplish this task. 
 - Use the EXACT file paths from the task
@@ -164,6 +176,10 @@ Write Python code to accomplish this task.
 - Write files using: with open("${targetFile || 'filename'}", 'w') as f: f.write(content)
 - DO NOT just print - ALWAYS write to files at the specified paths
 Output ONLY the code in a python code block. No explanation.`
+      }
+
+      const prompt = `${fileContents}
+${context}${dirInstruction}${promptPart}`
 
       const output = await this.callOllama(prompt)
       
@@ -189,6 +205,17 @@ Output ONLY the code in a python code block. No explanation.`
       const runResult = await this.runBash(`python3 "${scriptPath}" 2>&1`)
       
       let results = `Code executed:\n${combinedCode.slice(0, 1000)}\n\nOutput:\n${runResult.stdout || runResult.stderr}`
+
+      // For command tasks, success is if command ran (no crash)
+      if (isCommandTask) {
+        if (!runResult.stderr.includes("Error") && !runResult.stderr.includes("Traceback")) {
+          await this.runBash(`rm -f "${scriptPath}"`)
+          return { 
+            success: true, 
+            finalSummary: `Task completed: ${userPrompt}\n\nOutput:\n${runResult.stdout || runResult.stderr}` 
+          }
+        }
+      }
 
       let fileCheck = "No target file specified"
       if (targetPath) {

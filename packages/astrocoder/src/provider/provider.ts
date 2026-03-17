@@ -599,7 +599,7 @@ export namespace Provider {
             temperature: model.temperature ?? existing?.capabilities.temperature ?? false,
             reasoning: model.reasoning ?? existing?.capabilities.reasoning ?? false,
             attachment: model.attachment ?? existing?.capabilities.attachment ?? false,
-            toolcall: isOllamaModel(modelID, providerID) ? false : (model.tool_call ?? existing?.capabilities.toolcall ?? true),
+            toolcall: model.tool_call ?? existing?.capabilities.toolcall ?? true,
             input: {
               text: model.modalities?.input?.includes("text") ?? existing?.capabilities.input.text ?? true,
               audio: model.modalities?.input?.includes("audio") ?? existing?.capabilities.input.audio ?? false,

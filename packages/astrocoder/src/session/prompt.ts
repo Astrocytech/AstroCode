@@ -170,47 +170,11 @@ export namespace SessionPrompt {
 
     log.info("User prompt received", { text: userText.slice(0, 100) })
 
-    // For now, ALWAYS use workflow for testing
-    const isShellTask = true
+    // Workflow disabled - using system prompt approach instead
+    const isShellTask = false
 
-    if (isShellTask && userText.length > 0) {
-      log.info("Using workflow engine for shell task", { text: userText.slice(0, 50) })
-      try {
-        const engine = new WorkflowEngine("llama3.1:8b-instruct-q4_K_M", true) // quiet mode
-        log.info("Running workflow...")
-        const result = await engine.run(userText)
-        log.info("Workflow result:", { success: result.success, summary: result.finalSummary.slice(0, 100) })
-
-        // Create user message first
-        const message = await createUserMessage(input)
-
-        // Create assistant message with workflow result
-        const assistantMsg = MessageV2.Assistant.parse({
-          id: MessageID.ascending(),
-          sessionID: input.sessionID,
-          role: "assistant",
-          model: input.model ?? { providerID: "ollama", modelID: "llama3.1:8b-instruct-q4_K_M" },
-          agent: "workflow",
-          created: Date.now(),
-        })
-
-        const resultPart = MessageV2.TextPart.parse({
-          id: PartID.ascending(),
-          messageID: assistantMsg.info.id,
-          sessionID: input.sessionID,
-          type: "text",
-          text: result.finalSummary,
-          synthetic: true,
-        })
-
-        await Session.add({ ...assistantMsg.info, parentID: message.info.id })
-        await MessageV2.addParts(assistantMsg.info.id, [resultPart])
-
-        return [{ info: assistantMsg, parts: [resultPart] }]
-      } catch (err) {
-        log.error("Workflow failed, falling back to normal processing", { error: String(err), stack: (err as any)?.stack })
-        // Fall through to normal processing
-      }
+    if (isShellTask && userText.length > 5) {
+      // Disabled - not working properly
     }
 
     log.info("Not a shell task, using normal model")

@@ -1,6 +1,12 @@
 import { spawn } from "child_process"
 
 const PROJECT_ROOT = "/home/njonji/Desktop/ASTROCYTECH/AstroCode"
+const SCAFFOLDING = `
+SYSTEM_ENVIRONMENT: Linux (Ubuntu)
+WORKING_DIRECTORY: ${PROJECT_ROOT}
+ROLE: Linux System Expert
+STRICT_MODE: Output only standard Bash syntax.
+`
 
 interface OllamaChatResponse {
   message?: { content?: string }

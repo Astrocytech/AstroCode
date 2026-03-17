@@ -168,9 +168,32 @@ export namespace SessionPrompt {
       .map(p => (p as any).text)
       .join(" ") ?? ""
 
-    // Check if this is a shell task that should use workflow engine
-    const shellKeywords = ["copy", "run", "execute", "move", "delete", "create", "install", "build", "compile", "go to", "go into", "navigate to", "make sure", "find", "locate", "search", "refactor", "edit", "modify", "change"]
-    const isShellTask = shellKeywords.some(k => userText.toLowerCase().includes(k))
+    // Ask Ollama if this requires shell execution
+    const checkPrompt = `Does the following request require running shell commands (like cp, mv, python, grep, find, etc.) to complete? Reply ONLY 'YES' or 'NO'.
+    
+Request: "${userText}"`
+
+    // Quick check via Ollama
+    let isShellTask = false
+    try {
+      const response = await fetch("http://localhost:11434/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "llama3.1:8b-instruct-q4_K_M",
+          messages: [{ role: "user", content: checkPrompt }],
+          temperature: 0.1,
+          stream: false,
+        }),
+      })
+      const data = await response.json() as any
+      const answer = data.message?.content?.toUpperCase() || ""
+      isShellTask = answer.includes("YES")
+    } catch {
+      // If Ollama fails, fall back to keyword check
+      const shellKeywords = ["copy", "run", "execute", "move", "delete", "create", "install", "build", "compile", "go to", "go into", "navigate to", "make sure", "find", "locate", "search", "refactor", "edit", "modify", "change"]
+      isShellTask = shellKeywords.some(k => userText.toLowerCase().includes(k))
+    }
 
     if (isShellTask && userText.length > 0) {
       log.info("Using workflow engine for shell task", { text: userText.slice(0, 50) })

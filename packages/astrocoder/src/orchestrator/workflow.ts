@@ -67,6 +67,21 @@ export class WorkflowEngine {
     })
   }
 
+  private isDestructive(command: string): boolean {
+    const destructivePatterns = [
+      /rm\s+-?[rf]/,
+      /rmdir/,
+      /mv\s+.*\s+.*\s+\//,
+      /cp\s+.*\s+\/\s+/,
+      /dd\s+/,
+      /mkfs/,
+      />\s*\/dev\//,
+      /chmod\s+[0-7]{3,4}\s+\//,
+    ]
+    const cmd = command.toLowerCase()
+    return destructivePatterns.some(p => p.test(cmd))
+  }
+
   async gatekeeper(userPrompt: string): Promise<boolean> {
     console.log("STEP 1: Gatekeeper")
 
@@ -79,7 +94,7 @@ Reply ONLY 'CONTINUE' or 'DONE'.`
     const response = await this.callOllama(prompt)
     const shouldContinue = !response.trim().toUpperCase().includes("DONE")
 
-    console.log("  →", shouldContinue ? "CONTINUE" : "DONE")
+    console.log("  ->", shouldContinue ? "CONTINUE" : "DONE")
     return shouldContinue
   }
 
@@ -87,15 +102,19 @@ Reply ONLY 'CONTINUE' or 'DONE'.`
     console.log("STEP 2: Architect")
 
     const prompt = `
-Given: "${userPrompt}"
+Given task: "${userPrompt}"
 
-Output 3 commands to find files. Use ONLY find or grep.
-Format: * command
+Output the exact commands needed. Be specific:
+- Use exact file paths from the task
+- cp for copy, python for running scripts
+- Example: cp /path/to/file.txt /destination/
 
-* find . -name "*.md" -type f`
+Format one command per line starting with *:
+* cp /source/file.py /dest/
+* python /dest/file.py`
 
     const plan = await this.callOllama(prompt)
-    console.log("  → Plan generated")
+    console.log("  -> Plan generated")
     return plan
   }
 
@@ -107,22 +126,25 @@ Format: * command
       .map(line => line.replace(/^\*\s*/, '').trim())
       .filter(line => line.length > 0)
     
-    console.log("  → Plan cleaned")
+    console.log("  -> Plan cleaned")
     return lines.map(l => `* ${l}`).join('\n')
   }
 
   async cleaner(plan: string): Promise<string[]> {
     console.log("STEP 4: Cleaner")
 
+    const allowedCommands = ['find', 'grep', 'ls', 'cat', 'cp', 'mv', 'mkdir', 'rm', 'chmod', 'chown', 'python', 'python3', 'node', 'npm', 'bun', 'cd', 'pwd', 'tar', 'curl', 'wget', 'git']
+
     const steps = plan.split('\n')
       .map(line => line.trim())
       .filter(line => line.length > 0)
       .map(line => line.replace(/`/g, '').replace(/^\*\s*/, ''))
       .filter(line => {
-        return line.startsWith('find') || line.startsWith('grep') || line.startsWith('ls') || line.startsWith('cat')
+        const cmd = line.split(' ')[0].toLowerCase()
+        return allowedCommands.some(c => cmd.startsWith(c))
       })
 
-    console.log(`  → ${steps.length} steps extracted`)
+    console.log("  -> " + steps.length + " steps extracted")
     return steps
   }
 
@@ -133,17 +155,10 @@ Format: * command
 
     for (let i = 0; i < steps.length; i++) {
       const step = steps[i]
-      console.log(`  Step ${i + 1}/${steps.length}: ${step}`)
+      console.log("  Step " + (i + 1) + "/" + steps.length + ": " + step)
 
-      const commandPrompt = `
-${SCAFFOLDING}
-Current Goal: ${userPrompt}
-Specific Task: ${step}
-Rule: Output ONLY the raw Bash command. No markdown, no backticks.
-
-Command:`
-
-      let rawCommand = await this.callOllama(commandPrompt)
+      // Use the step directly as the command instead of asking LLM to generate
+      let rawCommand = step
 
       rawCommand = rawCommand
         .replace(/```bash|```/g, "")
@@ -157,11 +172,29 @@ Command:`
         (cmdLower.startsWith("find") && !cmdLower.includes("-name") && !cmdLower.includes("-type"))
       
       if (isIncomplete) {
-        console.log("    → Command incomplete, skipping")
+        console.log("    -> Command incomplete, skipping")
         continue
       }
 
-      const finalCommand = `cd ${PROJECT_ROOT} && ${rawCommand}`
+      // Security check for destructive commands
+      if (this.isDestructive(rawCommand)) {
+        console.log("    WARNING: Destructive command detected: " + rawCommand)
+        const confirmPrompt = `
+The following command is potentially destructive:
+${rawCommand}
+
+Is this safe to execute? Reply ONLY 'YES' or 'NO'.
+`
+        const confirm = await this.callOllama(confirmPrompt)
+        if (!confirm.toUpperCase().includes("YES")) {
+          console.log("    -> Command rejected by security check, skipping")
+          history += "\n" + step + ": REJECTED - destructive command"
+          continue
+        }
+        console.log("    -> Command approved by security check")
+      }
+
+      const finalCommand = "cd " + PROJECT_ROOT + " && " + rawCommand
       let attempt = 0
       let currentCommand = finalCommand
       let currentStepSuccess = false
@@ -182,7 +215,7 @@ Command:`
               if (attempt < 3) {
                 const broader = await this.callOllama(`Task: "${step}" needs more detail. Provide a broader command.`)
                 const broadCmd = broader.replace(/```bash|```/g, "").replace(/`/g, "").trim()
-                currentCommand = `cd ${PROJECT_ROOT} && ${broadCmd}`
+                currentCommand = "cd " + PROJECT_ROOT + " && " + broadCmd
               }
             }
           } else {
@@ -191,19 +224,19 @@ Command:`
         } else {
           attempt++
           if (attempt >= 3) {
-            console.log(`    → Failed: ${stderr || "exit code " + exitCode}`)
-            history += `\n${step}: FAILED - ${stderr || "exit code " + exitCode}`
+            console.log("    -> Failed: " + (stderr || "exit code " + exitCode))
+            history += "\n" + step + ": FAILED - " + (stderr || "exit code " + exitCode)
             break
           }
           const fix = await this.callOllama(`Command failed: ${stderr}. Fix it. Output ONLY the new command.`)
           const fixedCmd = fix.replace(/```bash|```/g, "").replace(/`/g, "").trim()
-          currentCommand = `cd ${PROJECT_ROOT} && ${fixedCmd}`
+          currentCommand = "cd " + PROJECT_ROOT + " && " + fixedCmd
         }
       }
 
       if (currentStepSuccess) {
-        history += `\n${step}: ${lastStdout.slice(0, 500)}`
-        console.log(`    → OK`)
+        history += "\n" + step + ": " + lastStdout.slice(0, 500)
+        console.log("    -> OK")
       }
     }
 

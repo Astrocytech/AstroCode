@@ -999,8 +999,40 @@ export namespace SessionPrompt {
       id: part.id ? PartID.make(part.id) : PartID.ascending(),
     })
 
+    // Auto-detect file paths in text for Ollama models (they can't use tools to read files)
+    const isOllama = model.providerID === "ollama" || model.modelID.startsWith("ollama/") || model.modelID.startsWith("ollama_chat/")
+    log.info("Ollama check", { providerID: model.providerID, modelID: model.modelID, isOllama })
+    let autoAttachFiles: typeof input.parts = []
+    if (isOllama) {
+      const filePathRegex = /(?:^|(?<=[^\w\/]))\/[\w\-./\\]+(?:\.\w+)?/g
+      for (const part of input.parts) {
+        if (part.type === "text") {
+          const matches = part.text.match(filePathRegex)
+          if (matches) {
+            log.info("Ollama auto-detected file paths", { matches })
+            for (const match of matches) {
+              const filepath = match
+              try {
+                const stats = await fs.stat(filepath).catch(() => undefined)
+                if (stats && stats.isFile()) {
+                  autoAttachFiles.push({
+                    type: "file",
+                    url: pathToFileURL(filepath).href,
+                    filename: path.basename(filepath),
+                    mime: "text/plain",
+                  })
+                  log.info("Ollama auto-attaching file", { filepath })
+                }
+              } catch {}
+            }
+          }
+        }
+      }
+    }
+
+    const allParts = [...autoAttachFiles, ...input.parts]
     const parts = await Promise.all(
-      input.parts.map(async (part): Promise<Draft<MessageV2.Part>[]> => {
+      allParts.map(async (part): Promise<Draft<MessageV2.Part>[]> => {
         if (part.type === "file") {
           // before checking the protocol we check if this is an mcp resource because it needs special handling
           if (part.source?.type === "resource") {

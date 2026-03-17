@@ -6,7 +6,7 @@ import { applyPatch, createTwoFilesPatch, parsePatch } from "diff"
 
 const logger = Log.create({ service: "ollama.parse" })
 // Paths to exclude from Aider-style editing
-const EXCLUDED_PATHS = ["Aider_code", "node_modules", ".git", "dist", "build", "coverage", ".next", ".turbo"]
+const EXCLUDED_PATHS = ["node_modules", ".git", "dist", "build", "coverage", ".next", ".turbo"]
 
 function isPathExcluded(filePath: string): boolean {
   const normalized = filePath.toLowerCase()
@@ -78,9 +78,14 @@ export async function parseOllamaResponse(
       logger.info("Skipping excluded path", { filePath })
       continue
     }
-    // Filter out obvious non-paths like "Edit filename.py"
+    // Filter out obvious non-paths like "Edit filename.py" or conversational text
     if (/^[A-Z][a-z]+ /.test(filePath)) {
       logger.info("Skipping non-path match", { filePath })
+      continue
+    }
+    // Skip if the file path is too short or looks like a greeting
+    if (filePath.length < 4 || /^(hi|hey|hello|ok|okay|yes|no|thanks|thank)/i.test(filePath)) {
+      logger.info("Skipping likely conversational response", { filePath })
       continue
     }
     const fullPath = await resolveFilePath(filePath, cwd, attachedFiles)
@@ -100,9 +105,14 @@ export async function parseOllamaResponse(
       logger.info("Skipping excluded path", { filePath })
       continue
     }
-    // Filter out obvious non-paths like "Edit filename.py"
+    // Filter out obvious non-paths like "Edit filename.py" or conversational text
     if (/^[A-Z][a-z]+ /.test(filePath)) {
       logger.info("Skipping non-path match", { filePath })
+      continue
+    }
+    // Skip if the file path is too short or looks like a greeting
+    if (filePath.length < 4 || /^(hi|hey|hello|ok|okay|yes|no|thanks|thank)/i.test(filePath)) {
+      logger.info("Skipping likely conversational response", { filePath })
       continue
     }
     const fullPath = await resolveFilePath(filePath, cwd, attachedFiles)

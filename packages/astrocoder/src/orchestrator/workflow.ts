@@ -28,7 +28,7 @@ export class WorkflowEngine {
       body: JSON.stringify({
         model: this.modelID,
         messages: [
-          { role: "system", content: "You are an autonomous coding assistant. Write working Python code to accomplish tasks. Don't ask questions. Don't discuss. Read the provided file contents, understand them, then write code that uses those functions." },
+          { role: "system", content: "You are an autonomous coding assistant. Your job is to COMPLETE tasks by writing and executing code. When asked to create files, you MUST create them with the EXACT content specified. Use the EXACT file paths given. Create directories if needed using os.makedirs() or mkdir -p. Write files using open(path, 'w'). NEVER just print - always write to files." },
           { role: "user", content: prompt }
         ],
         temperature: 0.1,
@@ -67,13 +67,31 @@ export class WorkflowEngine {
     })
   }
 
+  private extractTargetPath(prompt: string): string | null {
+    const patterns = [
+      /create\s+(\/[\w\-.\/]+\.\w+)/i,
+      /create\s+(\/[\w\-.\/]+)/i,
+      /save\s+to\s+(\/[\w\-.\/]+)/i,
+      /at\s+(\/[\w\-.\/]+\.\w+)/i,
+      /in\s+(\/[\w\-.\/]+)/i,
+    ]
+    
+    for (const regex of patterns) {
+      const match = prompt.match(regex)
+      if (match) {
+        return match[1]
+      }
+    }
+    return null
+  }
+
   private extractFilePaths(text: string): string[] {
     const paths: string[] = []
     const regex = /(?:^|[^\w\/])(\/[\w\-.\/]+(?:\.\w+)?)/g
     let match
     while ((match = regex.exec(text)) !== null) {
       const p = match[1]
-      if (p.includes('.py') || p.includes('.txt') || p.includes('.js') || p.includes('.ts')) {
+      if (p.includes('.py') || p.includes('.txt') || p.includes('.js') || p.includes('.ts') || p.includes('.json') || p.includes('.html') || p.includes('.yaml') || p.includes('.yml') || p.includes('.md') || p.includes('.xml') || p.includes('.css') || p.includes('.sh')) {
         paths.push(p)
       }
     }
@@ -106,6 +124,18 @@ export class WorkflowEngine {
     this.history = sessionHistory || []
     const maxAttempts = 5
 
+    const targetPath = this.extractTargetPath(userPrompt)
+    let targetDir = PROJECT_ROOT
+    let targetFile = null
+    
+    if (targetPath) {
+      const dir = path.dirname(targetPath)
+      if (dir && dir !== '.' && dir !== '/') {
+        targetDir = dir
+      }
+      targetFile = path.basename(targetPath)
+    }
+
     const filePaths = this.extractFilePaths(userPrompt)
     let fileContents = ""
     
@@ -121,10 +151,19 @@ export class WorkflowEngine {
         ? `\nPrevious attempts failed:\n${this.history.join('\n')}\n\n`
         : ""
 
-      const prompt = `${fileContents}
-${context}TASK: ${userPrompt}
+      const dirInstruction = targetDir !== PROJECT_ROOT 
+        ? `\nIMPORTANT: Create files in this exact directory: ${targetDir}\nUse: os.makedirs("${targetDir}", exist_ok=True) before writing files.\n`
+        : ""
 
-Read the file contents above. Now write a Python script that accomplishes this task. The script should import and use functions from the provided files. Output ONLY the code in a python code block. No explanation. No discussion. Just code.`
+      const prompt = `${fileContents}
+${context}${dirInstruction}TASK: ${userPrompt}
+
+Write Python code to accomplish this task. 
+- Use the EXACT file paths from the task
+- Create directories if needed: os.makedirs("${targetDir}", exist_ok=True)
+- Write files using: with open("${targetFile || 'filename'}", 'w') as f: f.write(content)
+- DO NOT just print - ALWAYS write to files at the specified paths
+Output ONLY the code in a python code block. No explanation.`
 
       const output = await this.callOllama(prompt)
       
@@ -139,7 +178,11 @@ Read the file contents above. Now write a Python script that accomplishes this t
       
       const combinedCode = codeBlocks.join('\n\n')
       
-      const codeWithShebang = `#!/usr/bin/env python3\nimport sys\nsys.path.insert(0, '/home/njonji/Desktop/IZBR')\n${combinedCode}`
+      const dirSetup = targetDir !== PROJECT_ROOT 
+        ? `import os\nos.makedirs("${targetDir}", exist_ok=True)\n`
+        : ""
+      
+      const codeWithShebang = `#!/usr/bin/env python3\nimport sys\nsys.path.insert(0, '/home/njonji/Desktop/IZBR')\n${dirSetup}${combinedCode}`
       
       await Bun.write(scriptPath, codeWithShebang)
 
@@ -147,24 +190,27 @@ Read the file contents above. Now write a Python script that accomplishes this t
       
       let results = `Code executed:\n${combinedCode.slice(0, 1000)}\n\nOutput:\n${runResult.stdout || runResult.stderr}`
 
-      const outputFile = filePaths.find(p => p.endsWith('.txt')) || 'output.txt'
-      const fileCheck = await this.runBash(`test -f "${outputFile}" && wc -l "${outputFile}" || echo "NO_FILE"`)
+      let fileCheck = "No target file specified"
+      if (targetPath) {
+        const exists = await this.runBash(`test -f "${targetPath}" && echo "EXISTS: ${targetPath}" || echo "NOT_FOUND"`)
+        fileCheck = exists.stdout || exists.stderr
+      }
 
       const verifyPrompt = `Task was: "${userPrompt}"
 
 Code stdout: ${runResult.stdout.slice(0, 500)}
 Code stderr: ${runResult.stderr.slice(0, 500)}
-File check: ${fileCheck.stdout}
+File check: ${fileCheck}
 
-Is this task COMPLETED? Reply ONLY YES or NO.`
+Is this task COMPLETED? Did the file get created at the requested path? Reply ONLY YES or NO.`
       
       const verification = await this.callOllama(verifyPrompt)
       
-      if (verification.toUpperCase().includes("YES")) {
+      if (verification.toUpperCase().includes("YES") || (targetPath && fileCheck.includes("EXISTS"))) {
         await this.runBash(`rm -f "${scriptPath}"`)
         return { 
           success: true, 
-          finalSummary: `Task completed: ${userPrompt}\n\n${results.slice(0, 3000)}` 
+          finalSummary: `Task completed: ${userPrompt}\n\nResults:\n${results}\n\nFile verification: ${fileCheck}` 
         }
       }
 

@@ -168,6 +168,8 @@ export namespace SessionPrompt {
       .map(p => (p as any).text)
       .join(" ") ?? ""
 
+    log.info("User prompt received", { text: userText.slice(0, 100) })
+
     // Ask Ollama if this requires shell execution
     const checkPrompt = `Does the following request require running shell commands (like cp, mv, python, grep, find, etc.) to complete? Reply ONLY 'YES' or 'NO'.
     
@@ -199,7 +201,9 @@ Request: "${userText}"`
       log.info("Using workflow engine for shell task", { text: userText.slice(0, 50) })
       try {
         const engine = new WorkflowEngine("llama3.1:8b-instruct-q4_K_M", true) // quiet mode
+        log.info("Running workflow...")
         const result = await engine.run(userText)
+        log.info("Workflow result:", { success: result.success, summary: result.finalSummary.slice(0, 100) })
 
         // Create user message first
         const message = await createUserMessage(input)
@@ -228,9 +232,11 @@ Request: "${userText}"`
 
         return [{ info: assistantMsg, parts: [resultPart] }]
       } catch (err) {
-        log.error("Workflow failed", { error: err })
+        log.error("Workflow failed, falling back to normal processing", { error: String(err), stack: (err as any)?.stack })
         // Fall through to normal processing
       }
+    } else {
+      log.info("Not a shell task, using normal model")
     }
 
     const session = await Session.get(input.sessionID)

@@ -108,18 +108,10 @@ Reply ONLY 'CONTINUE' or 'DONE'.`
   async architect(userPrompt: string): Promise<string> {
     this.log("STEP 2: Architect")
 
-    // Let Ollama figure out the best approach - truly general
-    const prompt = `
-Task: "${userPrompt}"
+    // Simple prompt - just get commands
+    const prompt = `Task: ${userPrompt}
 
-Determine the exact shell commands needed to complete this task.
-For file creation: use 'printf' or 'echo' with proper escaping
-For script execution: use python3, node, bash as appropriate
-Output one command per line starting with *
-Be specific with paths from the task.
-Example:
-* printf '%s\\n' 'script content' > /tmp/script.py
-* python3 /tmp/script.py`
+Output simple shell commands to complete this. One per line, start with *.`
 
     const plan = await this.callOllama(prompt)
     
@@ -142,16 +134,18 @@ Example:
   async cleaner(plan: string): Promise<string[]> {
     this.log("STEP 4: Cleaner")
 
-    // More general - allow any command that looks like a shell command
+    // Extract lines that look like commands - more lenient
     const steps = plan.split('\n')
       .map(line => line.trim())
-      .filter(line => line.length > 0)
-      .map(line => line.replace(/`/g, '').replace(/^\*\s*/, ''))
+      .filter(line => line.length > 3)  // At least some content
+      .map(line => line.replace(/^\*\s*/, ''))  // Remove leading *
+      .map(line => line.replace(/^```\w*/, ''))   // Remove markdown
+      .map(line => line.replace(/```$/, ''))     // Remove closing ```
+      .map(line => line.replace(/`/g, ''))       // Remove backticks
       .filter(line => {
-        // Accept lines that start with common shell commands
+        // Accept lines that look like shell commands
         const cmd = line.split(' ')[0].toLowerCase()
-        const valid = /^[a-z][a-z0-9_-]*$/i.test(cmd)
-        return valid && cmd.length > 1 // At least 2 chars
+        return /^[a-z][a-z0-9_]*$/.test(cmd) && cmd.length > 1
       })
 
     this.log("  -> " + steps.length + " steps extracted")
@@ -272,23 +266,29 @@ Provide a SHORT summary (2-3 sentences) of what was found and list key file path
     finalSummary: string
   }> {
     try {
-      const shouldContinue = await this.gatekeeper(userPrompt)
-      if (!shouldContinue) {
-        return { success: true, finalSummary: "Nothing to do - task is finished." }
-      }
+      // Skip gatekeeper - just process the task
+      this.log("Generating commands for task...")
+      
+      // Directly generate a single command to execute
+      const cmdPrompt = `Task: ${userPrompt}
 
-      const plan = await this.architect(userPrompt)
-      const verifiedPlan = await this.critic(plan)
-      const steps = await this.cleaner(verifiedPlan)
+Give me ONE simple bash command to accomplish this. Output ONLY the command, no explanation.`
 
-      if (steps.length === 0) {
-        return { success: false, finalSummary: "No steps extracted from plan" }
-      }
-
-      const history = await this.commander(userPrompt, steps)
-      const finalSummary = await this.reporter(userPrompt, history)
-
-      return { success: true, finalSummary }
+      const command = await this.callOllama(cmdPrompt)
+      const cleanCmd = command
+        .replace(/^```.*$/gm, '')   // Remove markdown code blocks
+        .replace(/`/g, '')         // Remove backticks
+        .replace(/^#!/, '#!')      // Keep shebang
+        .trim()
+      
+      this.log("Executing:", cleanCmd)
+      
+      const result = await this.runBash(cleanCmd)
+      
+      const output = result.stdout || result.stderr || "Command executed"
+      this.log("Output:", output.slice(0, 200))
+      
+      return { success: result.exitCode === 0, finalSummary: output.slice(0, 1000) }
     } catch (error) {
       return { success: false, finalSummary: String(error) }
     }

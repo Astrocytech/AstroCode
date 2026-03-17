@@ -170,32 +170,8 @@ export namespace SessionPrompt {
 
     log.info("User prompt received", { text: userText.slice(0, 100) })
 
-    // Ask Ollama if this requires shell execution
-    const checkPrompt = `Does the following request require running shell commands (like cp, mv, python, grep, find, etc.) to complete? Reply ONLY 'YES' or 'NO'.
-    
-Request: "${userText}"`
-
-    // Quick check via Ollama
-    let isShellTask = false
-    try {
-      const response = await fetch("http://localhost:11434/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "llama3.1:8b-instruct-q4_K_M",
-          messages: [{ role: "user", content: checkPrompt }],
-          temperature: 0.1,
-          stream: false,
-        }),
-      })
-      const data = await response.json() as any
-      const answer = data.message?.content?.toUpperCase() || ""
-      isShellTask = answer.includes("YES")
-    } catch {
-      // If Ollama fails, fall back to keyword check
-      const shellKeywords = ["copy", "run", "execute", "move", "delete", "create", "install", "build", "compile", "go to", "go into", "navigate to", "make sure", "find", "locate", "search", "refactor", "edit", "modify", "change"]
-      isShellTask = shellKeywords.some(k => userText.toLowerCase().includes(k))
-    }
+    // For now, ALWAYS use workflow for testing
+    const isShellTask = true
 
     if (isShellTask && userText.length > 0) {
       log.info("Using workflow engine for shell task", { text: userText.slice(0, 50) })
@@ -235,9 +211,9 @@ Request: "${userText}"`
         log.error("Workflow failed, falling back to normal processing", { error: String(err), stack: (err as any)?.stack })
         // Fall through to normal processing
       }
-    } else {
-      log.info("Not a shell task, using normal model")
     }
+
+    log.info("Not a shell task, using normal model")
 
     const session = await Session.get(input.sessionID)
     await SessionRevert.cleanup(session)

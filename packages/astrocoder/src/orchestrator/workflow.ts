@@ -1,12 +1,6 @@
 import { spawn } from "child_process"
 
 const PROJECT_ROOT = "/home/njonji/Desktop/ASTROCYTECH/AstroCode"
-const SCAFFOLDING = `
-SYSTEM_ENVIRONMENT: Linux (Ubuntu)
-WORKING_DIRECTORY: ${PROJECT_ROOT}
-ROLE: Linux System Expert
-STRICT_MODE: Output only standard Bash syntax.
-`
 
 interface OllamaChatResponse {
   message?: { content?: string }
@@ -14,12 +8,19 @@ interface OllamaChatResponse {
 
 export class WorkflowEngine {
   private modelID: string
+  private quiet: boolean
 
-  constructor(modelID = "llama3.1:8b-instruct-q4_K_M") {
+  constructor(modelID = "llama3.1:8b-instruct-q4_K_M", quiet = true) {
     this.modelID = modelID
+    this.quiet = quiet
+  }
+
+  private log(...args: any[]) {
+    if (!this.quiet) this.log(...args)
   }
 
   private async callOllama(prompt: string): Promise<string> {
+    this.log("Workflow: calling Ollama...")
     const baseUrl = "http://localhost:11434"
 
     const response = await fetch(`${baseUrl}/api/chat`, {
@@ -83,7 +84,7 @@ export class WorkflowEngine {
   }
 
   async gatekeeper(userPrompt: string): Promise<boolean> {
-    console.log("STEP 1: Gatekeeper")
+    this.log("STEP 1: Gatekeeper")
 
     const prompt = `
 ${SCAFFOLDING}
@@ -94,12 +95,12 @@ Reply ONLY 'CONTINUE' or 'DONE'.`
     const response = await this.callOllama(prompt)
     const shouldContinue = !response.trim().toUpperCase().includes("DONE")
 
-    console.log("  ->", shouldContinue ? "CONTINUE" : "DONE")
+    this.log("  ->", shouldContinue ? "CONTINUE" : "DONE")
     return shouldContinue
   }
 
   async architect(userPrompt: string): Promise<string> {
-    console.log("STEP 2: Architect")
+    this.log("STEP 2: Architect")
 
     const prompt = `
 Given task: "${userPrompt}"
@@ -114,24 +115,24 @@ Format one command per line starting with *:
 * python /dest/file.py`
 
     const plan = await this.callOllama(prompt)
-    console.log("  -> Plan generated")
+    this.log("  -> Plan generated")
     return plan
   }
 
   async critic(plan: string): Promise<string> {
-    console.log("STEP 3: Critic")
+    this.log("STEP 3: Critic")
     
     const lines = plan.split('\n')
       .filter(line => line.trim().startsWith('*'))
       .map(line => line.replace(/^\*\s*/, '').trim())
       .filter(line => line.length > 0)
     
-    console.log("  -> Plan cleaned")
+    this.log("  -> Plan cleaned")
     return lines.map(l => `* ${l}`).join('\n')
   }
 
   async cleaner(plan: string): Promise<string[]> {
-    console.log("STEP 4: Cleaner")
+    this.log("STEP 4: Cleaner")
 
     const allowedCommands = ['find', 'grep', 'ls', 'cat', 'cp', 'mv', 'mkdir', 'rm', 'chmod', 'chown', 'python', 'python3', 'node', 'npm', 'bun', 'cd', 'pwd', 'tar', 'curl', 'wget', 'git']
 
@@ -144,18 +145,18 @@ Format one command per line starting with *:
         return allowedCommands.some(c => cmd.startsWith(c))
       })
 
-    console.log("  -> " + steps.length + " steps extracted")
+    this.log("  -> " + steps.length + " steps extracted")
     return steps
   }
 
   async commander(userPrompt: string, steps: string[]): Promise<string> {
-    console.log("STEP 5: Commander")
+    this.log("STEP 5: Commander")
 
     let history = ""
 
     for (let i = 0; i < steps.length; i++) {
       const step = steps[i]
-      console.log("  Step " + (i + 1) + "/" + steps.length + ": " + step)
+      this.log("  Step " + (i + 1) + "/" + steps.length + ": " + step)
 
       // Use the step directly as the command instead of asking LLM to generate
       let rawCommand = step
@@ -172,13 +173,13 @@ Format one command per line starting with *:
         (cmdLower.startsWith("find") && !cmdLower.includes("-name") && !cmdLower.includes("-type"))
       
       if (isIncomplete) {
-        console.log("    -> Command incomplete, skipping")
+        this.log("    -> Command incomplete, skipping")
         continue
       }
 
       // Security check for destructive commands
       if (this.isDestructive(rawCommand)) {
-        console.log("    WARNING: Destructive command detected: " + rawCommand)
+        this.log("    WARNING: Destructive command detected: " + rawCommand)
         const confirmPrompt = `
 The following command is potentially destructive:
 ${rawCommand}
@@ -187,11 +188,11 @@ Is this safe to execute? Reply ONLY 'YES' or 'NO'.
 `
         const confirm = await this.callOllama(confirmPrompt)
         if (!confirm.toUpperCase().includes("YES")) {
-          console.log("    -> Command rejected by security check, skipping")
+          this.log("    -> Command rejected by security check, skipping")
           history += "\n" + step + ": REJECTED - destructive command"
           continue
         }
-        console.log("    -> Command approved by security check")
+        this.log("    -> Command approved by security check")
       }
 
       const finalCommand = "cd " + PROJECT_ROOT + " && " + rawCommand
@@ -224,7 +225,7 @@ Is this safe to execute? Reply ONLY 'YES' or 'NO'.
         } else {
           attempt++
           if (attempt >= 3) {
-            console.log("    -> Failed: " + (stderr || "exit code " + exitCode))
+            this.log("    -> Failed: " + (stderr || "exit code " + exitCode))
             history += "\n" + step + ": FAILED - " + (stderr || "exit code " + exitCode)
             break
           }
@@ -236,7 +237,7 @@ Is this safe to execute? Reply ONLY 'YES' or 'NO'.
 
       if (currentStepSuccess) {
         history += "\n" + step + ": " + lastStdout.slice(0, 500)
-        console.log("    -> OK")
+        this.log("    -> OK")
       }
     }
 
@@ -244,7 +245,7 @@ Is this safe to execute? Reply ONLY 'YES' or 'NO'.
   }
 
   async reporter(userPrompt: string, history: string): Promise<string> {
-    console.log("STEP 6: Reporter")
+    this.log("STEP 6: Reporter")
 
     const prompt = `
 User asked: "${userPrompt}"
@@ -285,17 +286,7 @@ Provide a SHORT summary (2-3 sentences) of what was found and list key file path
   }
 }
 
-export async function runWorkflow(userPrompt: string): Promise<void> {
-  console.log("\n" + "=".repeat(50))
-  console.log("WORKFLOW STARTED")
-  console.log("=".repeat(50) + "\n")
-
-  const engine = new WorkflowEngine()
-  const result = await engine.run(userPrompt)
-
-  console.log("\n" + "=".repeat(50))
-  console.log("FINAL ANSWER")
-  console.log("=".repeat(50))
-  console.log(result.finalSummary)
-  console.log("=".repeat(50) + "\n")
+export async function runWorkflow(userPrompt: string, quiet = true): Promise<{ success: boolean; finalSummary: string }> {
+  const engine = new WorkflowEngine("llama3.1:8b-instruct-q4_K_M", quiet)
+  return await engine.run(userPrompt)
 }

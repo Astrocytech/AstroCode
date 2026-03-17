@@ -175,8 +175,11 @@ export namespace SessionPrompt {
     if (isShellTask && userText.length > 0) {
       log.info("Using workflow engine for shell task", { text: userText.slice(0, 50) })
       try {
-        const engine = new WorkflowEngine()
+        const engine = new WorkflowEngine("llama3.1:8b-instruct-q4_K_M", true) // quiet mode
         const result = await engine.run(userText)
+
+        // Create user message first
+        const message = await createUserMessage(input)
 
         // Create assistant message with workflow result
         const assistantMsg = MessageV2.Assistant.parse({

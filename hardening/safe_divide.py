@@ -1,5 +1,6 @@
+
 def safe_divide(a, b):
-    if b == 0:
-        return "Error: Division by zero is not allowed"
-    else:
+    try:
         return a / b
+    except ZeroDivisionError:
+        return "Error: Division by zero is not allowed"

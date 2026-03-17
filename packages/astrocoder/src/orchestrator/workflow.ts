@@ -108,33 +108,20 @@ Reply ONLY 'CONTINUE' or 'DONE'.`
   async architect(userPrompt: string): Promise<string> {
     this.log("STEP 2: Architect")
 
+    // Let Ollama figure out the best approach - truly general
     const prompt = `
 Task: "${userPrompt}"
 
-Generate a Python script to complete this task.
-Output ONLY the raw script content, no markdown, no explanations.
-Start with #!/usr/bin/env python3`
+Determine the exact shell commands needed to complete this task.
+For file creation: use 'printf' or 'echo' with proper escaping
+For script execution: use python3, node, bash as appropriate
+Output one command per line starting with *
+Be specific with paths from the task.
+Example:
+* printf '%s\\n' 'script content' > /tmp/script.py
+* python3 /tmp/script.py`
 
-    const scriptContent = await this.callOllama(prompt)
-    
-    // Strip markdown but keep actual code
-    let cleanContent = scriptContent
-      .replace(/```python\n?/g, '')   // Remove opening ```
-      .replace(/```\n?/g, '')           // Remove closing ```
-      .replace(/^```.*$/gm, '')          // Remove lines that are just ```
-      .trim()
-    
-    // If it starts with comments, find the first real code line
-    const lines = cleanContent.split('\n')
-    const codeStartIndex = lines.findIndex(l => l.startsWith('#!/') || l.startsWith('import ') || l.startsWith('from '))
-    if (codeStartIndex > 0) {
-      cleanContent = lines.slice(codeStartIndex).join('\n')
-    }
-    
-    // Use base64 to safely transfer content
-    const base64Content = Buffer.from(cleanContent).toString('base64')
-    const plan = `* python3 -c "import base64; open('/home/njonji/Desktop/IZBR/generated.py','w').write(base64.b64decode('${base64Content}'.encode()).decode())"
-* python3 /home/njonji/Desktop/IZBR/generated.py`
+    const plan = await this.callOllama(prompt)
     
     this.log("  -> Plan generated")
     return plan
@@ -155,15 +142,16 @@ Start with #!/usr/bin/env python3`
   async cleaner(plan: string): Promise<string[]> {
     this.log("STEP 4: Cleaner")
 
-    const allowedCommands = ['find', 'grep', 'ls', 'cat', 'cp', 'mv', 'mkdir', 'rm', 'chmod', 'chown', 'python', 'python3', 'node', 'npm', 'bun', 'cd', 'pwd', 'tar', 'curl', 'wget', 'git']
-
+    // More general - allow any command that looks like a shell command
     const steps = plan.split('\n')
       .map(line => line.trim())
       .filter(line => line.length > 0)
       .map(line => line.replace(/`/g, '').replace(/^\*\s*/, ''))
       .filter(line => {
+        // Accept lines that start with common shell commands
         const cmd = line.split(' ')[0].toLowerCase()
-        return allowedCommands.some(c => cmd.startsWith(c))
+        const valid = /^[a-z][a-z0-9_-]*$/i.test(cmd)
+        return valid && cmd.length > 1 // At least 2 chars
       })
 
     this.log("  -> " + steps.length + " steps extracted")

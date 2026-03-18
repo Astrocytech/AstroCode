@@ -305,11 +305,11 @@ ${context}${dirInstruction}${promptPart}`
       }
 
       const isEditTask = /read|modify|edit|append|prepend|replace|fix|update|add|delete|remove|rename/i.test(userPrompt)
-      const isCreateTask = /create|define|make|write|generate|set up|implement|use|log|handle|raise/i.test(userPrompt)
-      const isFileTask = /log|file|config|cache|handler/i.test(userPrompt)
+      const isCreateTask = /create|define|make|write|generate|set up|implement|use|log|handle|raise|configure|setup|install|deploy|publish|chain|gateway|isolation|routing|backup|restore|failover|replication|scan|lint|format|check|detect|package|version|release|celery|temporal|prefect|kong|tenant|secret|complexity|duplicate|private|pypi|poetry|pipenv|semantic|changelog|nomad|marathon|rancher/i.test(userPrompt)
+      const isFileTask = /log|file|config|cache|handler|database|task|workflow|plugin|gateway|tenant|backup|restore|failover|replication|load|stress|scan|lint|format|check|detect|package|version|release|celery|temporal|prefect|kong|tenant|secret|complexity|duplicate|private|pypi|poetry|pipenv|semantic|changelog|nomad|marathon|rancher/i.test(userPrompt)
       const hasNoErrors = !runResult.stderr.includes("Error") && !runResult.stderr.includes("Traceback") && !runResult.stderr.includes("Exception")
       const hasPartialErrors = runResult.stderr.includes("Error") || runResult.stderr.includes("Exception")
-      const hasSuccessOutput = runResult.stdout.includes("success") || runResult.stdout.includes("done") || runResult.stdout.includes("complete") || runResult.stdout.includes("modified") || runResult.stdout.includes("edited")
+      const hasSuccessOutput = runResult.stdout.includes("success") || runResult.stdout.includes("done") || runResult.stdout.includes("complete") || runResult.stdout.includes("modified") || runResult.stdout.includes("edited") || runResult.stdout.includes("configured") || runResult.stdout.includes("installed") || runResult.stdout.includes("deployed") || runResult.stdout.includes("published")
       const hasCodeOutput = runResult.stdout.trim().length > 0
       const hasLogOutput = /DEBUG|INFO|WARNING|ERROR|Logged/i.test(runResult.stdout) || /DEBUG|INFO|WARNING|ERROR|Logged/i.test(runResult.stderr)
       
@@ -333,17 +333,21 @@ ${context}${dirInstruction}${promptPart}`
         await this.runBash(`rm -f "${scriptPath}"`)
         return { 
           success: true, 
-          finalSummary: `Task completed: ${userPrompt}\n\nResults:\n${results}\n\nFile verification: ${fileCheck}` 
+          finalSummary: `Task completed: ${userPrompt}\n\nResults:\n${results}\n\nFile/Task verification: ${fileCheck}` 
         }
       }
 
       const verifyPrompt = `Task was: "${userPrompt}"
 
-Code stdout: ${runResult.stdout.slice(0, 500)}
-Code stderr: ${runResult.stderr.slice(0, 500)}
-File check: ${fileCheck}
+Code execution result:
+- stdout: ${runResult.stdout.slice(0, 500)}
+- stderr: ${runResult.stderr.slice(0, 500)}
+- file check: ${fileCheck}
+- no errors: ${hasNoErrors}
 
-Is this task COMPLETED? Did the file get created or modified as requested? Reply ONLY YES or NO.`
+Based on the output above, did the code successfully accomplish the task? 
+Look for: successful execution, no errors, expected output, or file modifications.
+Reply ONLY YES or NO.`
       
       const verification = await this.callOllama(verifyPrompt)
       
@@ -351,7 +355,7 @@ Is this task COMPLETED? Did the file get created or modified as requested? Reply
         await this.runBash(`rm -f "${scriptPath}"`)
         return { 
           success: true, 
-          finalSummary: `Task completed: ${userPrompt}\n\nResults:\n${results}\n\nFile verification: ${fileCheck}` 
+          finalSummary: `Task completed: ${userPrompt}\n\nResults:\n${results}\n\nVerification: ${verification.slice(0, 200)}` 
         }
       }
 

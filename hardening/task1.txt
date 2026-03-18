@@ -1,3 +1,1 @@
-append new text
-new text
-Task 1 contentThis is an appended task
+Task 1 completed

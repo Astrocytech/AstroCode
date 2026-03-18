@@ -1,0 +1,1 @@
+Memoization is used to store the results of expensive function calls so that they can be reused instead of recalculating them.

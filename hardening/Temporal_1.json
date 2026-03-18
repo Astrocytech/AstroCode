@@ -1,0 +1,5 @@
+{"name": "Temporal", "description": "A temporal workflow.", "steps": [{"id": 1, "action": "read"}, {"id": 2, "action": "append"}, {"id": 3, "action": "replace"}]},
+{
+  "id": 4,
+  "action": "append"
+}

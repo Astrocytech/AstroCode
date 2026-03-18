@@ -1,2 +1,4 @@
-# Example usage of User class
-user = User('John Doe', 'john@example.com')
+from point_definition import Point
+
+p1 = Point(10, 20)
+p2 = Point(30, 40)

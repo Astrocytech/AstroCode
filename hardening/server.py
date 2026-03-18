@@ -1,14 +1,17 @@
 
-import http.server
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
-PORT = 8000
-server_address = ('', PORT)
-httpd = http.server.HTTPServer(server_address, http.server.SimpleHTTPRequestHandler)
+class RequestHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Hello, world!")
 
-print(f"Server running on port {PORT}")
-try:
+def run_server():
+    server_address = ('', 8000)
+    httpd = HTTPServer(server_address, RequestHandler)
+    print("Server running on port 8000...")
     httpd.serve_forever()
-except KeyboardInterrupt:
-    print("
-Server shutting down.")
-    httpd.socket.close()
+
+if __name__ == "__main__":
+    run_server()

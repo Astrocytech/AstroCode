@@ -1,0 +1,8 @@
+
+apiVersion: apps/v1
+kind: DeploymentStrategy
+metadata:
+  name: my-deployment-strategy
+spec:
+  deploymentTimeoutSeconds: 300
+

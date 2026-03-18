@@ -2,4 +2,4 @@ error
 warning
 error
 
-Appended text
+Appended textHello, world!

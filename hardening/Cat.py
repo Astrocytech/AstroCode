@@ -1,2 +1,6 @@
 class Cat(Pet):
-    pass
+    def __init__(self, name):
+        self.name = name
+
+	def meow(self):
+	    print('Meowing...')

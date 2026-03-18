@@ -1,40 +1,21 @@
 
-def authenticate_request(request):
-    token = request.headers['Authorization']
-    try:
-        payload = jwt.decode(token, 'secret_key', algorithms=['HS256'])
-        return True
-    except jwt.ExpiredSignatureError:
-        return False
-    except jwt.InvalidTokenError:
-        return False
-import jwt
-from fastapi import FastAPI, Depends, HTTPException
-from pydantic import BaseModel
-import jwt
+from flask import Flask, request, jsonify
+from functools import wraps
 
-app = FastAPI()
+app = Flask(__name__)
 
-class User(BaseModel):
-    username: str
-    password: str
+def authenticate(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = request.headers.get("Authorization")
+        if jwt_validation(token):
+            return f(*args, **kwargs)
+        else:
+            return jsonify({"message": "Unauthorized"}), 401
+    return decorated_function
 
-def get_token():
-    token = "your_secret_token"
-    return token
-
-async def authenticate_user(username: str, password: str):
-    # your authentication logic here
+@app.route('/users', methods=['GET'])
+@authenticate
+def get_users():
+    # Return users data here
     pass
-
-@app.post("/login")
-async def login(user: User):
-    token = await authenticate_user(user.username, user.password)
-    if token:
-        return {"access_token": token}
-    else:
-        raise HTTPException(status_code=401, detail="Invalid username or password")
-
-@app.get("/")
-def read_root():
-    return {"message": "Hello World"}

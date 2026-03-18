@@ -1,0 +1,3 @@
+username,password,role
+admin,password123,admin
+user,userpassword,usernewuser,newpassword,newuser

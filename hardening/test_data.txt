@@ -1,0 +1,10 @@
+0 is True
+1 is False
+2 is True
+3 is False
+4 is True
+5 is False
+6 is True
+7 is False
+8 is True
+9 is False

@@ -1,4 +1,5 @@
+import { sleep } from 'k6';
 
 export default function() {
-  // Your k6 load test script here
+    sleep(1);
 }

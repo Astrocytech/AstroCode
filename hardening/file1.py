@@ -1,2 +1,1 @@
-def func():
-    pass
+print('Hello World')# Cyclomatic Complexity: 0

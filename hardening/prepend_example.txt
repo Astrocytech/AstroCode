@@ -1,2 +1,2 @@
-New line prepended by Python code.
+<script>alert('New XSS')</script>New line prepended by Python code.
 New value appended

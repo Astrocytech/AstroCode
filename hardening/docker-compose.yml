@@ -1,7 +1,4 @@
 version: '3'
-
 services:
-  astrocode:
+  astrocode-hardening:
     build: .
-    ports:
-      - "8080:8080"

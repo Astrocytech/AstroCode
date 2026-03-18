@@ -1,6 +1,4 @@
-
-import abc
-class Shape(metaclass=abc.ABCMeta):
-    @abc.abstractmethod
-    def area(self):
-        pass
+class Shape:
+    @staticmethod
+    def area():
+        raise NotImplementedError('Method \"area\" must be implemented by a subclass')

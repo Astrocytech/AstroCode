@@ -1,10 +1,4 @@
-
-import os
-
-class Math:
-    @staticmethod
-    def add(a, b):
-        return a + b
-
-
-Math.subtract = lambda a, b: a - b
+def add_numbers(a, b):
+	return Math.add(a, b)
+from AstroCode.hardening import Math
+math_obj = Math()

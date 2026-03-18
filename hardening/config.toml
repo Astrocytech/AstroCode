@@ -1,0 +1,7 @@
+[section]
+old_key = "new_value"
+
+key = "value"
+
+[new_section]
+key = "value"

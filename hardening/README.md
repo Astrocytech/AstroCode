@@ -1,6 +1,2 @@
-# Astrocyte Hardening Project
-
-## Installation# AstroPackage
-# Astrocyte Hardening Project
-
-## Installation
+# AstroCode
+A Python package for astronomy

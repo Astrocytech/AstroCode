@@ -1,1 +1,4 @@
-interface Config { url: string; port: number; }
+interface Config {
+  url: string;
+  port: number;
+}

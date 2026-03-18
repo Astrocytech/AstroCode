@@ -1,9 +1,10 @@
 from celery import Celery
-app = Celery('tasks', broker='amqp://guest@localhost//')
-@app.task(bind=True, default_retry_delay=300, max_retries=5)
-def my_task(self, x, y):
+app = Celery()
+app.config_from_object("celeryconfig")
+@app.task
+def my_task(x):
     try:
-        result = x + y
-        return result
-    except Exception as exc:
-        self.retry(exc=exc)
+        # task code here
+        return x * 2
+    except Exception as e:
+        raise self.retry(exc=e, countdown=5)

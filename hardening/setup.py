@@ -1,7 +1,11 @@
+
 from setuptools import setup, find_packages
 
 setup(
-  name="AstroPackage",
-  version=__import__("__init__").__version__,
-  packages=find_packages(),
+    name='astrocode',
+    version='1.0',
+    packages=find_packages(),
+    author='Njonji',
+    author_email='njonji@example.com',
+    description='AstroCode for PyPI'
 )

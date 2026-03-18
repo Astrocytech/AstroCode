@@ -1,2 +1,4 @@
-Prepended contentModified: This is a sample file.
+Prepended text
+
+New contentPrepended contentModified: This is a sample file.
 Modified: Line 2 of the file.

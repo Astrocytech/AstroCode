@@ -1,8 +1,12 @@
-def add(a, b):
-    return a + b
+#!/usr/bin/python3
+import argparse
 
-def subtract(a, b):
-    return a - b
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-n', '--name', help='Name')
+    parser.add_argument('-v', '--verbose', action='store_true')
+    parser.add_argument('-o', '--output', help='Output')
 
-def multiply(a, b):
-    return a * b
+    args = parser.parse_args()
+    if args.verbose:
+        print('Verbose mode activated')

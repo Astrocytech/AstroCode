@@ -1,0 +1,7 @@
+
+Variable x: 5
+Variable z: 15
+
+
+Variable w: 20
+Variable y: 10

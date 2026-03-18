@@ -1,0 +1,2 @@
+# New rule for port 8080
+sudo ufw allow from any to any port 8080

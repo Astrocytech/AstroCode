@@ -1,0 +1,9 @@
+# Allow port 8080 in firewall
+rule version 5 start
+chain rule name = hardening-firewall-allow-8080
+target accept
+proto tcp destination dport 8080
+jump hardening-firewall-allow-8080
+log limit 3 info
+meta L7 family ipv4 dport name HTTP
+end rule

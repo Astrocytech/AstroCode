@@ -1,0 +1,3 @@
+Prepending new string
+Changes to be stashed:
+Adding new change 1

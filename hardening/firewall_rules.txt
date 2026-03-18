@@ -1,0 +1,2 @@
+# Allow port 8080 in firewall
+sudo ufw allow from any to any port 8080

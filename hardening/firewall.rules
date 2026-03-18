@@ -1,0 +1,2 @@
+# New rule to allow port 8080
+sudo ufw allow from any to any port 8080 proto tcp comment 'allow port 8080'

@@ -1,2 +1,1 @@
-content of file 1line 3
-line 4
+This is the first file

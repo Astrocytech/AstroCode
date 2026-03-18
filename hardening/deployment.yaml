@@ -1,0 +1,17 @@
+---
+deployment:
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: astro
+    template:
+      metadata:
+        labels:
+          app: astro
+      spec:
+        containers:
+        - name: astro
+          image: nginx
+  strategy:
+    type: Recreate

@@ -1,0 +1,5 @@
+
+This will be appended to the end of the file.
+This is a sample file.
+Line 2 of the file.
+|hello|world|

@@ -1,0 +1,3 @@
+[2026-03-18 12:38:49] [ERROR] This is a prepended log message.
+[2026-03-18 12:38:49] [WARNING] This is an appended log message.
+[2026-03-18 12:38:49] [INFO] This is a log message.

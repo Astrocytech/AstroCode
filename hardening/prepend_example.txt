@@ -1,0 +1,2 @@
+New line prepended by Python code.
+New value appended

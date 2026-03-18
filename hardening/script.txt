@@ -1,0 +1,4 @@
+
+-n --name
+--verbose -v
+-o --output

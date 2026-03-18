@@ -1,0 +1,3 @@
+New line prepended.
+Hello, world!
+New line appended.New content

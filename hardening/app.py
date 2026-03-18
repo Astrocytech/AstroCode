@@ -1,7 +1,10 @@
-from bottle import run, route
+from flask import Flask, request
+app = Flask(__name__)
 
-@route('/')
-def index():
-    return "Hello World!"
-
-run(host='localhost', port=8080)
+@app.route('/your_route', methods=['GET'])
+def your_function():
+    token = request.headers.get('Authorization')
+    if not check_jwt_token(token):
+        return "Invalid token"
+    # rest of your code
+    pass

@@ -1,0 +1,2362 @@
+# AstroCoder Hardening Prompts - Comprehensive Test Suite
+# Turn ollama 3B instruct into a working autonomous coding engine
+
+================================================================================
+SECTION 1: FILE OPERATIONS - BASIC
+================================================================================
+
+TEST_001: Create hello.py
+PROMPT: Create hello.py that prints "Hello World"
+EXPECTED: File with print("Hello World")
+
+TEST_002: Create in directory
+PROMPT: Create /home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/test.txt with "test content"
+EXPECTED: File at exact path with content
+
+TEST_003: Create JSON
+PROMPT: Create config.json with {"app": "test", "version": 1}
+EXPECTED: Valid JSON
+
+TEST_004: Create multi-line
+PROMPT: Create script.py with multiple functions: add, subtract, multiply
+EXPECTED: File with 3 functions
+
+TEST_005: Overwrite existing
+PROMPT: Overwrite hello.py with print("New content")
+EXPECTED: File replaced
+
+================================================================================
+SECTION 2: FILE OPERATIONS - ADVANCED
+================================================================================
+
+TEST_006: Create HTML
+PROMPT: Create index.html with <html><body><h1>Hello</h1></body></html>
+EXPECTED: Valid HTML file
+
+TEST_007: Create CSS
+PROMPT: Create style.css with body { background: #000; color: #fff; }
+EXPECTED: Valid CSS
+
+TEST_008: Create JavaScript
+PROMPT: Create app.js with function init() { console.log("ready"); }
+EXPECTED: JS file with function
+
+TEST_009: Create TypeScript
+PROMPT: Create types.ts with interface Config { url: string; port: number; }
+EXPECTED: Valid TypeScript
+
+TEST_010: Create Shell script
+PROMPT: Create setup.sh with #!/bin/bash and echo "Running"
+EXPECTED: Executable script
+
+TEST_011: Create Markdown
+PROMPT: Create README.md with # Title and ## Installation
+EXPECTED: Markdown file
+
+TEST_012: Create YAML
+PROMPT: Create app.yaml with server: host: localhost port: 8080
+EXPECTED: Valid YAML
+
+TEST_013: Create XML
+PROMPT: Create data.xml with <config><setting>value</setting></config>
+EXPECTED: Valid XML
+
+TEST_014: Create SQLite database
+PROMPT: Create database.db with CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT)
+EXPECTED: SQLite DB created
+
+TEST_015: Create Excel-compatible CSV
+PROMPT: Create report.csv with headers: date,sales,profit and 3 rows
+EXPECTED: Valid CSV
+
+================================================================================
+SECTION 3: FILE EDITING
+================================================================================
+
+TEST_016: Read and modify
+PROMPT: Read hello.py and add a comment at the top
+EXPECTED: Comment added
+
+TEST_019: Append content
+PROMPT: Append "appended text" to test.txt
+EXPECTED: Text appended
+
+TEST_020: Prepend content
+PROMPT: Prepend "header\n" to test.txt
+EXPECTED: Content prepended
+
+TEST_021: Replace content
+PROMPT: Replace "old" with "new" in test.txt
+EXPECTED: All replacements made
+
+TEST_022: Delete line
+PROMPT: Delete line 5 from test.txt
+EXPECTED: Line removed
+
+TEST_023: Update JSON key
+PROMPT: Update config.json to add "debug": true
+EXPECTED: JSON updated
+
+TEST_024: Rename file
+PROMPT: Rename old.txt to new.txt
+EXPECTED: File renamed
+
+TEST_025: Delete file
+PROMPT: Delete temp.txt
+EXPECTED: File deleted
+
+TEST_026: Copy file
+PROMPT: Copy source.txt to destination.txt
+EXPECTED: File copied
+
+TEST_027: Move file
+PROMPT: Move file.txt to subdir/file.txt
+EXPECTED: File moved
+
+================================================================================
+SECTION 4: CODE GENERATION - FUNCTIONS
+================================================================================
+
+TEST_028: Simple function
+PROMPT: Create function is_even(n) that returns True/False
+EXPECTED: Function works
+
+TEST_029: Function with error handling
+PROMPT: Create safe_divide(a, b) that handles division by zero
+EXPECTED: Error handled
+
+TEST_030: Recursive function
+PROMPT: Create recursive fibonacci(n)
+EXPECTED: Correct results
+
+TEST_031: Lambda function
+PROMPT: Create square = lambda x: x**2
+EXPECTED: Lambda defined
+
+TEST_032: Generator function
+PROMPT: Create def count_to(n) that yields 1 to n
+EXPECTED: Generator works
+
+TEST_033: Closure
+PROMPT: Create counter() that returns a function that counts calls
+EXPECTED: Closure working
+
+TEST_034: Function with type hints
+PROMPT: def greet(name: str) -> str:
+EXPECTED: Type hints present
+
+TEST_035: Async function
+PROMPT: Create async def fetch_data(url: str)
+EXPECTED: Async function
+
+================================================================================
+SECTION 5: CODE GENERATION - CLASSES
+================================================================================
+
+TEST_036: Simple class
+PROMPT: Create class Dog with bark() method
+EXPECTED: Class created
+
+TEST_037: Class with init
+PROMPT: Create class Person with __init__(self, name, age)
+EXPECTED: Constructor present
+
+TEST_038: Class inheritance
+PROMPT: Create class Cat inheriting from Pet
+EXPECTED: Inheritance works
+
+TEST_039: Multiple inheritance
+PROMPT: Create class that inherits from both Parent1 and Parent2
+EXPECTED: Multiple inheritance
+
+TEST_040: Static method
+PROMPT: Create class Math with @staticmethod add(a, b)
+EXPECTED: Static method
+
+TEST_041: Class method
+PROMPT: Create class Factory with @classmethod create(cls)
+EXPECTED: Class method
+
+TEST_042: Properties
+PROMPT: Create class Temperature with celsius property and fahrenheit setter
+EXPECTED: Properties work
+
+TEST_043: Dunder methods
+PROMPT: Create class with __str__, __repr__, __eq__
+EXPECTED: Dunder methods
+
+TEST_044: Abstract class
+PROMPT: Create abstract class Shape with abstract method area()
+EXPECTED: Abstract class
+
+================================================================================
+SECTION 6: CODE GENERATION - COMPLETE SCRIPTS
+================================================================================
+
+TEST_045: CLI with argparse
+PROMPT: Create script with --name --age --verbose arguments
+EXPECTED: CLI works
+
+TEST_046: HTTP server
+PROMPT: Create Python HTTP server on port 8000
+EXPECTED: Server runs
+
+TEST_048: CSV processor
+PROMPT: Read data.csv and calculate average of column "score"
+EXPECTED: Average calculated
+
+TEST_056: List directory
+PROMPT: Run ls -la in /home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening
+EXPECTED: Listing shown
+
+TEST_057: Run Python
+PROMPT: Run hello.py
+EXPECTED: Script runs
+
+TEST_061: Disk usage
+PROMPT: Run du -sh on /home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening
+EXPECTED: Size shown
+
+TEST_062: Process list
+PROMPT: List all Python processes
+EXPECTED: Processes shown
+
+TEST_063: Kill process
+PROMPT: Kill process on port 9000 if exists
+EXPECTED: Process handled
+
+TEST_064: System uptime
+PROMPT: Run uptime command
+EXPECTED: Uptime shown
+
+TEST_065: Memory usage
+PROMPT: Run free -h
+EXPECTED: Memory shown
+
+================================================================================
+SECTION 8: AUTONOMOUS EXECUTION
+================================================================================
+
+TEST_066: No questions asked
+PROMPT: Generate 10 random numbers - just do it
+EXPECTED: Numbers generated
+
+TEST_067: Self-correct
+PROMPT: Create script that calculates fibonacci. If it has a bug, fix it yourself.
+EXPECTED: Working script
+
+TEST_068: Multi-step without prompting
+PROMPT: Create dir, then file in dir, then write to file
+EXPECTED: All steps done
+
+TEST_069: Handle missing deps
+PROMPT: Create script that uses pandas. If not installed, install it first.
+EXPECTED: Dep installed
+
+TEST_070: Retry on failure
+PROMPT: Create script that retries failed HTTP request 3 times
+EXPECTED: Retry works
+
+TEST_071: Fallback logic
+PROMPT: Try method A, if fails try method B
+EXPECTED: Fallback works
+
+TEST_072: Complete workflow
+PROMPT: Fetch data, transform, save to database
+EXPECTED: Full pipeline runs
+
+================================================================================
+SECTION 9: DEBUGGING
+================================================================================
+
+TEST_073: Find bug
+PROMPT: Find bug in broken.py - don't ask me what the error is
+EXPECTED: Bug found and fixed
+
+TEST_074: Explain error
+PROMPT: Run broken.py and explain what went wrong
+EXPECTED: Error explained
+
+TEST_075: Fix import
+PROMPT: Fix ImportError in broken.py
+EXPECTED: Import fixed
+
+TEST_076: Fix logic
+PROMPT: Fix logic error in calculate.py - add returns wrong value
+EXPECTED: Logic fixed
+
+TEST_077: Fix index error
+PROMPT: Fix IndexError in broken.py
+EXPECTED: Fixed
+
+TEST_078: Fix key error
+PROMPT: Fix KeyError in broken.py
+EXPECTED: Fixed
+
+TEST_079: Fix type error
+PROMPT: Fix TypeError in broken.py
+EXPECTED: Fixed
+
+TEST_080: Add debugging
+PROMPT: Add print statements to trace variable values
+EXPECTED: Debug output shown
+
+================================================================================
+SECTION 10: DATA PROCESSING
+================================================================================
+
+TEST_081: Parse JSON
+PROMPT: Parse data.json and extract all "name" fields
+EXPECTED: Names extracted
+
+TEST_082: Parse CSV
+PROMPT: Read data.csv and filter rows where age > 18
+EXPECTED: Filtered data
+
+TEST_083: Transform data
+PROMPT: Convert all strings to uppercase in data.txt
+EXPECTED: Data transformed
+
+TEST_084: Sort data
+PROMPT: Sort numbers.txt numerically
+EXPECTED: Sorted
+
+TEST_085: Deduplicate
+PROMPT: Remove duplicate lines from data.txt
+EXPECTED: Duplicates removed
+
+TEST_086: Merge files
+PROMPT: Merge file1.txt and file2.txt
+EXPECTED: Merged
+
+TEST_087: Split file
+PROMPT: Split large.txt into chunks of 100 lines each
+EXPECTED: Split into files
+
+TEST_088: Filter by pattern
+PROMPT: Keep only lines matching error in app.log
+EXPECTED: Filtered
+
+TEST_089: Extract regex
+PROMPT: Extract all emails from log.txt
+EXPECTED: Emails extracted
+
+TEST_090: Convert encoding
+PROMPT: Convert latin1.txt to UTF-8
+EXPECTED: Converted
+
+================================================================================
+SECTION 11: NETWORK OPERATIONS
+================================================================================
+
+TEST_091: GET request
+PROMPT: GET https://httpbin.org/get and print status
+EXPECTED: 200 OK
+
+TEST_092: POST request
+PROMPT: POST to httpbin.org/post with JSON body
+EXPECTED: Response received
+
+TEST_093: PUT request
+PROMPT: PUT to httpbin.org/put with data
+EXPECTED: Updated
+
+TEST_094: DELETE request
+PROMPT: DELETE to httpbin.org/delete
+EXPECTED: Deleted
+
+TEST_095: Download file
+PROMPT: Download https://example.com/image.png
+EXPECTED: File downloaded
+
+TEST_096: Upload file
+PROMPT: Upload file.txt to httpbin.org/post
+EXPECTED: Uploaded
+
+TEST_097: Handle timeout
+PROMPT: Request with 2 second timeout
+EXPECTED: Timeout handled
+
+TEST_098: Handle 404
+PROMPT: Request to non-existent page and handle 404
+EXPECTED: 404 handled
+
+TEST_099: Authentication
+PROMPT: Make request with Bearer token
+EXPECTED: Authenticated
+
+TEST_100: Rate limiting
+PROMPT: Make 10 requests with 1 second delay between
+EXPECTED: Requests complete
+
+================================================================================
+SECTION 12: DATABASE OPERATIONS
+================================================================================
+
+TEST_101: Create table
+PROMPT: Create SQLite table users (id, name, email, created_at)
+EXPECTED: Table created
+
+TEST_102: Insert data
+PROMPT: Insert new user into users table
+EXPECTED: Data inserted
+
+TEST_103: Query data
+PROMPT: SELECT * FROM users where name = 'John'
+EXPECTED: User found
+
+TEST_104: Update data
+PROMPT: UPDATE users SET email = 'new@email.com' WHERE id = 1
+EXPECTED: Updated
+
+TEST_105: Delete data
+PROMPT: DELETE FROM users WHERE id = 1
+EXPECTED: Deleted
+
+TEST_106: Join tables
+PROMPT: SELECT * FROM users JOIN orders ON users.id = orders.user_id
+EXPECTED: Joined
+
+TEST_107: Aggregate
+PROMPT: SELECT COUNT(*), AVG(price) FROM products
+EXPECTED: Aggregated
+
+TEST_108: Transaction
+PROMPT: Use transaction to insert multiple records atomically
+EXPECTED: Atomic insert
+
+================================================================================
+SECTION 13: TESTING
+================================================================================
+
+TEST_109: Unit test
+PROMPT: Write pytest test for add(a,b) function
+EXPECTED: Test passes
+
+TEST_110: Test with fixtures
+PROMPT: Write test with @pytest.fixture for database
+EXPECTED: Fixture works
+
+TEST_111: Mock test
+PROMPT: Write test using unittest.mock.patch
+EXPECTED: Mock works
+
+TEST_112: Parametrized test
+PROMPT: Write parametrized test for is_even with multiple inputs
+EXPECTED: All pass
+
+TEST_113: Integration test
+PROMPT: Write test that calls external API
+EXPECTED: Integration test
+
+TEST_114: Run tests
+PROMPT: Run pytest on test file
+EXPECTED: Tests run
+
+TEST_115: Coverage
+PROMPT: Run pytest with --cov option
+EXPECTED: Coverage shown
+
+================================================================================
+SECTION 14: SECURITY
+================================================================================
+
+TEST_116: Sanitize SQL
+PROMPT: Create function that sanitizes input to prevent SQL injection
+EXPECTED: Sanitized
+
+TEST_117: Hash password
+PROMPT: Hash password using bcrypt
+EXPECTED: Hashed
+
+TEST_118: Verify password
+PROMPT: Verify bcrypt hash matches password
+EXPECTED: Verified
+
+TEST_119: Generate token
+PROMPT: Generate secure random token
+EXPECTED: Token generated
+
+TEST_120: Validate input
+PROMPT: Validate email format
+EXPECTED: Validation works
+
+TEST_121: Escape HTML
+PROMPT: Escape user input to prevent XSS
+EXPECTED: Escaped
+
+TEST_122: CSRF token
+PROMPT: Generate CSRF token
+EXPECTED: Token created
+
+================================================================================
+SECTION 15: CONCURRENCY
+================================================================================
+
+TEST_123: Threading
+PROMPT: Use threading to run 5 tasks in parallel
+EXPECTED: Parallel execution
+
+TEST_124: Multiprocessing
+PROMPT: Use multiprocessing to calculate squares of 1000 numbers
+EXPECTED: Faster than sequential
+
+TEST_125: Async await
+PROMPT: Create async function that awaits 3 tasks concurrently
+EXPECTED: Concurrent execution
+
+TEST_126: Thread pool
+PROMPT: Use ThreadPoolExecutor to download 10 URLs
+EXPECTED: Pool works
+
+TEST_127: Process pool
+PROMPT: Use ProcessPoolExecutor for CPU-intensive task
+EXPECTED: Pool works
+
+TEST_128: Queue
+PROMPT: Use queue.Queue to pass data between threads
+EXPECTED: Queue works
+
+================================================================================
+SECTION 16: PYTHON SPECIFIC
+================================================================================
+
+TEST_129: Virtual env
+PROMPT: Create venv in /home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/venv
+EXPECTED: venv created
+
+TEST_130: List comprehension
+PROMPT: Use list comprehension to filter even numbers from 1-100
+EXPECTED: Correct output
+
+TEST_131: Dict comprehension
+PROMPT: Create dict with {k: k**2 for k in range(10)}
+EXPECTED: Dict created
+
+TEST_132: Set comprehension
+PROMPT: Create set of squares for numbers 1-10
+EXPECTED: Set created
+
+TEST_133: Generator expression
+PROMPT: Use generator expression to process large file
+EXPECTED: Generator works
+
+TEST_134: Decorator
+PROMPT: Create @timer decorator that measures execution time
+EXPECTED: Works
+
+TEST_135: Context manager
+PROMPT: Create @contextmanager for timing
+EXPECTED: Works
+
+TEST_136: Dataclass
+PROMPT: Create @dataclass User with name, email fields
+EXPECTED: Dataclass works
+
+TEST_137: Enum
+PROMPT: Create enum Status with PENDING, COMPLETE, FAILED
+EXPECTED: Enum works
+
+TEST_138: NamedTuple
+PROMPT: Create Point = NamedTuple('Point', [('x', int), ('y', int)])
+EXPECTED: Works
+
+TEST_139: F-string
+PROMPT: Use f-string to format name and age
+EXPECTED: Formatted
+
+TEST_140: Walrus operator
+PROMPT: Use walrus operator to assign and check in one expression
+EXPECTED: Works
+
+================================================================================
+SECTION 17: SHELL/SCRIPTING
+================================================================================
+
+TEST_141: Pipe chain
+PROMPT: cat file.txt | grep error | sort | uniq -c
+EXPECTED: Chain works
+
+TEST_142: Environment variables
+PROMPT: export APP_ENV=production && echo $APP_ENV
+EXPECTED: Variable set
+
+TEST_143: Conditional
+PROMPT: If file exists, echo "found" else echo "not found"
+EXPECTED: Conditional works
+
+TEST_144: For loop
+PROMPT: for i in {1..5}; do echo $i; done
+EXPECTED: Loop works
+
+TEST_145: While loop
+PROMPT: Read file line by line using while read
+EXPECTED: Lines read
+
+TEST_146: Function
+PROMPT: Define bash function greet() { echo "Hello $1"; }
+EXPECTED: Function works
+
+TEST_147: Case statement
+PROMPT: Use case to match option
+EXPECTED: Case works
+
+TEST_148: Background process
+PROMPT: Start python -m http.server 8888 in background
+EXPECTED: Server starts
+
+TEST_149: Subshell
+PROMPT: (cd /tmp && pwd)
+EXPECTED: Subshell works
+
+TEST_150: Here document
+PROMPT: cat <<EOF > file.txt
+content
+EOF
+EXPECTED: File created
+
+================================================================================
+SECTION 18: REGEX
+================================================================================
+
+TEST_151: Match pattern
+PROMPT: Match all phone numbers in text
+EXPECTED: Matched
+
+TEST_152: Find all
+PROMPT: Find all IP addresses in log file
+EXPECTED: IPs found
+
+TEST_153: Replace regex
+PROMPT: Replace dates MM/DD/YYYY with YYYY-MM-DD
+EXPECTED: Replaced
+
+TEST_154: Split regex
+PROMPT: Split on multiple delimiters
+EXPECTED: Split
+
+TEST_155: Named groups
+PROMPT: Parse log line with named groups
+EXPECTED: Groups extracted
+
+================================================================================
+SECTION 19: CONFIGURATION
+================================================================================
+
+TEST_156: .env file
+PROMPT: Create .env with DATABASE_URL=postgres://localhost:5432/db
+EXPECTED: .env created
+
+TEST_157: Config parsing
+PROMPT: Create config.py that reads from .env
+EXPECTED: Config loaded
+
+TEST_158: Argparse
+PROMPT: Create script with -n --name -v --verbose -o --output
+EXPECTED: Args work
+
+TEST_159: Toml config
+PROMPT: Read config.toml using Python
+EXPECTED: TOML parsed
+
+TEST_160: Ini config
+PROMPT: Read config.ini using configparser
+EXPECTED: INI parsed
+
+================================================================================
+SECTION 20: LOGGING
+================================================================================
+
+TEST_161: Basic logging
+PROMPT: Set up logging to file app.log
+EXPECTED: Logged
+
+TEST_162: Log levels
+PROMPT: Log at DEBUG, INFO, WARNING, ERROR levels
+EXPECTED: All logged
+
+TEST_163: Log format
+PROMPT: Log with timestamp, level, message format
+EXPECTED: Formatted
+
+TEST_164: Rotating log
+PROMPT: Use RotatingFileHandler for logs
+EXPECTED: Rotates
+
+================================================================================
+SECTION 21: ERROR HANDLING
+================================================================================
+
+TEST_165: Try/except
+PROMPT: Wrap risky code in try/except
+EXPECTED: Handled
+
+TEST_166: Multiple except
+PROMPT: Handle ValueError, TypeError, KeyError separately
+EXPECTED: All handled
+
+TEST_167: Finally
+PROMPT: Use finally to close file
+EXPECTED: Always runs
+
+TEST_168: Raise exception
+PROMPT: Raise ValueError for invalid input
+EXPECTED: Raised
+
+TEST_169: Custom exception
+PROMPT: Create CustomError(Exception) class
+EXPECTED: Created
+
+TEST_170: Assert
+PROMPT: Use assert to validate precondition
+EXPECTED: Asserts work
+
+================================================================================
+SECTION 22: CACHING
+================================================================================
+
+TEST_171: LRU cache
+PROMPT: Use @lru_cache for expensive function
+EXPECTED: Cached
+
+TEST_172: File cache
+PROMPT: Create simple file-based cache
+EXPECTED: Works
+
+TEST_173: TTL cache
+PROMPT: Cache with time-to-live expiration
+EXPECTED: Expires
+
+TEST_174: Memoization
+PROMPT: Implement memoization for recursive fibonacci
+EXPECTED: Memoized
+
+================================================================================
+SECTION 23: WEB FRAMEWORKS
+================================================================================
+
+TEST_175: Flask app
+PROMPT: Create Flask app with / and /api/data endpoints
+EXPECTED: Works
+
+TEST_176: FastAPI
+PROMPT: Create FastAPI with GET /items/{item_id}
+EXPECTED: Works
+
+TEST_177: Django manage.py
+PROMPT: Create Django project with startproject
+EXPECTED: Created
+
+TEST_178: Bottle app
+PROMPT: Create simple Bottle app
+EXPECTED: Works
+
+TEST_179: Aiohttp client
+PROMPT: Use aiohttp to fetch URL
+EXPECTED: Works
+
+TEST_180: Sanic app
+PROMPT: Create Sanic endpoint
+EXPECTED: Works
+
+================================================================================
+SECTION 24: DATA FORMATS
+================================================================================
+
+TEST_181: XML parsing
+PROMPT: Parse config.xml using ElementTree
+EXPECTED: Parsed
+
+TEST_182: JSON operations
+PROMPT: Pretty print JSON with indent=2
+EXPECTED: Pretty printed
+
+TEST_183: YAML parsing
+PROMPT: Read config.yaml using PyYAML
+EXPECTED: Parsed
+
+TEST_184: CSV reading
+PROMPT: Use csv.DictReader to read data.csv
+EXPECTED: Read
+
+TEST_185: TOML parsing
+PROMPT: Read pyproject.toml
+EXPECTED: Parsed
+
+TEST_186: MessagePack
+PROMPT: Pack and unpack with msgpack
+EXPECTED: Works
+
+TEST_187: Pickle
+PROMPT: Pickle and unpickle object
+EXPECTED: Works
+
+TEST_188: Parquet
+PROMPT: Read parquet file using pyarrow
+EXPECTED: Read
+
+================================================================================
+SECTION 25: MACHINE LEARNING / DATA SCIENCE
+================================================================================
+
+TEST_189: NumPy array
+PROMPT: Create numpy array and calculate mean
+EXPECTED: Mean calculated
+
+TEST_190: Pandas DataFrame
+PROMPT: Create DataFrame and filter rows
+EXPECTED: Filtered
+
+TEST_191: Matplotlib plot
+PROMPT: Create line chart and save as plot.png
+EXPECTED: Saved
+
+TEST_192: Scikit-learn
+PROMPT: Train simple linear regression model
+EXPECTED: Trained
+
+================================================================================
+SECTION 26: DEVOPS
+================================================================================
+
+TEST_193: Docker build
+PROMPT: Build Dockerfile into image
+EXPECTED: Built
+
+TEST_194: Docker run
+PROMPT: Run container from image
+EXPECTED: Runs
+
+TEST_195: Docker-compose
+PROMPT: docker-compose up -d
+EXPECTED: Started
+
+TEST_196: Kubernetes
+PROMPT: Apply deployment.yaml to k8s cluster
+EXPECTED: Applied
+
+TEST_197: Terraform
+PROMPT: Plan terraform configuration
+EXPECTED: Planned
+
+TEST_198: Ansible playbook
+PROMPT: Run ansible-playbook site.yml
+EXPECTED: Playbook runs
+
+================================================================================
+SECTION 27: GIT OPERATIONS
+================================================================================
+
+TEST_199: Git init
+PROMPT: Initialize git repo in new directory
+EXPECTED: Initialized
+
+TEST_200: Git add/commit
+PROMPT: Add files and commit with message
+EXPECTED: Committed
+
+TEST_201: Git branch
+PROMPT: Create and checkout branch feature/new
+EXPECTED: Branch created
+
+TEST_202: Git merge
+PROMPT: Merge feature branch into main
+EXPECTED: Merged
+
+TEST_203: Git rebase
+PROMPT: Rebase on main
+EXPECTED: Rebased
+
+TEST_204: Git stash
+PROMPT: Stash changes and pop
+EXPECTED: Stashed
+
+TEST_205: Git cherry-pick
+PROMPT: Cherry-pick specific commit
+EXPECTED: Picked
+
+================================================================================
+SECTION 28: SYSTEM ADMINISTRATION
+================================================================================
+
+TEST_206: User management
+PROMPT: Create new system user
+EXPECTED: User created
+
+TEST_207: Service management
+PROMPT: Start/restart/stop systemd service
+EXPECTED: Managed
+
+TEST_208: Cron job
+PROMPT: Add cron job to run script daily
+EXPECTED: Added
+
+TEST_209: SSH key
+PROMPT: Generate SSH key pair
+EXPECTED: Generated
+
+TEST_210: Firewall
+PROMPT: Allow port 8080 in firewall
+EXPECTED: Allowed
+
+================================================================================
+SECTION 29: CLOUD OPERATIONS
+================================================================================
+
+TEST_211: AWS S3
+PROMPT: Upload file to S3 bucket
+EXPECTED: Uploaded
+
+TEST_212: AWS EC2
+PROMPT: List EC2 instances
+EXPECTED: Listed
+
+TEST_213: GCP Cloud Storage
+PROMPT: Upload to GCP bucket
+EXPECTED: Uploaded
+
+TEST_214: Azure Blob
+PROMPT: Upload to Azure storage
+EXPECTED: Uploaded
+
+TEST_215: Heroku deploy
+PROMPT: Deploy app to Heroku
+EXPECTED: Deployed
+
+================================================================================
+SECTION 30: MONITORING
+================================================================================
+
+TEST_216: Health check
+PROMPT: Create /health endpoint returning 200
+EXPECTED: Returns 200
+
+TEST_217: Metrics
+PROMPT: Expose /metrics in Prometheus format
+EXPECTED: Exposed
+
+TEST_218: Alerting
+PROMPT: Check if service is down and alert
+EXPECTED: Alert triggered
+
+================================================================================
+SECTION 31: CRYPTO OPERATIONS (curve_hack4.py specific)
+================================================================================
+
+TEST_219: Import crypto functions
+PROMPT: Import narrower_64 from /home/njonji/Desktop/IZBR/curve_hack4.py
+EXPECTED: Imported
+
+TEST_220: Generate private key
+PROMPT: Generate 64-char hex private key using secrets module
+EXPECTED: Generated
+
+TEST_221: Use narrower_64
+PROMPT: Call narrower_64 with 48-char hex string
+EXPECTED: Returns 64-char
+
+TEST_222: Create key generator script
+PROMPT: Create generator.py in /home/njonji/Desktop/IZBR/ that generates 100 key pairs
+EXPECTED: Script created
+
+TEST_223: Save to file
+PROMPT: Save key pairs to keys.txt in format "private,public"
+EXPECTED: Saved
+
+TEST_224: Batch generation
+PROMPT: Generate 1000 keys and save to file
+EXPECTED: 1000 keys
+
+================================================================================
+SECTION 32: EDGE CASES
+================================================================================
+
+TEST_225: Empty file
+PROMPT: Read empty.txt and handle gracefully
+EXPECTED: No crash
+
+TEST_226: Binary file
+PROMPT: Read binary.png and extract size
+EXPECTED: Size shown
+
+TEST_227: Very large file
+PROMPT: Process 1GB file line by line without loading into memory
+EXPECTED: Processed
+
+TEST_228: Unicode
+PROMPT: Handle Chinese characters 你好世界 in file
+EXPECTED: Handled
+
+TEST_229: Special chars
+PROMPT: Handle special chars: !@#$%^&*()[]{}|\
+EXPECTED: Handled
+
+TEST_230: Network timeout
+PROMPT: Handle 30 second timeout gracefully
+EXPECTED: Handled
+
+TEST_231: Disk full
+PROMPT: Check disk space before writing, handle if full
+EXPECTED: Handled
+
+TEST_232: Permission denied
+PROMPT: Handle permission error when writing to /root/
+EXPECTED: Handled
+
+TEST_233: Concurrent writes
+PROMPT: Handle two processes writing to same file
+EXPECTED: No corruption
+
+TEST_234: Circular import
+PROMPT: Fix circular import in Python
+EXPECTED: Fixed
+
+================================================================================
+SECTION 33: REAL-WORLD SCENARIOS
+================================================================================
+
+TEST_235: Backup script
+PROMPT: Create backup script that tars /home directory
+EXPECTED: Backup works
+
+TEST_236: Log rotation
+PROMPT: Create script that rotates logs when > 10MB
+EXPECTED: Rotates
+
+TEST_237: Health monitor
+PROMPT: Create script that checks if services are running
+EXPECTED: Checks work
+
+TEST_238: Deploy script
+PROMPT: Create deploy script: git pull, pip install, restart service
+EXPECTED: Deploy works
+
+TEST_239: Report generator
+PROMPT: Generate HTML report from database data
+EXPECTED: Report generated
+
+TEST_240: Batch processor
+PROMPT: Process 1000 files in batch
+EXPECTED: All processed
+
+================================================================================
+SECTION 34: API DESIGN
+================================================================================
+
+TEST_241: REST endpoint
+PROMPT: Create FastAPI endpoint GET /users/{id} that returns JSON
+EXPECTED: Returns JSON
+
+TEST_242: POST endpoint
+PROMPT: Create POST /users that accepts JSON body
+EXPECTED: Accepts JSON
+
+TEST_243: Authentication
+PROMPT: Add Bearer token auth to endpoint
+EXPECTED: Auth works
+
+TEST_244: Rate limiting
+PROMPT: Add rate limit of 10 requests/minute
+EXPECTED: Limited
+
+TEST_245: Validation
+PROMPT: Add Pydantic validation to request body
+EXPECTED: Validates
+
+TEST_246: Error responses
+PROMPT: Return proper 404 for missing resource
+EXPECTED: 404 returned
+
+TEST_247: Pagination
+PROMPT: Add ?page=1&limit=10 to list endpoint
+EXPECTED: Paginated
+
+TEST_248: Swagger docs
+PROMPT: Auto-generate OpenAPI docs
+EXPECTED: Docs generated
+
+================================================================================
+SECTION 35: BEST PRACTICES
+================================================================================
+
+TEST_249: Type hints
+PROMPT: Add type hints to all functions in module
+EXPECTED: Typed
+
+TEST_250: Docstrings
+PROMPT: Add Google-style docstrings to all functions
+EXPECTED: Documented
+
+TEST_251: Comments
+PROMPT: Add inline comments explaining complex logic
+EXPECTED: Commented
+
+TEST_252: Constants
+PROMPT: Extract magic numbers into named constants
+EXPECTED: Constantized
+
+TEST_253: Configuration
+PROMPT: Move hardcoded values to config file
+EXPECTED: Configured
+
+TEST_254: Error messages
+PROMPT: Improve error messages to be descriptive
+EXPECTED: Improved
+
+TEST_255: Naming
+PROMPT: Rename variables to follow snake_case
+EXPECTED: Renamed
+
+TEST_256: Shorten functions
+PROMPT: Refactor long function into smaller ones
+EXPECTED: Refactored
+
+================================================================================
+SECTION 36: PERFORMANCE
+================================================================================
+
+TEST_257: Profiling
+PROMPT: Add profiling to find bottleneck
+EXPECTED: Bottleneck found
+
+TEST_258: Optimize loop
+PROMPT: Optimize nested loops using list comprehension
+EXPECTED: Optimized
+
+TEST_259: Use builtins
+PROMPT: Replace manual sum with sum() built-in
+EXPECTED: Faster
+
+TEST_260: Lazy loading
+PROMPT: Use lazy import for heavy module
+EXPECTED: Loads faster
+
+================================================================================
+SECTION 37: CONTAINERIZATION
+================================================================================
+
+TEST_261: Dockerfile
+PROMPT: Create Dockerfile with Python, pip install requirements.txt
+EXPECTED: Builds
+
+TEST_262: Dockerignore
+PROMPT: Create .dockerignore with node_modules, __pycache__
+EXPECTED: Ignores
+
+TEST_263: Multi-stage build
+PROMPT: Create multi-stage Dockerfile for smaller image
+EXPECTED: Smaller image
+
+TEST_264: Docker-compose
+PROMPT: Create compose with web and db services
+EXPECTED: Works
+
+================================================================================
+SECTION 38: CI/CD
+================================================================================
+
+TEST_265: GitHub Actions
+PROMPT: Create .github/workflows/ci.yml that runs tests
+EXPECTED: Runs
+
+TEST_266: GitLab CI
+PROMPT: Create .gitlab-ci.yml with test stage
+EXPECTED: Runs
+
+TEST_267: Jenkinsfile
+PROMPT: Create Jenkinsfile with build and test stages
+EXPECTED: Works
+
+TEST_268: Makefile
+PROMPT: Create Makefile with install, test, build targets
+EXPECTED: Works
+
+================================================================================
+SECTION 39: DOCUMENTATION
+================================================================================
+
+TEST_269: README
+PROMPT: Create README.md with: Title, Description, Installation, Usage
+EXPECTED: Complete
+
+TEST_270: API docs
+PROMPT: Create API.md documenting all endpoints
+EXPECTED: Documented
+
+TEST_271: CONTRIBUTING
+PROMPT: Create CONTRIBUTING.md with contribution guidelines
+EXPECTED: Created
+
+TEST_272: CHANGELOG
+PROMPT: Create CHANGELOG.md with version history
+EXPECTED: Created
+
+================================================================================
+SECTION 40: MISCELLANEOUS
+================================================================================
+
+TEST_273: Random string
+PROMPT: Generate random 32-char alphanumeric string
+EXPECTED: Generated
+
+TEST_274: UUID
+PROMPT: Generate UUID4
+EXPECTED: Generated
+
+TEST_275: Hash
+PROMPT: Calculate SHA256 of file
+EXPECTED: Calculated
+
+TEST_276: Compress
+PROMPT: Compress file.txt to file.gz
+EXPECTED: Compressed
+
+TEST_277: Archive
+PROMPT: Create tar.gz of directory
+EXPECTED: Archived
+
+TEST_278: Checksum verify
+PROMPT: Verify MD5 checksum matches
+EXPECTED: Verified
+
+TEST_279: Base64 encode
+PROMPT: Encode string to base64
+EXPECTED: Encoded
+
+TEST_280: URL encode
+PROMPT: URL encode special characters
+EXPECTED: Encoded
+
+================================================================================
+SCORING SUMMARY
+================================================================================
+Total Tests: 280
+Status: X/280 PASSED
+
+Categories:
+- File Operations: 1-27
+- Code Generation: 28-90  
+- Commands: 56-65
+- Autonomous: 66-72
+- Debugging: 73-80
+- Data Processing: 81-90
+- Network: 91-100
+- Database: 101-108
+- Testing: 109-115
+- Security: 116-122
+- Concurrency: 123-128
+- Python: 129-140
+- Shell: 141-150
+- Regex: 151-155
+- Config: 156-160
+- Logging: 161-164
+- Error Handling: 165-170
+- Caching: 171-174
+- Web Frameworks: 175-180
+- Data Formats: 181-188
+- ML/Data: 189-192
+- DevOps: 193-198
+- Git: 199-205
+- SysAdmin: 206-210
+- Cloud: 211-215
+- Monitoring: 216-218
+- Crypto: 219-224
+- Edge Cases: 225-234
+- Real World: 235-240
+- API Design: 241-248
+- Best Practices: 249-256
+- Performance: 257-260
+- Containerization: 261-264
+- CI/CD: 265-268
+- Documentation: 269-272
+- Miscellaneous: 273-280
+
+FAIL Categories:
+- Model asks questions
+- Model refuses 
+- Wrong format output
+- Executes instead of creates
+- Doesn't use file context
+- Crashes/hangs
+- Wrong output
+- Partial completion
+
+================================================================================
+SECTION 41: MICROSERVICES
+================================================================================
+
+TEST_281: Service discovery
+PROMPT: Create a service that registers itself to Consul
+EXPECTED: Registers
+
+TEST_282: Message queue
+PROMPT: Publish message to RabbitMQ queue
+EXPECTED: Published
+
+TEST_283: Message consumer
+PROMPT: Create consumer that listens to queue
+EXPECTED: Consumes
+
+TEST_284: gRPC service
+PROMPT: Create gRPC server with GetUser method
+EXPECTED: Server works
+
+TEST_285: gRPC client
+PROMPT: Create gRPC client that calls GetUser
+EXPECTED: Works
+
+TEST_286: GraphQL API
+PROMPT: Create GraphQL endpoint with user query
+EXPECTED: Works
+
+TEST_287: WebSocket server
+PROMPT: Create WebSocket server that echoes messages
+EXPECTED: Echoes
+
+TEST_288: WebSocket client
+PROMPT: Connect to WebSocket and send message
+EXPECTED: Connected
+
+================================================================================
+SECTION 42: GRAPH OPERATIONS
+================================================================================
+
+TEST_289: Graph creation
+PROMPT: Create NetworkX graph and add nodes
+EXPECTED: Graph created
+
+TEST_290: Shortest path
+PROMPT: Find shortest path between two nodes
+EXPECTED: Path found
+
+TEST_291: BFS/DFS
+PROMPT: Implement breadth-first search
+EXPECTED: Works
+
+================================================================================
+SECTION 43: ALGORITHMS
+================================================================================
+
+TEST_292: Sorting algorithm
+PROMPT: Implement quicksort algorithm
+EXPECTED: Sorted
+
+TEST_293: Search algorithm
+PROMPT: Implement binary search
+EXPECTED: Found
+
+TEST_294: Graph algorithm
+PROMPT: Implement Dijkstra's algorithm
+EXPECTED: Works
+
+TEST_295: Dynamic programming
+PROMPT: Solve coin change problem using DP
+EXPECTED: Solved
+
+TEST_296: Backtracking
+PROMPT: Solve N-Queens problem
+EXPECTED: Solutions found
+
+TEST_297: Tree operations
+PROMPT: Implement BST insert and search
+EXPECTED: Works
+
+TEST_298: Linked list
+PROMPT: Implement singly linked list with add, delete, search
+EXPECTED: Works
+
+TEST_299: Heap
+PROMPT: Implement min-heap
+EXPECTED: Works
+
+TEST_300: Trie
+PROMPT: Implement prefix tree with insert and search
+EXPECTED: Works
+
+================================================================================
+SECTION 44: FILE SYSTEMS
+================================================================================
+
+TEST_301: Walk directory
+PROMPT: Recursively walk directory and list all .py files
+EXPECTED: Listed
+
+TEST_302: Watch directory
+PROMPT: Watch directory for file changes using watchdog
+EXPECTED: Detects changes
+
+TEST_303: Temporary files
+PROMPT: Create and clean up temp files using tempfile
+EXPECTED: Cleaned
+
+TEST_304: Path operations
+PROMPT: Use pathlib to join, resolve, relative_to paths
+EXPECTED: Works
+
+================================================================================
+SECTION 45: SERIALIZATION
+================================================================================
+
+TEST_305: Protocol Buffers
+PROMPT: Define .proto and generate Python classes
+EXPECTED: Generated
+
+TEST_306: Avro
+PROMPT: Create Avro schema and serialize data
+EXPECTED: Serialized
+
+TEST_307: Thrift
+PROMPT: Define Thrift IDL and generate code
+EXPECTED: Generated
+
+================================================================================
+SECTION 46: AUTHENTICATION
+================================================================================
+
+TEST_308: JWT creation
+PROMPT: Create JWT token with payload
+EXPECTED: Token created
+
+TEST_309: JWT verification
+PROMPT: Verify JWT token signature
+EXPECTED: Verified
+
+TEST_310: OAuth flow
+PROMPT: Implement OAuth2 authorization code flow
+EXPECTED: Works
+
+TEST_311: API key
+PROMPT: Generate and validate API key
+EXPECTED: Works
+
+TEST_312: Session management
+PROMPT: Create session with expiry
+EXPECTED: Works
+
+TEST_313: Password reset
+PROMPT: Implement password reset flow with token
+EXPECTED: Works
+
+================================================================================
+SECTION 47: RATE LIMITING
+================================================================================
+
+TEST_314: Token bucket
+PROMPT: Implement token bucket rate limiter
+EXPECTED: Limits
+
+TEST_315: Sliding window
+PROMPT: Implement sliding window rate limiter
+EXPECTED: Limits
+
+TEST_316: Leaky bucket
+PROMPT: Implement leaky bucket algorithm
+EXPECTED: Works
+
+================================================================================
+SECTION 48: CLOUDS AWS
+================================================================================
+
+TEST_317: S3 upload
+PROMPT: Upload file to S3 bucket
+EXPECTED: Uploaded
+
+TEST_318: S3 download
+PROMPT: Download file from S3
+EXPECTED: Downloaded
+
+TEST_319: Lambda function
+PROMPT: Create Lambda function handler
+EXPECTED: Handler works
+
+TEST_320: DynamoDB
+PROMPT: Put and Get item from DynamoDB
+EXPECTED: Works
+
+TEST_321: SNS publish
+PROMPT: Publish message to SNS topic
+EXPECTED: Published
+
+TEST_322: SQS queue
+PROMPT: Send and receive message from SQS
+EXPECTED: Works
+
+TEST_323: EC2 management
+PROMPT: Start and stop EC2 instance
+EXPECTED: Works
+
+TEST_324: RDS
+PROMPT: Connect to RDS PostgreSQL
+EXPECTED: Connected
+
+================================================================================
+SECTION 49: CLOUD GCP
+================================================================================
+
+TEST_325: GCS upload
+PROMPT: Upload to Google Cloud Storage
+EXPECTED: Uploaded
+
+TEST_326: BigQuery
+PROMPT: Query BigQuery table
+EXPECTED: Results
+
+TEST_327: Pub/Sub
+PROMPT: Publish to Pub/Sub topic
+EXPECTED: Published
+
+TEST_328: Cloud Functions
+PROMPT: Create HTTP-triggered function
+EXPECTED: Works
+
+TEST_329: Cloud Run
+PROMPT: Containerize and deploy to Cloud Run
+EXPECTED: Deployed
+
+================================================================================
+SECTION 50: CLOUD AZURE
+================================================================================
+
+TEST_330: Blob storage
+PROMPT: Upload to Azure Blob storage
+EXPECTED: Uploaded
+
+TEST_331: Cosmos DB
+PROMPT: Insert and query Cosmos DB
+EXPECTED: Works
+
+TEST_332: Service Bus
+PROMPT: Send message to Service Bus
+EXPECTED: Sent
+
+TEST_333: Azure Functions
+PROMPT: Create HTTP-triggered function
+EXPECTED: Works
+
+================================================================================
+SECTION 51: INFRASTRUCTURE AS CODE
+================================================================================
+
+TEST_334: Terraform provider
+PROMPT: Create Terraform configuration for AWS EC2
+EXPECTED: Config created
+
+TEST_335: Terraform module
+PROMPT: Create reusable Terraform module
+EXPECTED: Works
+
+TEST_336: Pulumi program
+PROMPT: Create Pulumi program for S3 bucket
+EXPECTED: Works
+
+TEST_337: Ansible playbook
+PROMPT: Create playbook that installs nginx
+EXPECTED: Installs
+
+TEST_338: Ansible role
+PROMPT: Create reusable Ansible role
+EXPECTED: Works
+
+TEST_339: Vagrant
+PROMPT: Create Vagrantfile for development VM
+EXPECTED: Works
+
+TEST_340: Packer
+PROMPT: Create Packer template for AMI
+EXPECTED: Builds
+
+================================================================================
+SECTION 52: CONTAINER ORCHESTRATION
+================================================================================
+
+TEST_341: Kubernetes pod
+PROMPT: Create pod.yaml
+EXPECTED: Created
+
+TEST_342: Kubernetes deployment
+PROMPT: Create deployment.yaml with 3 replicas
+EXPECTED: Created
+
+TEST_343: Kubernetes service
+PROMPT: Create service.yaml for pod
+EXPECTED: Created
+
+TEST_344: Kubernetes ingress
+PROMPT: Create ingress.yaml with routing rules
+EXPECTED: Created
+
+TEST_345: ConfigMap
+PROMPT: Create configmap.yaml
+EXPECTED: Created
+
+TEST_346: Secret
+PROMPT: Create secret.yaml for passwords
+EXPECTED: Created
+
+TEST_347: Helm chart
+PROMPT: Create Helm chart structure
+EXPECTED: Created
+
+TEST_348: Kustomize
+PROMPT: Create kustomization.yaml with overlays
+EXPECTED: Works
+
+================================================================================
+SECTION 53: OBSERVABILITY - LOGGING
+================================================================================
+
+TEST_349: Structured logging
+PROMPT: Log in JSON format with fields
+EXPECTED: JSON logged
+
+TEST_350: Log correlation
+PROMPT: Add trace ID to logs
+EXPECTED: Correlated
+
+TEST_351: Log aggregation
+PROMPT: Send logs to Elasticsearch
+EXPECTED: Sent
+
+TEST_352: Log analysis
+PROMPT: Query logs in Kibana
+EXPECTED: Query works
+
+================================================================================
+SECTION 54: OBSERVABILITY - METRICS
+================================================================================
+
+TEST_353: Prometheus metrics
+PROMPT: Expose /metrics endpoint
+EXPECTED: Metrics exposed
+
+TEST_354: Custom metrics
+PROMPT: Track custom counter and gauge
+EXPECTED: Tracked
+
+TEST_355: Alerting rules
+PROMPT: Create Prometheus alerting rules
+EXPECTED: Created
+
+TEST_356: Grafana dashboard
+PROMPT: Create Grafana dashboard JSON
+EXPECTED: Created
+
+================================================================================
+SECTION 55: OBSERVABILITY - TRACING
+================================================================================
+
+TEST_357: OpenTelemetry
+PROMPT: Add tracing to function
+EXPECTED: Traced
+
+TEST_358: Distributed trace
+PROMPT: Trace across services
+EXPECTED: Traced
+
+TEST_359: Jaeger
+PROMPT: Send spans to Jaeger
+EXPECTED: Sent
+
+================================================================================
+SECTION 56: CHAOS ENGINEERING
+================================================================================
+
+TEST_360: Fault injection
+PROMPT: Inject latency into service call
+EXPECTED: Injected
+
+TEST_361: Chaos monkey
+PROMPT: Randomly terminate container
+EXPECTED: Terminates
+
+TEST_362: Network partition
+PROMPT: Simulate network partition
+EXPECTED: Simulated
+
+================================================================================
+SECTION 57: PATTERN IMPLEMENTATIONS
+================================================================================
+
+TEST_363: Singleton
+PROMPT: Implement singleton pattern
+EXPECTED: One instance
+
+TEST_364: Factory
+PROMPT: Implement factory pattern
+EXPECTED: Created
+
+TEST_365: Observer
+PROMPT: Implement observer pattern
+EXPECTED: Notified
+
+TEST_366: Strategy
+PROMPT: Implement strategy pattern
+EXPECTED: Swappable
+
+TEST_367: Adapter
+PROMPT: Implement adapter pattern
+EXPECTED: Adapted
+
+TEST_368: Decorator pattern
+PROMPT: Implement decorator pattern
+EXPECTED: Decorated
+
+TEST_369: Repository
+PROMPT: Implement repository pattern for DB
+EXPECTED: Works
+
+TEST_370: Unit of work
+PROMPT: Implement unit of work pattern
+EXPECTED: Works
+
+TEST_371: CQRS
+PROMPT: Implement CQRS pattern
+EXPECTED: Separated
+
+TEST_372: Event sourcing
+PROMPT: Implement event sourcing
+EXPECTED: Stored
+
+================================================================================
+SECTION 58: REACTIVE
+================================================================================
+
+TEST_373: Observable
+PROMPT: Create RxPY observable
+EXPECTED: Works
+
+TEST_374: Subject
+PROMPT: Use BehaviorSubject
+EXPECTED: Works
+
+TEST_375: Operators
+PROMPT: Use map, filter, reduce operators
+EXPECTED: Works
+
+TEST_376: Backpressure
+PROMPT: Handle backpressure in stream
+EXPECTED: Handled
+
+================================================================================
+SECTION 59: FUNCTIONAL PROGRAMMING
+================================================================================
+
+TEST_377: Pure functions
+PROMPT: Refactor to pure functions
+EXPECTED: Pure
+
+TEST_378: Higher-order functions
+PROMPT: Create function that takes function
+EXPECTED: Works
+
+TEST_379: Currying
+PROMPT: Implement curry function
+EXPECTED: Works
+
+TEST_380: Partial application
+PROMPT: Implement partial function
+EXPECTED: Works
+
+TEST_381: Functor
+PROMPT: Implement functor for custom type
+EXPECTED: Works
+
+TEST_382: Monad
+PROMPT: Implement maybe monad
+EXPECTED: Works
+
+================================================================================
+SECTION 60: GAME DEVELOPMENT
+================================================================================
+
+TEST_383: Game loop
+PROMPT: Create basic game loop
+EXPECTED: Runs
+
+TEST_384: Sprite
+PROMPT: Create sprite with position
+EXPECTED: Works
+
+TEST_385: Collision detection
+PROMPT: Detect collision between rectangles
+EXPECTED: Detected
+
+TEST_386: Pathfinding
+PROMPT: Use A* pathfinding
+EXPECTED: Path found
+
+TEST_387: Physics
+PROMPT: Implement basic physics
+EXPECTED: Works
+
+================================================================================
+SECTION 61: GUI
+================================================================================
+
+TEST_388: Tkinter
+PROMPT: Create Tkinter window with button
+EXPECTED: Works
+
+TEST_389: PyQt
+PROMPT: Create PyQt window
+EXPECTED: Works
+
+TEST_390: GTK
+PROMPT: Create GTK application
+EXPECTED: Works
+
+TEST_391: CLI menu
+PROMPT: Create interactive CLI menu
+EXPECTED: Works
+
+TEST_392: Progress bar
+PROMPT: Add tqdm progress bar
+EXPECTED: Shows
+
+================================================================================
+SECTION 62: MOBILITY
+================================================================================
+
+TEST_393: Location services
+PROMPT: Get current GPS location
+EXPECTED: Location
+
+TEST_394: Camera
+PROMPT: Capture photo with camera
+EXPECTED: Captured
+
+TEST_395: Sensors
+PROMPT: Read accelerometer data
+EXPECTED: Data read
+
+TEST_396: Notifications
+PROMPT: Send push notification
+EXPECTED: Sent
+
+TEST_397: Background task
+PROMPT: Run task in background
+EXPECTED: Runs
+
+================================================================================
+SECTION 63: BLOCKCHAIN
+================================================================================
+
+TEST_398: Wallet
+PROMPT: Create Ethereum wallet
+EXPECTED: Created
+
+TEST_399: Transaction
+PROMPT: Sign and send transaction
+EXPECTED: Sent
+
+TEST_400: Smart contract
+PROMPT: Deploy simple smart contract
+EXPECTED: Deployed
+
+TEST_401: Token
+PROMPT: Create ERC-20 token
+EXPECTED: Created
+
+TEST_402: NFT
+PROMPT: Create NFT metadata
+EXPECTED: Created
+
+================================================================================
+SECTION 64: IOT
+================================================================================
+
+TEST_403: MQTT publish
+PROMPT: Publish to MQTT broker
+EXPECTED: Published
+
+TEST_404: MQTT subscribe
+PROMPT: Subscribe to MQTT topic
+EXPECTED: Subscribed
+
+TEST_405: REST on device
+PROMPT: Create REST API on Raspberry Pi
+EXPECTED: Works
+
+TEST_406: Serial communication
+PROMPT: Read from serial port
+EXPECTED: Read
+
+================================================================================
+SECTION 65: AUDIO/VIDEO
+================================================================================
+
+TEST_407: Audio playback
+PROMPT: Play audio file with playsound
+EXPECTED: Plays
+
+TEST_408: Audio recording
+PROMPT: Record audio with microphone
+EXPECTED: Records
+
+TEST_409: Video playback
+PROMPT: Play video with OpenCV
+EXPECTED: Plays
+
+TEST_410: Video capture
+PROMPT: Capture video from webcam
+EXPECTED: Captures
+
+TEST_411: Transcode
+PROMPT: Transcode video to different format
+EXPECTED: Transcoded
+
+TEST_412: Stream
+PROMPT: Stream video with ffmpeg
+EXPECTED: Streams
+
+================================================================================
+SECTION 66: NATURAL LANGUAGE
+================================================================================
+
+TEST_413: Sentiment analysis
+PROMPT: Analyze sentiment of text
+EXPECTED: Analyzed
+
+TEST_414: Named entity recognition
+PROMPT: Extract NER from text
+EXPECTED: Extracted
+
+TEST_415: Translation
+PROMPT: Translate text using transformers
+EXPECTED: Translated
+
+TEST_416: Summarization
+PROMPT: Summarize long text
+EXPECTED: Summarized
+
+TEST_417: Chatbot
+PROMPT: Create simple chatbot
+EXPECTED: Chats
+
+================================================================================
+SECTION 67: COMPUTER VISION
+================================================================================
+
+TEST_418: Object detection
+PROMPT: Detect objects in image with YOLO
+EXPECTED: Detected
+
+TEST_419: Face detection
+PROMPT: Detect faces in image
+EXPECTED: Detected
+
+TEST_420: Image classification
+PROMPT: Classify image with ResNet
+EXPECTED: Classified
+
+TEST_421: OCR
+PROMPT: Extract text from image using OCR
+EXPECTED: Extracted
+
+TEST_422: Image segmentation
+PROMPT: Segment image with U-Net
+EXPECTED: Segmented
+
+TEST_423: Style transfer
+PROMPT: Apply artistic style to image
+EXPECTED: Applied
+
+================================================================================
+SECTION 68: ADVANCED ML
+================================================================================
+
+TEST_424: Neural network
+PROMPT: Build simple neural network with PyTorch
+EXPECTED: Works
+
+TEST_425: CNN
+PROMPT: Create convolutional neural network
+EXPECTED: Works
+
+TEST_426: RNN
+PROMPT: Create recurrent neural network
+EXPECTED: Works
+
+TEST_427: LSTM
+PROMPT: Create LSTM for sequence prediction
+EXPECTED: Works
+
+TEST_428: Transformer
+PROMPT: Implement attention mechanism
+EXPECTED: Works
+
+TEST_429: GAN
+PROMPT: Create simple GAN
+EXPECTED: Generates
+
+TEST_430: Reinforcement learning
+PROMPT: Train agent with Q-learning
+EXPECTED: Trains
+
+================================================================================
+SECTION 69: DATA ENGINEERING
+================================================================================
+
+TEST_431: ETL pipeline
+PROMPT: Create ETL: extract from API, transform, load to DB
+EXPECTED: Works
+
+TEST_432: Airflow DAG
+PROMPT: Create Airflow DAG with tasks
+EXPECTED: Works
+
+TEST_433: Spark job
+PROMPT: Create PySpark job
+EXPECTED: Works
+
+TEST_434: Kafka producer
+PROMPT: Produce messages to Kafka
+EXPECTED: Produced
+
+TEST_435: Kafka consumer
+PROMPT: Consume from Kafka
+EXPECTED: Consumed
+
+TEST_436: Data warehouse
+PROMPT: Create table in BigQuery
+EXPECTED: Created
+
+================================================================================
+SECTION 70: REAL-TIME
+================================================================================
+
+TEST_437: WebSocket chat
+PROMPT: Create chat with WebSocket
+EXPECTED: Works
+
+TEST_438: Server-sent events
+PROMPT: Create SSE endpoint
+EXPECTED: Works
+
+TEST_439: Webhook
+PROMPT: Create and test webhook handler
+EXPECTED: Works
+
+TEST_440: SSE client
+PROMPT: Connect to SSE endpoint
+EXPECTED: Connected
+
+================================================================================
+SECTION 71: GRAPHQL
+================================================================================
+
+TEST_441: Schema
+PROMPT: Define GraphQL schema
+EXPECTED: Defined
+
+TEST_442: Resolver
+PROMPT: Implement resolver function
+EXPECTED: Resolves
+
+TEST_443: Mutation
+PROMPT: Create GraphQL mutation
+EXPECTED: Works
+
+TEST_444: Subscription
+PROMPT: Create GraphQL subscription
+EXPECTED: Works
+
+================================================================================
+SECTION 72: GRPC/PROTOBUF
+================================================================================
+
+TEST_445: Proto definition
+PROMPT: Define .proto with service and messages
+EXPECTED: Defined
+
+TEST_446: Generate code
+PROMPT: Generate Python from .proto
+EXPECTED: Generated
+
+TEST_447: Server streaming
+PROMPT: Implement server streaming RPC
+EXPECTED: Streams
+
+TEST_448: Client streaming
+PROMPT: Implement client streaming RPC
+EXPECTED: Streams
+
+================================================================================
+SECTION 73: MESH/SERVICE MESH
+================================================================================
+
+TEST_449: Istio virtual service
+PROMPT: Create Istio virtual service
+EXPECTED: Created
+
+TEST_450: Istio destination rule
+PROMPT: Create destination rule
+EXPECTED: Created
+
+TEST_451: Linkerd
+PROMPT: Configure Linkerd service mesh
+EXPECTED: Configured
+
+================================================================================
+SECTION 74: SERVERLESS
+================================================================================
+
+TEST_452: AWS Lambda
+PROMPT: Create Lambda with boto3
+EXPECTED: Created
+
+TEST_453: Azure Function
+PROMPT: Create Azure Function
+EXPECTED: Created
+
+TEST_454: Google Cloud Function
+PROMPT: Create Cloud Function
+EXPECTED: Created
+
+TEST_455: OpenFaaS
+PROMPT: Deploy function to OpenFaaS
+EXPECTED: Deployed
+
+================================================================================
+SECTION 75: STATE MANAGEMENT
+================================================================================
+
+TEST_456: Redis cache
+PROMPT: Set and get from Redis
+EXPECTED: Works
+
+TEST_457: Redis pub/sub
+PROMPT: Publish and subscribe with Redis
+EXPECTED: Works
+
+TEST_458: Memcached
+PROMPT: Use Memcached for caching
+EXPECTED: Cached
+
+TEST_459: etcd
+PROMPT: Use etcd for service discovery
+EXPECTED: Works
+
+================================================================================
+SECTION 76: SEARCH
+================================================================================
+
+TEST_460: Elasticsearch index
+PROMPT: Create index in Elasticsearch
+EXPECTED: Created
+
+TEST_461: Elasticsearch query
+PROMPT: Query documents
+EXPECTED: Results
+
+TEST_462: Meilisearch
+PROMPT: Add documents to Meilisearch
+EXPECTED: Added
+
+TEST_463: Typesense
+PROMPT: Search with Typesense
+EXPECTED: Works
+
+================================================================================
+SECTION 77: BPM/WORKFLOW
+================================================================================
+
+TEST_464: Celery task
+PROMPT: Create Celery task with retry
+EXPECTED: Works
+
+TEST_465: Celery chain
+PROMPT: Chain Celery tasks
+EXPECTED: Chained
+
+TEST_466: Temporal workflow
+PROMPT: Create Temporal workflow
+EXPECTED: Works
+
+TEST_467: Prefect flow
+PROMPT: Create Prefect flow
+EXPECTED: Works
+
+================================================================================
+SECTION 78: API GATEWAY
+================================================================================
+
+TEST_468: Kong plugin
+PROMPT: Create custom Kong plugin
+EXPECTED: Created
+
+TEST_469: Rate limiting gateway
+PROMPT: Configure rate limiting in gateway
+EXPECTED: Limited
+
+TEST_470: Authentication gateway
+PROMPT: Add JWT validation in gateway
+EXPECTED: Validated
+
+================================================================================
+SECTION 79: MULTI-TENANCY
+================================================================================
+
+TEST_471: Tenant isolation
+PROMPT: Implement tenant data isolation
+EXPECTED: Isolated
+
+TEST_472: Tenant routing
+PROMPT: Route by tenant ID
+EXPECTED: Routed
+
+TEST_473: Shared database
+PROMPT: Implement row-level security
+EXPECTED: Secured
+
+================================================================================
+SECTION 80: DISASTER RECOVERY
+================================================================================
+
+TEST_474: Backup
+PROMPT: Create automated backup script
+EXPECTED: Works
+
+TEST_475: Restore
+PROMPT: Restore from backup
+EXPECTED: Restored
+
+TEST_476: Failover
+PROMPT: Implement database failover
+EXPECTED: Fails over
+
+TEST_477: Replication
+PROMPT: Set up master-slave replication
+EXPECTED: Replicated
+
+================================================================================
+SECTION 81: PERFORMANCE TESTING
+================================================================================
+
+TEST_478: Load test
+PROMPT: Create load test with Locust
+EXPECTED: Works
+
+TEST_479: Stress test
+PROMPT: Stress test API
+EXPECTED: Stressed
+
+TEST_480: JMeter
+PROMPT: Create JMeter test plan
+EXPECTED: Created
+
+TEST_481: K6
+PROMPT: Create K6 load test
+EXPECTED: Works
+
+================================================================================
+SECTION 82: SECURITY SCANNING
+================================================================================
+
+TEST_482: Dependency scan
+PROMPT: Scan for vulnerable dependencies
+EXPECTED: Scanned
+
+TEST_483: SAST
+PROMPT: Run static analysis security tool
+EXPECTED: Ran
+
+TEST_484: DAST
+PROMPT: Run dynamic security scan
+EXPECTED: Ran
+
+TEST_485: Secret scanning
+PROMPT: Scan for exposed secrets
+EXPECTED: Scanned
+
+================================================================================
+SECTION 83: CODE QUALITY
+================================================================================
+
+TEST_486: Linting
+PROMPT: Run pylint on Python files
+EXPECTED: Linted
+
+TEST_487: Formatting
+PROMPT: Format code with Black
+EXPECTED: Formatted
+
+TEST_488: Type checking
+PROMPT: Run mypy type checker
+EXPECTED: Checked
+
+TEST_489: Complexity
+PROMPT: Measure cyclomatic complexity
+EXPECTED: Measured
+
+TEST_490: Duplicate detection
+PROMPT: Find duplicate code
+EXPECTED: Found
+
+================================================================================
+SECTION 84: PACKAGE MANAGEMENT
+================================================================================
+
+TEST_491: PyPI package
+PROMPT: Create package structure for PyPI
+EXPECTED: Created
+
+TEST_492: Private pypi
+PROMPT: Upload to private PyPI
+EXPECTED: Uploaded
+
+TEST_493: Poetry
+PROMPT: Create pyproject.toml with Poetry
+EXPECTED: Created
+
+TEST_494: Pipenv
+PROMPT: Use Pipfile for dependencies
+EXPECTED: Works
+
+================================================================================
+SECTION 85: VERSIONING
+================================================================================
+
+TEST_495: Semantic versioning
+PROMPT: Implement semantic versioning
+EXPECTED: Works
+
+TEST_496: Changelog
+PROMPT: Generate changelog from git
+EXPECTED: Generated
+
+TEST_497: Release
+PROMPT: Create GitHub release
+EXPECTED: Created
+
+================================================================================
+SECTION 86: ORCHESTRATION
+================================================================================
+
+TEST_498: Nomad job
+PROMPT: Create Nomad job file
+EXPECTED: Created
+
+TEST_499: Marathon
+PROMPT: Create Marathon app definition
+EXPECTED: Created
+
+TEST_500: Rancher
+PROMPT: Deploy workload in Rancher
+EXPECTED: Deployed
+
+================================================================================
+SCORING SUMMARY
+================================================================================
+Total Tests: 500
+Status: X/500 PASSED
+
+FAIL Categories:
+- Model asks questions instead of executing
+- Model refuses due to safety filters
+- Wrong format output
+- Executes instead of creates file
+- Doesn't use file context
+- Crashes/hangs
+- Wrong output
+- Partial completion

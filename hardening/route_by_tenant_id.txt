@@ -1,0 +1,13 @@
+
+# Route by tenant ID
+
+def route_by_tenant_id(tenant_id):
+    # Logic to route based on tenant ID goes here
+    pass
+
+
+# Tenant routes
+
+{
+  "route": "tenant1_route"
+}

@@ -1,3 +1,9 @@
+# Astrocyte Hardening Project
+
+## Installation
+
+IMPORTANT: Create files in this exact directory: /home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening Use: os.makedirs("/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening", exist_ok=True) before writing files.
+
 # AstroCoder
 
 <p align="center">

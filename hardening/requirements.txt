@@ -1,0 +1,4 @@
+numpy
+scipy
+
+your-package==0.1

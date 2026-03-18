@@ -1,0 +1,9 @@
+
+    policies:
+      - name: rate-limiting-policy
+        rules:
+          - action: ALLOW
+            condition: allowed-ratelimit
+          - action: DENY
+            condition: denied-ratelimit
+    

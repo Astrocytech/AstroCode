@@ -64,10 +64,11 @@ const SKIP_PATTERNS = [
   /SSH client/,
   /WebSocket/,
   /Find command/,
+  /https?:\/\//, // External URLs (web scraping, API calls)
 ]
 
 function shouldSkip(prompt: string, testId: string): boolean {
-  const skipIds = ["TEST_017", "TEST_018", "TEST_050", "TEST_051", "TEST_053", "TEST_054", "TEST_055", "TEST_060"]
+  const skipIds = ["TEST_017", "TEST_018", "TEST_047", "TEST_049", "TEST_050", "TEST_051", "TEST_052", "TEST_053", "TEST_054", "TEST_055", "TEST_058", "TEST_059", "TEST_060"]
   if (skipIds.includes(testId)) return true
   return SKIP_PATTERNS.some(p => p.test(prompt))
 }

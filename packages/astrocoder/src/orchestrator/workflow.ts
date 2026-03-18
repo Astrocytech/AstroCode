@@ -87,6 +87,13 @@ export class WorkflowEngine {
       /save\s+to\s+([\w\-.]+\.\w+)/i,
       /overwrite\s+([\w\-.]+\.\w+)/i,
       /to\s+([\w\-.]+\.\w+)/i,
+      /read\s+([\w\-.]+\.\w+)/i,  // Added for read operations
+      /modify\s+([\w\-.]+\.\w+)/i,  // Added for modify operations
+      /edit\s+([\w\-.]+\.\w+)/i,  // Added for edit operations
+      /append\s+to\s+([\w\-.]+\.\w+)/i,  // Added for append operations
+      /prepend\s+to\s+([\w\-.]+\.\w+)/i,  // Added for prepend operations
+      /replace\s+.*\s+in\s+([\w\-.]+\.\w+)/i,  // Added for replace operations
+      /update\s+([\w\-.]+\.\w+)/i,  // Added for update operations
     ]
     
     for (const regex of patterns) {

@@ -1,0 +1,4 @@
+New greeting: 
+Hello, John Doe!
+Hello, Jane Doe!
+Hello, Alice Smith!

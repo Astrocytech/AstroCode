@@ -1,1 +1,1 @@
-SELECT COUNT(*), AVG(price) FROM products
+Average score: 5.00

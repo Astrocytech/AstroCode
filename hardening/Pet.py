@@ -1,2 +1,0 @@
-class Pet:
-    pass

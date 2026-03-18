@@ -1,7 +1,0 @@
-
-version: '3'
-services:
-  astro:
-    image: astrocytech/astro
-    ports:
-      - "3000:3000"

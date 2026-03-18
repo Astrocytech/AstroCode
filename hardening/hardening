@@ -1,7 +1,0 @@
-def safe_divide(a, b):
-    try:
-        return a / b
-    except ZeroDivisionError:
-        with open("/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/safe_divide_result.txt", 'w') as result_f:
-            result_f.write("Cannot divide by zero")
-        return None

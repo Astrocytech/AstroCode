@@ -1,9 +1,0 @@
-try:
-def divide(x, y):
-    if y == 0:
-        return None
-    else:
-        return x / y
-
-except Exception as e:
-  print(e)

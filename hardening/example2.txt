@@ -1,2 +1,0 @@
-Prepended content
-Appended content

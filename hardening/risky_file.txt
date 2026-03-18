@@ -1,3 +1,0 @@
-Prepended content
-risky_code
-Appended content

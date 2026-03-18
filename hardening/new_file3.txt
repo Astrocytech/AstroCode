@@ -1,3 +1,0 @@
-# prepended
-Prepended text
-After: This is the content of file 3 

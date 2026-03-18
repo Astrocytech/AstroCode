@@ -1,1 +1,0 @@
-Square of 4: 16

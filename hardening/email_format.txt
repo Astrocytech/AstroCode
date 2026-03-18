@@ -1,3 +1,0 @@
-test@example.com: True
-invalid_email: False
-invalid_email@astrocytech.com: False

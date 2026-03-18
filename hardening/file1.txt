@@ -1,1 +1,3 @@
-Content 1
+Prepended line 1This is the content of file1
+Appended line 1
+Appended line 2

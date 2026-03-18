@@ -223,4 +223,5 @@
 [196/500] Running TEST_196 Kubernetes... FAIL
 [197/500] Running TEST_197 Terraform... FAIL
 [198/500] Running TEST_198 Ansible playbook... PASS
-[199/500] Running TEST_199 Git init... 
+[199/500] Running TEST_199 Git init... FAIL
+[200/500] Running TEST_200 Git add/commit... 

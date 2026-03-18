@@ -1,5 +1,1 @@
-This will be appended to the end of the file.
-Hello World!1
-2
-3
-4
+content of file 1

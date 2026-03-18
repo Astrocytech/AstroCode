@@ -1,1 +1,1 @@
-content of file 1
+This is a new file.

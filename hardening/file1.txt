@@ -1,1 +1,2 @@
-content of file 1
+content of file 1line 3
+line 4

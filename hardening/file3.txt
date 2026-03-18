@@ -1,3 +1,1 @@
-Prepended line
-Prepended text
-After: This is the content of file 3
+This is file 3.

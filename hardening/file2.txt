@@ -1,1 +1,1 @@
-Replaced content: This is the content of file2
+This is file 2.

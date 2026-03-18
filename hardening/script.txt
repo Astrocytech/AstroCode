@@ -1,0 +1,11 @@
+#!/bin/bash
+name=$1
+age=$2
+verbose=$3
+
+if [ \$verbose == true ]; then
+  echo "Name: \$name, Age: \$age"
+fi
+if [ \$verbose == false ]; then
+  echo "Name and Age: $name, $age"
+fi

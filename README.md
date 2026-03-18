@@ -165,4 +165,6 @@ MIT License - see [LICENSE](./LICENSE) for details.
 
 ## Credits
 
-AstroCoder is based on [OpenCode](https://github.com/anomalyco/opencode) - an excellent AI coding tool. This fork focuses on making local Ollama models work properly.
+AstroCoder is based on [OpenCode](https://github.com/anomalyco/opencode) - an excellent AI coding tool. This fork focuses on making local Ollama models work properly.# Title
+
+## Installation

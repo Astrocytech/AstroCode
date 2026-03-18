@@ -1,0 +1,3 @@
+/home/njonji/Desktop/ASTROCYTECH/AstroCode
+
+cd /tmp && pwd

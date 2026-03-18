@@ -1,0 +1,1 @@
+Subdirectory 2 count: 3

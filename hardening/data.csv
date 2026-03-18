@@ -1,6 +1,6 @@
-
-column_to_filter,other_column
-10,x
-20,y
-5,z
-15,w
+feature1,feature2,target
+1,10,100
+2,20,200
+3,30,300
+4,40,400
+5,50,500

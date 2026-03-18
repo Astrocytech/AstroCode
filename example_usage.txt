@@ -1,0 +1,2 @@
+Example usage:
+print(greet("John"))  # Output: Hello, John!

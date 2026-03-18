@@ -1,7 +1,7 @@
 
 def fibonacci(n):
     if n <= 0:
-        return "Input positive integer"
+        return "Input should be positive integer."
     elif n == 1:
         return 0
     elif n == 2:
@@ -12,5 +12,4 @@ def fibonacci(n):
             a, b = b, a + b
         return b
 
-if __name__ == "__main__":
-    print(fibonacci(10))
+print(fibonacci(10))

@@ -1,3 +1,0 @@
-This is the content of file 2.
-Appended content.
-This is an appended line.This is appended to file 2.

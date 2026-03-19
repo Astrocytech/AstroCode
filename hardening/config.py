@@ -1,1 +1,0 @@
-SECRET_KEY = 'hardcoded_secret_key'

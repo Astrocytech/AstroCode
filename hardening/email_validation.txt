@@ -1,2 +1,0 @@
-Email 'test@example.com' is valid
-Email 'invalid_email' is invalid

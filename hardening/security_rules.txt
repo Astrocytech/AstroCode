@@ -1,3 +1,0 @@
-Rule 1: User 1 can access table A
-Rule 2: User 2 can access table B
-Rule 3: User 3 can access table C

@@ -1,3 +1,0 @@
-import os
-from precondition import validate_precondition
-validate_precondition()

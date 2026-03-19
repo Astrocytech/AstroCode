@@ -1,4 +1,0 @@
-User 4, Read, Table D
-
-User 1, Read, Table A
-User 2, Write, Table B

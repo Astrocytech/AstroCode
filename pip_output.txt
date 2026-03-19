@@ -1,1 +1,0 @@
-Requirement already satisfied: colorama in /home/njonji/.pyenv/versions/3.11.6/lib/python3.11/site-packages (0.4.6)

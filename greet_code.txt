@@ -1,4 +1,0 @@
-import os
-def greet(name: str) -> str:
-greeting = f"Hello, {name}!"
-return greeting

@@ -1,1 +1,0 @@
-SELECT COUNT(*), AVG(price) FROM products

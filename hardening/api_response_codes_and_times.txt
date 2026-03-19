@@ -1,3 +1,0 @@
-API Response Codes and Times
-3xx - Redirection
-5xx - Server Error

@@ -1,8 +1,0 @@
-
-    allowed-ratelimit:
-      - 1000
-      - 10s
-    denied-ratelimit:
-      - 500
-      - 1m
-    

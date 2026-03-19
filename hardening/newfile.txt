@@ -1,5 +1,0 @@
-error
-warning
-error
-
-Appended textHello, world!

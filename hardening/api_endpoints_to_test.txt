@@ -1,3 +1,0 @@
-GET /users/
-GET /users/
-POST /login/

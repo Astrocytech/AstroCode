@@ -1,3 +1,0 @@
-SELECT * FROM users WHERE name = 'John'
-id	name	password
-1	John	hello123

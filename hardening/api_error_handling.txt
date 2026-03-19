@@ -1,6 +1,0 @@
-API Error Handling
-API Response Codes and Times
-2xx - Success
-4xx - Client Error
-
-Error Message: User not found

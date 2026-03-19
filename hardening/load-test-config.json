@@ -1,4 +1,0 @@
-{
-"test_name": "K6 Load Test",
-"k6_file": "k6-load-test.js"
-}

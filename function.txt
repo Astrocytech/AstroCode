@@ -1,7 +1,0 @@
-def narrower_64(hex48: str) -> str:
-    raw24 = bytes.fromhex(hex48)
-    if len(raw24) != 24:
-        raise ValueError('Expected 24-byte input (48 hex characters).')
-    padded = _pkcs7_pad(raw24, 16)
-    cipher = AES.new(_AES_KEY, AES.MODE_ECB)
-    return cipher.encrypt(padded).hex().upper()

@@ -1,2 +1,0 @@
-Step 1 with changes
-{'name': 'Step 1', 'description': 'A step in the Temporal workflow.', 'actions': [{'id': 1, 'type': 'read', 'params': {}}]}

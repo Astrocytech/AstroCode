@@ -1,4 +1,0 @@
-Status Enum:
-PENDING
-COMPLETE
-FAILED

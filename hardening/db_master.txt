@@ -1,2 +1,0 @@
-master_database_config
-new_data_to_append

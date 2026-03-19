@@ -1,6 +1,0 @@
-
-# Example route configuration
-
-{
-  "route": "new_tenant2_route"
-}

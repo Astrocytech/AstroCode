@@ -1,5 +1,0 @@
-import os
-with open("/home/njonji/Desktop/ASTROCYTECH/AstroCode/test.txt.new", "r") as r:
-    data = r.read()
-with open("/home/njonji/Desktop/ASTROCYTECH/AstroCode/test.txt", "w") as w:
-    w.write(data.replace("old", "new"))

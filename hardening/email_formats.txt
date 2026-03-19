@@ -1,2 +1,0 @@
-Email must start with [a-zA-Z0-9]+ and end with @domain.[A-Za-z]{2,}
-Email contains only alphanumeric characters, ., _, or -

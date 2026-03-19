@@ -1,6 +1,0 @@
-[distutils]
-index-servers =
-  pypi
-[pypi]
-username = YOUR_USERNAME
-password = YOUR_PASSWORD

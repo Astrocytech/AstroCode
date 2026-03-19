@@ -1,7 +1,0 @@
-New Person
-Name: Jane Doe
-Age: 25
-Name: John Doe
-Age: 30
-Name: Alice Smith
-Age: 35

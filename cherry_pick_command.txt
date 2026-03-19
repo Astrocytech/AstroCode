@@ -1,1 +1,0 @@
-git cherry-pick your_commit_hash -x && git add . && git commit -m "hardening Cherry-pick" && git push origin master

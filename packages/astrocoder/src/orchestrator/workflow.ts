@@ -30,7 +30,7 @@ export class WorkflowEngine {
       body: JSON.stringify({
         model: this.modelID,
         messages: [
-          { role: "system", content: "You are an autonomous coding assistant. Your job is to COMPLETE tasks by writing and executing code. CRITICAL: You must output ONLY Python code in a python code block. No explanations, no conversational text. Start with ```python, write the code, end with ```. Nothing else." },
+          { role: "system", content: "You are an autonomous coding assistant. Your ONLY job is to write and execute Python code. CRITICAL RULES: 1) Output EXACTLY ```python on its own line, then your code, then ``` on its own line. 2) NO explanations, NO tutorials, NO markdown text outside code blocks. 3) Start with ```python and end with ```. 4) The code will be executed directly. Write ONLY code that can run." },
           { role: "user", content: prompt }
         ],
         temperature: 0.0,
@@ -64,7 +64,7 @@ export class WorkflowEngine {
     /DROP\s+TABLE/i,
     /DROP\s+DATABASE/i,
     /DELETE\s+FROM\s+\w+\s*;(?!\s*WHERE)/i,
-    /truncate\s+/i,
+    /truncate\s+\w/i,  // Shell truncate command, not Python method
     /shut\s*down/i,
     /halt/i,
     /init\s+0/i,
@@ -98,24 +98,15 @@ Reply ONLY with the reviewed/fixed Python code in a python code block. If no cha
   }
 
   private async consensusCode(code: string, task: string): Promise<{ code: string; consensus: boolean }> {
-    for (let i = 0; i < 3; i++) {
-      const review1 = await this.reviewCode(code, task)
-      const review2 = await this.reviewCode(code, task)
-      
-      const blocks1 = this.extractCode(review1)
-      const blocks2 = this.extractCode(review2)
-      
-      const code1 = blocks1.join('\n\n').trim()
-      const code2 = blocks2.join('\n\n').trim()
-      
-      if (code1 === code2) {
-        return { code: code1, consensus: true }
-      }
+    const review = await this.reviewCode(code, task)
+    const blocks = this.extractCode(review)
+    const reviewedCode = blocks.join('\n\n').trim()
+    
+    if (reviewedCode && reviewedCode !== code) {
+      return { code: reviewedCode, consensus: true }
     }
-    // No consensus after 3 tries, return last review
-    const finalReview = await this.reviewCode(code, task)
-    const finalBlocks = this.extractCode(finalReview)
-    return { code: finalBlocks.join('\n\n').trim(), consensus: false }
+    
+    return { code: reviewedCode || code, consensus: false }
   }
 
   private async runBash(command: string): Promise<{ stdout: string; stderr: string; exitCode: number }> {
@@ -159,13 +150,21 @@ Reply ONLY with the reviewed/fixed Python code in a python code block. If no cha
       /save\s+to\s+([\w\-.]+\.\w+)/i,
       /overwrite\s+([\w\-.]+\.\w+)/i,
       /to\s+([\w\-.]+\.\w+)/i,
-      /read\s+([\w\-.]+\.\w+)/i,  // Added for read operations
-      /modify\s+([\w\-.]+\.\w+)/i,  // Added for modify operations
-      /edit\s+([\w\-.]+\.\w+)/i,  // Added for edit operations
-      /append\s+to\s+([\w\-.]+\.\w+)/i,  // Added for append operations
-      /prepend\s+to\s+([\w\-.]+\.\w+)/i,  // Added for prepend operations
-      /replace\s+.*\s+in\s+([\w\-.]+\.\w+)/i,  // Added for replace operations
-      /update\s+([\w\-.]+\.\w+)/i,  // Added for update operations
+      /read\s+([\w\-.]+\.\w+)/i,
+      /parse\s+([\w\-.]+\.\w+)/i,  // Parse operations
+      /extract\s+([\w\-.]+\.\w+)/i,  // Extract operations
+      /filter\s+([\w\-.]+\.\w+)/i,  // Filter operations
+      /sort\s+([\w\-.]+\.\w+)/i,  // Sort operations
+      /transform\s+([\w\-.]+\.\w+)/i,  // Transform operations
+      /merge\s+([\w\-.]+\.\w+)/i,  // Merge operations
+      /split\s+([\w\-.]+\.\w+)/i,  // Split operations
+      /deduplicate\s+([\w\-.]+\.\w+)/i,  // Deduplicate operations
+      /modify\s+([\w\-.]+\.\w+)/i,
+      /edit\s+([\w\-.]+\.\w+)/i,
+      /append\s+to\s+([\w\-.]+\.\w+)/i,
+      /prepend\s+to\s+([\w\-.]+\.\w+)/i,
+      /replace\s+.*\s+in\s+([\w\-.]+\.\w+)/i,
+      /update\s+([\w\-.]+\.\w+)/i,
     ]
     
     for (const regex of patterns) {
@@ -187,7 +186,7 @@ Reply ONLY with the reviewed/fixed Python code in a python code block. If no cha
         paths.push(p)
       }
     }
-    const relativeRegex = /(?:^|[^\w\/])([\w\-.]+\.(?:py|txt|js|ts|json|html|yaml|yml|md|xml|css|sh))/g
+    const relativeRegex = /(?:^|[^\w\/])([\w\-]*\.(?:py|txt|js|ts|json|html|yaml|yml|md|xml|css|sh|log)(?!\w))/g
     while ((match = relativeRegex.exec(text)) !== null) {
       const p = match[1]
       const fullPath = path.join(HARDENING_DIR, p)
@@ -278,9 +277,11 @@ Reply ONLY with the reviewed/fixed Python code in a python code block. If no cha
         ? `\nPrevious attempts failed:\n${this.history.join('\n')}\n\nIMPORTANT: Fix the errors from previous attempts. Do not repeat the same mistakes.\n`
         : ""
 
-      const dirInstruction = targetDir !== PROJECT_ROOT && !isCommandTask
-        ? `\nIMPORTANT: Create files in this exact directory: ${targetDir}\nUse: os.makedirs("${targetDir}", exist_ok=True) before writing files.\n`
-        : ""
+      const dirInstruction = !isCommandTask && targetDir !== PROJECT_ROOT
+        ? `\nIMPORTANT: Files are in: ${targetDir}\nUse full paths like: ${targetDir}/filename\n`
+        : fileContents 
+          ? `\nIMPORTANT: Working directory is: ${HARDENING_DIR}\nUse full paths: ${HARDENING_DIR}/filename\n`
+          : ""
 
       let promptPart = ""
       if (isCommandTask) {

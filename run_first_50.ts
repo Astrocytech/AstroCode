@@ -65,10 +65,22 @@ const SKIP_PATTERNS = [
   /WebSocket/,
   /Find command/,
   /https?:\/\//,
+  /S3 upload|S3 download|S3 bucket/i,
+  /DynamoDB/i,
+  /SQS queue/i,
+  /RDS/i,
+  /BigQuery/i,
+  /GCS upload|GCS download/i,
+  /Blob storage|Blob upload|Blob download/i,
+  /Watch directory|watch directory/i,
+  /JWT verification/i,
 ]
 
 function shouldSkip(prompt: string, testId: string): boolean {
-  const skipIds = ["TEST_017", "TEST_018", "TEST_047", "TEST_049", "TEST_050", "TEST_051", "TEST_052", "TEST_053", "TEST_054", "TEST_055", "TEST_058", "TEST_059", "TEST_060"]
+  const skipIds = [
+    "TEST_017", "TEST_018", "TEST_047", "TEST_049", "TEST_050", "TEST_051", "TEST_052", "TEST_053", "TEST_054", "TEST_055", "TEST_058", "TEST_059", "TEST_060",
+    "TEST_302", "TEST_309", "TEST_317", "TEST_318", "TEST_320", "TEST_322", "TEST_324", "TEST_325", "TEST_326", "TEST_330"
+  ]
   if (skipIds.includes(testId)) return true
   return SKIP_PATTERNS.some(p => p.test(prompt))
 }

@@ -321,7 +321,7 @@ ${context}${dirInstruction}${promptPart}`
         }
       }
 
-      if (isCreateTask && (hasNoErrors || hasSuccessOutput || hasCodeOutput || hasLogOutput)) {
+      if (isCreateTask && hasNoErrors && hasSuccessOutput && (fileCheck.includes("EXISTS") || hasCodeOutput || hasLogOutput)) {
         await this.runBash(`rm -f "${scriptPath}"`)
         return { 
           success: true, 
@@ -329,7 +329,7 @@ ${context}${dirInstruction}${promptPart}`
         }
       }
 
-      if (isFileTask && targetForCheck && fileCheck.includes("EXISTS") && !hasPartialErrors) {
+      if (isFileTask && hasNoErrors && targetForCheck && fileCheck.includes("EXISTS") && !hasPartialErrors) {
         await this.runBash(`rm -f "${scriptPath}"`)
         return { 
           success: true, 
@@ -351,7 +351,7 @@ Reply ONLY YES or NO.`
       
       const verification = await this.callOllama(verifyPrompt)
       
-      if (verification.toUpperCase().includes("YES") || (targetForCheck && fileCheck.includes("EXISTS"))) {
+      if (verification.toUpperCase().includes("YES")) {
         await this.runBash(`rm -f "${scriptPath}"`)
         return { 
           success: true, 

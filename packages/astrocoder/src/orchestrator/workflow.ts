@@ -33,7 +33,7 @@ export class WorkflowEngine {
           { role: "system", content: "You are an autonomous coding assistant. Your job is to COMPLETE tasks by writing and executing code. CRITICAL: You must output ONLY Python code in a python code block. No explanations, no conversational text. Start with ```python, write the code, end with ```. Nothing else." },
           { role: "user", content: prompt }
         ],
-        temperature: 0.1,
+        temperature: 0.0,
         stream: false,
       }),
     })
@@ -44,6 +44,78 @@ export class WorkflowEngine {
 
     const data = await response.json() as OllamaChatResponse
     return data.message?.content || ""
+  }
+
+  private readonly BLOCKED_PATTERNS = [
+    /rm\s+-rf\s+\//,
+    /rm\s+-rf\s+\*/,
+    /dd\s+if=/,
+    /mkfs/,
+    /:\)\{/,  // Fork bomb
+    /while\s*\(\s*true\s*\)\s*{:\s*&\s*};/,  // Fork bomb variant
+  ]
+
+  private readonly DANGEROUS_PATTERNS = [
+    /rm\s+-r/,
+    /rm\s+-f/,
+    /del\s+/,
+    /chmod\s+0{3,}/,
+    /chown\s+root/,
+    /DROP\s+TABLE/i,
+    /DROP\s+DATABASE/i,
+    /DELETE\s+FROM\s+\w+\s*;(?!\s*WHERE)/i,
+    /truncate\s+/i,
+    /shut\s*down/i,
+    /halt/i,
+    /init\s+0/i,
+    /reboot/i,
+  ]
+
+  private checkSafety(code: string): { blocked: boolean; dangerous: boolean; message: string } {
+    for (const pattern of this.BLOCKED_PATTERNS) {
+      if (pattern.test(code)) {
+        return { blocked: true, dangerous: false, message: `Blocked catastrophic command detected: ${pattern}` }
+      }
+    }
+    for (const pattern of this.DANGEROUS_PATTERNS) {
+      if (pattern.test(code)) {
+        return { blocked: false, dangerous: true, message: `Potentially dangerous operation detected: ${pattern}` }
+      }
+    }
+    return { blocked: false, dangerous: false, message: "" }
+  }
+
+  private async reviewCode(code: string, task: string): Promise<string> {
+    const prompt = `Review this Python code for correctness and bugs. If issues found, fix them.
+
+Task: ${task}
+
+Code:
+${code}
+
+Reply ONLY with the reviewed/fixed Python code in a python code block. If no changes needed, reply with the original code unchanged.`
+    return await this.callOllama(prompt)
+  }
+
+  private async consensusCode(code: string, task: string): Promise<{ code: string; consensus: boolean }> {
+    for (let i = 0; i < 3; i++) {
+      const review1 = await this.reviewCode(code, task)
+      const review2 = await this.reviewCode(code, task)
+      
+      const blocks1 = this.extractCode(review1)
+      const blocks2 = this.extractCode(review2)
+      
+      const code1 = blocks1.join('\n\n').trim()
+      const code2 = blocks2.join('\n\n').trim()
+      
+      if (code1 === code2) {
+        return { code: code1, consensus: true }
+      }
+    }
+    // No consensus after 3 tries, return last review
+    const finalReview = await this.reviewCode(code, task)
+    const finalBlocks = this.extractCode(finalReview)
+    return { code: finalBlocks.join('\n\n').trim(), consensus: false }
   }
 
   private async runBash(command: string): Promise<{ stdout: string; stderr: string; exitCode: number }> {
@@ -203,7 +275,7 @@ export class WorkflowEngine {
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const context = this.history.length > 0 
-        ? `\nPrevious attempts failed:\n${this.history.join('\n')}\n\n`
+        ? `\nPrevious attempts failed:\n${this.history.join('\n')}\n\nIMPORTANT: Fix the errors from previous attempts. Do not repeat the same mistakes.\n`
         : ""
 
       const dirInstruction = targetDir !== PROJECT_ROOT && !isCommandTask
@@ -259,26 +331,73 @@ ${context}${dirInstruction}${promptPart}`
         continue
       }
 
-      const scriptPath = path.join(PROJECT_ROOT, `temp_workflow_${attempt}.py`)
+      let combinedCode = codeBlocks.join('\n\n')
       
-      const combinedCode = codeBlocks.join('\n\n')
-      
-      const dirSetup = targetDir !== PROJECT_ROOT 
-        ? `import os\nos.makedirs("${targetDir}", exist_ok=True)\n`
-        : ""
-      
-      const codeWithShebang = `#!/usr/bin/env python3\nimport sys\nsys.path.insert(0, '/home/njonji/Desktop/IZBR')\n${dirSetup}${combinedCode}`
-      
-      writeFileSync(scriptPath, codeWithShebang)
+      // Consensus-based healing: generate twice, compare, use consistent version
+      const { code: reviewedCode, consensus } = await this.consensusCode(combinedCode, userPrompt)
+      if (reviewedCode) {
+        combinedCode = reviewedCode
+      }
 
-      const runResult = await this.runBash(`python3 "${scriptPath}" 2>&1`)
-      
+      // Safety check before execution
+      const safety = this.checkSafety(combinedCode)
+      if (safety.blocked) {
+        return {
+          success: false,
+          finalSummary: `BLOCKED: ${safety.message}\n\nCode:\n${combinedCode.slice(0, 500)}`
+        }
+      }
+      if (safety.dangerous) {
+        console.warn(`WARNING: ${safety.message}`)
+      }
+
+      let runSuccess = false
+      let runResult = { stdout: "", stderr: "", exitCode: 0 }
+
+      // Execute with execution-based healing fallback
+      for (let healAttempt = 0; healAttempt < 3; healAttempt++) {
+        const scriptPath = path.join(PROJECT_ROOT, `temp_workflow_${attempt}_${healAttempt}.py`)
+        
+        const dirSetup = targetDir !== PROJECT_ROOT 
+          ? `import os\nos.makedirs("${targetDir}", exist_ok=True)\n`
+          : ""
+        
+        const codeWithShebang = `#!/usr/bin/env python3\nimport sys\nsys.path.insert(0, '/home/njonji/Desktop/IZBR')\n${dirSetup}${combinedCode}`
+        
+        writeFileSync(scriptPath, codeWithShebang)
+        runResult = await this.runBash(`timeout 30 python3 "${scriptPath}" 2>&1`)
+        
+        // Check if execution succeeded
+        if (!runResult.stderr.includes("Error") && !runResult.stderr.includes("Traceback") && !runResult.stderr.includes("Exception")) {
+          runSuccess = true
+          await this.runBash(`rm -f "${scriptPath}"`)
+          break
+        }
+        
+        // If failed, try to fix with error feedback
+        if (healAttempt < 2) {
+          const fixPrompt = `The following code failed with this error:
+${runResult.stderr}
+
+Code:
+${combinedCode}
+
+Write CORRECTED Python code that fixes this error. Only output the code in a python code block.`
+          const fixedOutput = await this.callOllama(fixPrompt)
+          const fixedBlocks = this.extractCode(fixedOutput)
+          if (fixedBlocks.length > 0) {
+            combinedCode = fixedBlocks.join('\n\n')
+          }
+        }
+        
+        await this.runBash(`rm -f "${scriptPath}"`)
+      }
+
       let results = `Code executed:\n${combinedCode.slice(0, 1000)}\n\nOutput:\n${runResult.stdout || runResult.stderr}`
 
       // For command tasks, success is if command ran (no crash)
       if (isCommandTask) {
-        if (!runResult.stderr.includes("Error") && !runResult.stderr.includes("Traceback")) {
-          await this.runBash(`rm -f "${scriptPath}"`)
+        if (runSuccess) {
           return { 
             success: true, 
             finalSummary: `Task completed: ${userPrompt}\n\nOutput:\n${runResult.stdout || runResult.stderr}` 
@@ -307,30 +426,26 @@ ${context}${dirInstruction}${promptPart}`
       const isEditTask = /read|modify|edit|append|prepend|replace|fix|update|add|delete|remove|rename/i.test(userPrompt)
       const isCreateTask = /create|define|make|write|generate|set up|implement|use|log|handle|raise|configure|setup|install|deploy|publish|chain|gateway|isolation|routing|backup|restore|failover|replication|scan|lint|format|check|detect|package|version|release|celery|temporal|prefect|kong|tenant|secret|complexity|duplicate|private|pypi|poetry|pipenv|semantic|changelog|nomad|marathon|rancher/i.test(userPrompt)
       const isFileTask = /log|file|config|cache|handler|database|task|workflow|plugin|gateway|tenant|backup|restore|failover|replication|load|stress|scan|lint|format|check|detect|package|version|release|celery|temporal|prefect|kong|tenant|secret|complexity|duplicate|private|pypi|poetry|pipenv|semantic|changelog|nomad|marathon|rancher/i.test(userPrompt)
-      const hasNoErrors = !runResult.stderr.includes("Error") && !runResult.stderr.includes("Traceback") && !runResult.stderr.includes("Exception")
       const hasPartialErrors = runResult.stderr.includes("Error") || runResult.stderr.includes("Exception")
       const hasSuccessOutput = runResult.stdout.includes("success") || runResult.stdout.includes("done") || runResult.stdout.includes("complete") || runResult.stdout.includes("modified") || runResult.stdout.includes("edited") || runResult.stdout.includes("configured") || runResult.stdout.includes("installed") || runResult.stdout.includes("deployed") || runResult.stdout.includes("published")
       const hasCodeOutput = runResult.stdout.trim().length > 0
       const hasLogOutput = /DEBUG|INFO|WARNING|ERROR|Logged/i.test(runResult.stdout) || /DEBUG|INFO|WARNING|ERROR|Logged/i.test(runResult.stderr)
       
-      if (isEditTask && (hasNoErrors || hasSuccessOutput) && targetForCheck && fileCheck.includes("EXISTS")) {
-        await this.runBash(`rm -f "${scriptPath}"`)
+      if (isEditTask && runSuccess && targetForCheck && fileCheck.includes("EXISTS")) {
         return { 
           success: true, 
           finalSummary: `Task completed: ${userPrompt}\n\nResults:\n${results}\n\nFile verification: ${fileCheck}` 
         }
       }
 
-      if (isCreateTask && hasNoErrors && hasSuccessOutput && (fileCheck.includes("EXISTS") || hasCodeOutput || hasLogOutput)) {
-        await this.runBash(`rm -f "${scriptPath}"`)
+      if (isCreateTask && runSuccess && (fileCheck.includes("EXISTS") || hasCodeOutput || hasLogOutput)) {
         return { 
           success: true, 
           finalSummary: `Task completed: ${userPrompt}\n\nResults:\n${results}\n\nCode executed successfully` 
         }
       }
 
-      if (isFileTask && hasNoErrors && targetForCheck && fileCheck.includes("EXISTS") && !hasPartialErrors) {
-        await this.runBash(`rm -f "${scriptPath}"`)
+      if (isFileTask && runSuccess && targetForCheck && fileCheck.includes("EXISTS") && !hasPartialErrors) {
         return { 
           success: true, 
           finalSummary: `Task completed: ${userPrompt}\n\nResults:\n${results}\n\nFile/Task verification: ${fileCheck}` 
@@ -343,7 +458,7 @@ Code execution result:
 - stdout: ${runResult.stdout.slice(0, 500)}
 - stderr: ${runResult.stderr.slice(0, 500)}
 - file check: ${fileCheck}
-- no errors: ${hasNoErrors}
+- execution success: ${runSuccess}
 
 Based on the output above, did the code successfully accomplish the task? 
 Look for: successful execution, no errors, expected output, or file modifications.
@@ -352,7 +467,6 @@ Reply ONLY YES or NO.`
       const verification = await this.callOllama(verifyPrompt)
       
       if (verification.toUpperCase().includes("YES")) {
-        await this.runBash(`rm -f "${scriptPath}"`)
         return { 
           success: true, 
           finalSummary: `Task completed: ${userPrompt}\n\nResults:\n${results}\n\nVerification: ${verification.slice(0, 200)}` 
@@ -360,7 +474,6 @@ Reply ONLY YES or NO.`
       }
 
       this.history.push(`Attempt ${attempt} failed: ${(runResult.stderr || runResult.stdout).slice(0, 200)}`)
-      await this.runBash(`rm -f "${scriptPath}"`)
     }
 
     return { 

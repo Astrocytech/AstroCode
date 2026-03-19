@@ -170,14 +170,50 @@ export namespace SessionPrompt {
 
     log.info("User prompt received", { text: userText.slice(0, 100) })
 
-    // Workflow disabled - using system prompt approach instead
-    const isShellTask = false
+    const agent = await Agent.get(input.agent ?? (await Agent.defaultAgent()))
+    const model = input.model ?? agent.model ?? (await lastModel(input.sessionID))
+    const isOllama = model.providerID === "ollama" || model.modelID.startsWith("ollama/") || model.modelID.startsWith("ollama_chat/")
 
-    if (isShellTask && userText.length > 5) {
-      // Disabled - not working properly
+    // Use WorkflowEngine for Ollama models - same as hardening tests
+    if (isOllama && userText.length > 5) {
+      log.info("Using WorkflowEngine for Ollama task", { modelID: model.modelID })
+      const engine = new WorkflowEngine(model.modelID.replace("ollama/", "").replace("ollama_chat/", ""), false)
+      const result = await engine.run(userText)
+      
+      // Create assistant message with result
+      const assistantMsg: MessageV2.Assistant = {
+        id: MessageID.ascending(),
+        sessionID: input.sessionID,
+        role: "assistant",
+        agent: agent.name,
+        modelID: model.modelID,
+        providerID: model.providerID,
+        mode: agent.name,
+        parentID: MessageID.ascending(),
+        path: { cwd: Instance.directory, root: Instance.worktree },
+        cost: 0,
+        tokens: { input: 0, output: 0, reasoning: 0, cache: { read: 0, write: 0 } },
+        time: { created: Date.now(), completed: Date.now() },
+        finish: "stop",
+      }
+      await Session.updateMessage(assistantMsg)
+      
+      const textPart: MessageV2.TextPart = {
+        id: PartID.ascending(),
+        messageID: assistantMsg.id,
+        sessionID: input.sessionID,
+        type: "text",
+        text: result.finalSummary,
+      }
+      await Session.updatePart(textPart)
+      
+      return {
+        info: assistantMsg,
+        parts: [textPart],
+      }
     }
 
-    log.info("Not a shell task, using normal model")
+    log.info("Using normal model processing")
 
     const session = await Session.get(input.sessionID)
     await SessionRevert.cleanup(session)

@@ -1,3 +1,0 @@
-Prepended line.
-Hello, world!
-This is an appended line.

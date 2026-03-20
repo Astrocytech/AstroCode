@@ -1,3 +1,0 @@
-This is prepended content.
-This is content 2.
-This is modified content.

@@ -1,5 +1,0 @@
-Prepended stringNew content
-Prepended textThis is a new line
-New contentNew text prepended
-Appended contentnew_append
-Appended content

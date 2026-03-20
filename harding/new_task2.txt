@@ -1,2 +1,0 @@
-This is the first content to be written in new_task2.txt
-This is additional text that should be appended to new_task2.txt

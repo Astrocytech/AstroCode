@@ -1,2 +1,0 @@
-New content for file 1
-New content appended at the end

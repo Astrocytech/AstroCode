@@ -1,3 +1,0 @@
-Prepended this line
-This is the new content
-Appended this line

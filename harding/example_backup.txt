@@ -1,3 +1,0 @@
-This is some prepended content.
-New content
-This is an example file.This is a prepended line. 

@@ -1,4 +1,0 @@
-Prepended text.
-This is task 2
-
-This is an appended line.

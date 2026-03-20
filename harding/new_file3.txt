@@ -1,5 +1,0 @@
-Prepended line 1
-Hello, World!
-new_textNew content prepended to file 2.
-This is the content of file 2.This is some appended text.
-This is new text!

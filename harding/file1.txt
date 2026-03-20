@@ -1,3 +1,0 @@
-New text before existing text
-This is the content of hardening.
-This line is appended.

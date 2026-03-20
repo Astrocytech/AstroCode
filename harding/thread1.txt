@@ -1,2 +1,0 @@
-Thread 1 started
-Thread 1 finished

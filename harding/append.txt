@@ -1,0 +1,10 @@
+
+Appended contentNew content for file 2.
+This is the content of file 2.
+New line added at the end.Newly added line
+New content for file 2.
+This is the content of file 2.
+New line added at the end.This is an append.
+
+Appended contentAppended content
+ New line

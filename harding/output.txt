@@ -1,0 +1,7 @@
+This is prepended content:
+Prepended content
+New Line
+Appended content
+Appended line
+Hello, world!
+New Line

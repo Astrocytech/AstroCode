@@ -1,0 +1,2 @@
+Prepended text.
+This is an example. Appended text.

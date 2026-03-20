@@ -1,0 +1,4 @@
+Prepended text
+New Line 1
+Line 1
+Appended text

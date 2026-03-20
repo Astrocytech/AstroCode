@@ -1,0 +1,8 @@
+This is prepended content.
+new_textNew content prepended to file 2.
+This is the content of file 2.This is some appended text.Hello, World!
+new_textNew content prepended to file 2.
+This is the content of file 2.This is some appended text.Hello, World!
+Appended text
+Appended line 1
+Appended line 2

@@ -1,0 +1,4 @@
+Prepended text
+This is the initial content.Appended content.
+
+New line appendedAppended text here

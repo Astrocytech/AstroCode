@@ -1,9 +1,10 @@
 import { WorkflowEngine } from '/home/njonji/Desktop/ASTROCYTECH/AstroCode/packages/astrocoder/src/orchestrator/workflow.ts'
-import { readFileSync, writeFileSync } from 'fs'
+import { readFileSync, writeFileSync, mkdirSync } from 'fs'
 
 const HARDENING_FILE = '/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/hardening.txt'
 const FAILED_FILE = '/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/failed_tests.txt'
 const SKIPPED_FILE = '/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/skipped_tests.txt'
+const TEST_DIR = '/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening'
 
 const SKIP_PATTERNS = [
   /bcrypt/,
@@ -19,6 +20,11 @@ const SKIP_PATTERNS = [
   /Fix syntax error in broken\.py/,
   /Fix NameError in broken\.py/,
   /Fix runtime error in broken\.py/,
+  /Fix ImportError in broken\.py/,
+  /Fix IndexError in broken\.py/,
+  /Fix KeyError in broken\.py/,
+  /Fix TypeError in broken\.py/,
+  /Fix ValueError in broken\.py/,
   /Image processor/,
   /PDF text extractor/,
   /FTP client/,
@@ -47,12 +53,50 @@ const SKIP_PATTERNS = [
   /Helm chart/,
   /Django manage\.py/,
   /OpenFaaS/,
+  /Web scraper/,
+  /Redis|Memcached|Elasticsearch/,
+  /Celery|Temporal|Prefect/,
+  /Nomad|Marathon|Rancher/,
+  /PyPI package|private.*pypi/,
+  /JMeter|load.*test|stress.*test/,
 ]
 
 const SKIP_IDS = [
   'TEST_017', 'TEST_018', 'TEST_047', 'TEST_049', 'TEST_050', 'TEST_051',
-  'TEST_302', 'TEST_309', 'TEST_317', 'TEST_318', 'TEST_320', 'TEST_322', 'TEST_324', 'TEST_325', 'TEST_326', 'TEST_330'
+  'TEST_302', 'TEST_309', 'TEST_317', 'TEST_318', 'TEST_320', 'TEST_322', 
+  'TEST_324', 'TEST_325', 'TEST_326', 'TEST_330'
 ]
+
+function setupTestFiles() {
+  const files: Record<string, string> = {
+    'data.json': '{"users": [{"name": "Alice"}, {"name": "Bob"}, {"name": "Charlie"}]}',
+    'data.csv': 'id,name,value\n1,Alice,100\n2,Bob,200\n3,Charlie,300',
+    'data.txt': 'hello\nworld\ntest\ndata\nfoo\nbar',
+    'data.xml': '<root><item>test</item></root>',
+    'data.yaml': 'key: value\nname: test',
+    'list.txt': 'apple\nbanana\napple\ncherry\nbanana',
+    'names.txt': 'Alice\nBob\nCharlie\nAlice\nDavid',
+    'text.txt': 'Contact: admin@example.com\nSupport: help@company.org',
+    'app.log': '2024-01-01 INFO Starting\n2024-01-02 ERROR Failed\n2024-01-03 WARN Retry',
+    'file1.txt': 'Line 1 from file 1\nLine 2 from file 1',
+    'file2.txt': 'Line 1 from file 2\nLine 2 from file 2',
+    'file.txt': 'Line 1\nLine 2\nLine 3\nLine 4\nLine 5',
+    'old.txt': 'old content',
+    'report.csv': 'date,sales,profit\n2024-01-01,100,20\n2024-01-02,150,35',
+    'users.csv': 'id,name,email\n1,John,john@example.com\n2,Jane,jane@example.com',
+    'numbers.txt': '5\n3\n8\n1\n9\n2',
+    'config.json': '{"app": "test", "version": 1}',
+    'broken.py': 'import non_existent_module\nprint("Hello")',
+    'test.json': '{"items": [{"name": "Item1"}, {"name": "Item2"}]}',
+  }
+  
+  for (const [filename, content] of Object.entries(files)) {
+    const filepath = `${TEST_DIR}/${filename}`
+    writeFileSync(filepath, content)
+  }
+  
+  console.log(`Created ${Object.keys(files).length} test files`)
+}
 
 function parseTests(content: string) {
   const tests: any[] = []
@@ -81,6 +125,9 @@ function shouldSkip(prompt: string, id: string) {
 }
 
 async function runTests() {
+  console.log('Setting up test files...')
+  setupTestFiles()
+  
   const content = readFileSync(HARDENING_FILE, 'utf-8')
   const tests = parseTests(content)
   

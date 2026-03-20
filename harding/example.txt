@@ -1,3 +1,5 @@
+This is prepended text
 New + Old: 
 Hello World!
-This is an append operation
+This is an append operationNew line of text
+

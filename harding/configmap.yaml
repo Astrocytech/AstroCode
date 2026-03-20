@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-map
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-map
+
+# Appended content here...

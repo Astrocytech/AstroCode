@@ -287,29 +287,39 @@ Reply ONLY with the reviewed/fixed Python code in a python code block. If no cha
       if (isCommandTask) {
         promptPart = `TASK: ${userPrompt}
 
-Execute this task using Python subprocess or os.system. 
-For example: subprocess.run(["ls", "-la", "${targetDir || '/home/njonji/Desktop/ASTROCYTECH/AstroCode'}"], shell=True)
-Use subprocess.run with shell=True for shell commands.
+Execute this task using Python subprocess or os.system.
+Use shell=True for all shell commands.
+IMPORTANT: Working directory is: ${PROJECT_ROOT}
+
+Examples:
+- List files: subprocess.run("ls -la", shell=True)
+- Run script: subprocess.run("python3 script.py", shell=True)
+- Check disk: subprocess.run("du -sh .", shell=True)
+- Git status: subprocess.run("git status", shell=True)
 
 STRICT OUTPUT FORMAT - You MUST follow this exactly:
-1. Start your response with \`\`\`python
-2. Write ONLY the Python code - no explanations, no comments about what you're doing
-3. End with \`\`\`
-4. Do NOT write anything else - no text before or after the code block`
+1. Start with \`\`\`python on its own line
+2. Write ONLY the Python code - no explanations
+3. End with \`\`\` on its own line
+4. Do NOT write anything else`
       } else {
         const isFixTask = /fix|solve|correct|repair/i.test(userPrompt)
+        const isDataTask = /parse|extract|filter|transform|sort|merge|split|convert|deduplicate/i.test(userPrompt)
         const editInstruction = fileContents 
           ? `- The file content shown above is already read - use it as needed\n`
           : ""
         const fixInstruction = isFixTask 
           ? `- For FIX tasks: write the CORRECTED file content using: with open("filepath", 'w') as f: f.write(corrected_content)\n  Do NOT include broken imports or syntax in your code\n`
           : ""
+        const dataExamples = isDataTask
+          ? `- For data tasks: read file, process, print results\n  Example: with open('file.txt') as f: print(f.read())\n`
+          : ""
         promptPart = `TASK: ${userPrompt}
 
 Write Python code to accomplish this task. 
-${editInstruction}${fixInstruction}- Use the EXACT file paths from the task
+${editInstruction}${fixInstruction}${dataExamples}- Use the EXACT file paths from the task
 - For editing tasks (append, prepend, replace): read the file first, then modify
-- Create directories if needed: os.makedirs("${targetDir}", exist_ok=True)
+- Create directories if needed: os.makedirs("${targetDir || HARDENING_DIR}", exist_ok=True)
 - Write files using: with open("${targetFile || 'filename'}", 'w') as f: f.write(content)
 - For append: use 'a' mode, for prepend: read first then write new+old
 

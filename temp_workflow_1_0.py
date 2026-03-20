@@ -5,15 +5,17 @@ import os
 os.makedirs("/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening", exist_ok=True)
 import os
 
-# Create directories if needed
+# Create directory if not exists
 os.makedirs("/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening", exist_ok=True)
 
-# Checkout branch feature/new using git commands
-with open("/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/git_commands.txt", 'w') as f:
-    f.write("git checkout -b feature/new\n")
+# Define files and content
+req_file = "/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/requirements.txt"
+procfile = "/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/Procfile"
 
-# Append the new file to the repository
-os.system("git add .")
-os.system("git commit -m 'Initial commit'")
-os.system("git branch -M feature/new")
-os.system("git checkout feature/new")
+with open(req_file, 'a') as f:
+    f.write("gunicorn app:app\n")
+
+with open(procfile, 'w') as f:
+    f.write("web: gunicorn app:app --log-file -\n")
+
+os.system("git add . && git commit -m 'Update' && git push heroku main")

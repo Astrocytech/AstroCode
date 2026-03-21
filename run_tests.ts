@@ -7,6 +7,9 @@ const SKIPPED_FILE = '/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/skipp
 const TEST_DIR = '/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening'
 
 const SKIP_PATTERNS = [
+  // ============================================
+  // MISSING EXTERNAL SERVICES / CREDENTIALS
+  // ============================================
   /bcrypt/,
   /sqlalchemy/,
   /psycopg2/,
@@ -17,20 +20,6 @@ const SKIP_PATTERNS = [
   /paramiko/,
   /fabric/,
   /scp/,
-  /Fix syntax error in broken\.py/,
-  /Fix NameError in broken\.py/,
-  /Fix runtime error in broken\.py/,
-  /Fix ImportError in broken\.py/,
-  /Fix IndexError in broken\.py/,
-  /Fix KeyError in broken\.py/,
-  /Fix TypeError in broken\.py/,
-  /Fix ValueError in broken\.py/,
-  /Image processor/,
-  /PDF text extractor/,
-  /FTP client/,
-  /SSH client/,
-  /Watch directory|watch directory/i,
-  /JWT verification/i,
   /S3 upload|S3 download|S3 bucket/i,
   /DynamoDB/i,
   /SQS queue/i,
@@ -38,74 +27,26 @@ const SKIP_PATTERNS = [
   /BigQuery/i,
   /GCS upload|GCS download/i,
   /Blob storage|Blob upload|Blob download/i,
-  /Docker build/,
-  /Docker-compose/,
-  /Kubernetes|k8s/,
-  /Terraform/,
-  /Ansible/,
-  /Cloud Run/,
-  /Azure|aws|gcp/i,
-  /PyTorch|tensor flow|keras/i,
-  /Airflow|Spark|Kafka/,
-  /GraphQL schema/,
-  /gRPC/,
-  /Istio|Linkerd/,
-  /Helm chart/,
-  /Django manage\.py/,
-  /OpenFaaS/,
-  /Web scraper/,
-  /Redis|Memcached|Elasticsearch/,
-  /Celery|Temporal|Prefect/,
-  /Nomad|Marathon|Rancher/,
-  /PyPI package|private.*pypi/,
-  /MessagePack/,
-  /Parquet/,
-  /Scikit-learn/,
-  /subshell|sub-shell/i,
-  /here document/i,
-  /Match pattern/i,
-  /Toml config/i,
-  /Ini config/i,
-  /Message queue/i,
-  /RabbitMQ/,
-  /Proto Buffers/,
-  /Service mesh/,
-  /Read and modify.*\.py/,
-  /Download file/i,
-  /Upload file/i,
-  /Web scraper/,
-  /Image processor/,
-  /PDF text extractor/,
-  /FTP client/,
-  /SSH client/,
-  /Cron job/,
-  /Firewall/,
-  /Backup script/,
-  /Makefile/,
-  /WebSocket client/,
-  /DynamoDB/i,
-  /GCS upload/,
   /Cosmos DB/,
   /Service Bus/,
-  /Vagrant/,
   /Prometheus metrics/,
-  /Custom metrics/,
-  /Distributed trace/,
-  /Jaeger/,
-  /Fault injection/,
-  /Chaos monkey/,
-  /Network partition/,
-  /Camera/,
-  /Sensors/,
-  /Notifications/,
-  /Transaction.*blockchain/,
-  /MQTT/,
-  /Serial communication/,
-  /Audio playback/,
-  /Audio recording/,
-  /Video playback/,
-  /Video capture/,
-  /Stream.*video/,
+  /Elasticsearch query|Elasticsearch index/,
+  /Meilisearch/,
+  /Typesense/,
+  /Redis cache|Redis pub\/sub/,
+  /Memcached/,
+  /RabbitMQ/,
+  /Kafka producer|Kafka consumer/,
+  /Celery task|Celery chain/,
+  /Temporal workflow|Prefect flow/,
+  /Airflow DAG/,
+  /Spark job/,
+
+  // ============================================
+  // GPU/ML LIBRARIES NOT INSTALLED
+  // ============================================
+  /PyTorch|tensor flow|keras/i,
+  /Scikit-learn/,
   /Sentiment analysis/,
   /Named entity recognition/,
   /Translation/,
@@ -115,52 +56,97 @@ const SKIP_PATTERNS = [
   /Image segmentation/,
   /Style transfer/,
   /Reinforcement learning/,
-  /Server-sent events/,
-  /Elasticsearch query/,
-  /Meilisearch/,
-  /Typesense/,
-  /JMeter|load.*test|stress.*test/,
-  /Multi-step without prompting/,
-  /Fallback logic/,
-  /Complete workflow/,
-  /Find bug/,
-  /Add debugging/,
-  /Split file/,
-  /Convert encoding/,
-  /Pipe chain/,
-  /Conditional|for loop|while loop/i,
-  /XML parsing/,
-  /JSON operations/,
-  /Git init|git add|git commit|git merge|git rebase|git cherry-pick|git stash/i,
-  /Import crypto functions/,
-  /narrower_64/,
-  /Very large file/,
-  /Batch processor/,
-  /Authentication|rate limiting|validation/i,
-  /Error responses|pagination/i,
-  /Docstrings|constants/i,
-  /Error messages|naming/i,
-  /Profiling|optimize loop/i,
-  /UUID|Base64 encode|compress/i,
-  /Event sourcing/,
+  /CNN|RNN|LSTM|Transformer|GAN/,
+
+  // ============================================
+  // HARDWARE / SYSTEM ACCESS
+  // ============================================
+  /Camera/,
+  /Sensors/,
+  /MQTT subscribe/,
+  /Serial communication/,
+  /Audio playback|Audio recording/,
+  /Video playback|Video capture/,
   /Tkinter/,
-  /Handle timeout/,
-  /Aggregate/,
-  /Replace regex/i,
-  /Basic logging|Log format/i,
-  /Finally/,
-  /TTL cache/,
-  /Binary file/,
-  /Circular import/,
-  /Error responses/i,
-  /SSE client/,
-  /PyPI package/i,
+
+  // ============================================
+  // INFRASTRUCTURE TOOLS (need setup)
+  // ============================================
+  /Docker build/,
+  /Docker-compose$|Docker-compose up/,
+  /Kubernetes|k8s/,
+  /Terraform/,
+  /Helm chart/,
+  /Ansible playbook/,
+  /Cloud Run/,
+  /Nomad|Marathon|Rancher/,
+  /Vagrant/,
+
+  // ============================================
+  // CLOUD PROVIDERS (need credentials)
+  // ============================================
+  /Azure Function/,
+  /Google Cloud Function/,
+  /OpenFaaS/,
+  /Istio virtual service|Linkerd/,
+  /Django manage\.py/,
+
+  // ============================================
+  // COMPLEX EXTERNAL DEPENDENCIES
+  // ============================================
+  /Web scraper/,
+  /FTP client/,
+  /SSH client/,
+  /gRPC/,
+  /Proto Buffers/,
+  /GraphQL schema/,
+  /Service mesh/,
+  /Fault injection|Chaos monkey/,
+  /Network partition/,
+
+  // ============================================
+  // TESTS THAT NEED SPECIFIC FILES / ENV
+  // ============================================
+  /Fix syntax error in broken\.py/,
+  /Fix NameError in broken\.py/,
+  /Fix runtime error in broken\.py/,
+  /Fix ImportError in broken\.py/,
+  /Fix IndexError in broken\.py/,
+  /Fix KeyError in broken\.py/,
+  /Fix TypeError in broken\.py/,
+  /Fix ValueError in broken\.py/,
+
+  // ============================================
+  // TASKS THAT REQUIRE USER INPUT/INTERACTION
+  // ============================================
+  /Watch directory|watch directory/i,
+  /Firewall/,
+  /Cron job/,
+  /Backup script/,
+
+  // ============================================
+  // MISSING PYTHON PACKAGES / TOOLS
+  // ============================================
+  /MessagePack/,
+  /Parquet/,
+  /Image processor/,
+  /PDF text extractor/,
+  /JWT verification/,
+  /PyPI package|private pypi/i,
+
+  // ============================================
+  // WATCH / POLLING PATTERNS (infinite loops)
+  // ============================================
+  /Infinite loop|while true|while 1/,
+
+  // ============================================
+  // SPECIFIC TESTS THAT NEED SKIPPING
+  // ============================================
+  /narrower_64/,
 ]
 
 const SKIP_IDS = [
-  'TEST_017', 'TEST_018', 'TEST_047', 'TEST_049', 'TEST_050', 'TEST_051',
-  'TEST_302', 'TEST_309', 'TEST_317', 'TEST_318', 'TEST_320', 'TEST_322', 
-  'TEST_324', 'TEST_325', 'TEST_326', 'TEST_330'
+  'TEST_017', 'TEST_018',  // Fix errors - need broken.py setup
 ]
 
 function setupTestFiles() {

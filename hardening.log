@@ -1,0 +1,7 @@
+2026-03-20 17:52:20,736 - INFO - Appended new line to append.txt
+2026-03-20 17:52:20,737 - WARNING - Replaced contents of prepend.txt
+2026-03-20 17:52:20,737 - ERROR - Replaced contents of replace.txt
+2026-03-20 17:52:20,737 - DEBUG - This is a debug message
+2026-03-20 17:52:20,737 - INFO - This is an info message
+2026-03-20 17:52:20,737 - WARNING - This is a warning message
+2026-03-20 17:52:20,737 - ERROR - This is an error message

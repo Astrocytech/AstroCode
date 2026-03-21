@@ -684,7 +684,7 @@ PROMPT: Find all IP addresses in log file
 EXPECTED: IPs found
 
 TEST_153: Replace regex
-PROMPT: Replace dates MM/DD/YYYY with YYYY-MM-DD
+PROMPT: Replace dates 2026-03-20 with YYYY-MM-DD
 EXPECTED: Replaced
 
 TEST_154: Split regex

@@ -1,3 +1,6 @@
+# ASTROCYTECH
+
+## Installation
 # AstroCyTech Hardening
 
 ## Installation
@@ -6,4 +9,5 @@
 # AstroCyTech Hardening
 
 ## Installation
-### Usage
+### UsageIMPORTANT: Files are in: /home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening
+Use full paths like: /home/njonji/Desktop/ASTROCYTECH/AstroCode/harding/filename

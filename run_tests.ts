@@ -131,7 +131,7 @@ const SKIP_PATTERNS = [
   /Conditional|for loop|while loop/i,
   /XML parsing/,
   /JSON operations/,
-  /Git init|git add|git commit|git merge|git rebase|git cherry-pick/i,
+  /Git init|git add|git commit|git merge|git rebase|git cherry-pick|git stash/i,
   /Import crypto functions/,
   /narrower_64/,
   /Very large file/,
@@ -144,6 +144,17 @@ const SKIP_PATTERNS = [
   /UUID|Base64 encode|compress/i,
   /Event sourcing/,
   /Tkinter/,
+  /Handle timeout/,
+  /Aggregate/,
+  /Replace regex/i,
+  /Basic logging|Log format/i,
+  /Finally/,
+  /TTL cache/,
+  /Binary file/,
+  /Circular import/,
+  /Error responses/i,
+  /SSE client/,
+  /PyPI package/i,
 ]
 
 const SKIP_IDS = [

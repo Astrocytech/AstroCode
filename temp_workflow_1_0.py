@@ -4,51 +4,33 @@ sys.path.insert(0, '/home/njonji/Desktop/IZBR')
 import os
 os.makedirs("/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening", exist_ok=True)
 import os
-from pathlib import Path
 
 # Create directories if needed
 os.makedirs("/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening", exist_ok=True)
 
-# Define files and their contents
-requirements = """
-flask
-gunicorn
-"""
-Procfile = """
-web: gunicorn app:app
-"""
-
-# Write the requirements file
+# Open requirements.txt for writing
 with open("/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/requirements.txt", 'w') as f:
-    f.write(requirements)
+    f.write("flask\n")
 
-# Write the Procfile
+# Open Procfile for writing
 with open("/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/Procfile", 'w') as f:
-    f.write(Procfile)
+    f.write("web: gunicorn app:app")
 
-# Edit runtime.txt (append)
-with open("/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/runtime.txt", 'a') as f:
-    f.write("python-3.9.5")
+# Create runtime.txt
+with open("/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/runtime.txt", 'w') as f:
+    f.write("python-3.9.7\n")
 
-# Edit runtime.txt (prepend)
-with open("/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/runtime.txt", 'r+') as f:
-    contents = f.read()
-    new_contents = "python-3.9.5\n" + contents
-    f.seek(0)
-    f.write(new_contents)
-    f.truncate()
+# Append to .gitignore if it exists, otherwise create a new file
+try:
+    with open("/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/.gitignore", 'a') as f:
+        f.write("\nrequirements.txt\nProcfile\nruntime.txt")
+except FileNotFoundError:
+    with open("/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/.gitignore", 'w') as f:
+        f.write("requirements.txt\nProcfile\nruntime.txt")
 
-# Edit the app.py file to include a main guard
-with open("/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/app.py", 'r+') as f:
-    contents = f.read()
-    new_contents = "if __name__ == '__main__':\n\tapp.run(debug=True)\n" + contents
-    f.seek(0)
-    f.write(new_contents)
-    f.truncate()
-
-# Commit and push changes to Heroku
-os.system("git add .")
-os.system("git commit -m 'Deploy app to Heroku'")
-os.system("heroku create")
-os.system('heroku git remote add heroku https://git.heroku.com/your-app-name.git') # Added quotes around the URL
-os.system('heroku deploy')
+# Note: heroku login should be done manually or via an API key
+# Deploy to Heroku
+os.system('git init')
+os.system('git add . && git commit -m "initial commit"')
+os.system('heroku create')
+os.system('git push heroku main')  # Changed 'master' to 'main'

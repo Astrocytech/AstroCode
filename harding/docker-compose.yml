@@ -1,0 +1,12 @@
+
+version: '3'
+services:
+  astrocode:
+    build: .
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_USER=astrocode
+      - POSTGRES_PASSWORD=astrocode

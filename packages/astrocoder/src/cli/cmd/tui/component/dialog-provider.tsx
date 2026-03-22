@@ -15,8 +15,8 @@ import { Clipboard } from "@tui/util/clipboard"
 import { useToast } from "../ui/toast"
 
 const PROVIDER_PRIORITY: Record<string, number> = {
-  opencode: 0,
-  "opencode-go": 1,
+  astrocoder: 0,
+  "astrocoder-go": 1,
   openai: 2,
   "github-copilot": 3,
   anthropic: 4,
@@ -36,10 +36,10 @@ export function createDialogProviderOptions() {
         title: provider.name,
         value: provider.id,
         description: {
-          opencode: "(Recommended)",
+          astrocoder: "(Recommended)",
           anthropic: "(API key)",
           openai: "(ChatGPT Plus/Pro or API key)",
-          "opencode-go": "Low cost subscription for everyone",
+          "astrocoder-go": "Low cost subscription for everyone",
         }[provider.id],
         category: provider.id in PROVIDER_PRIORITY ? "Popular" : "Other",
         async onSelect() {

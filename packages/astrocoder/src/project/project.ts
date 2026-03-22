@@ -89,7 +89,7 @@ export namespace Project {
   }
 
   function readCachedId(dir: string) {
-    return Filesystem.readText(path.join(dir, "opencode"))
+    return Filesystem.readText(path.join(dir, "astrocoder"))
       .then((x) => x.trim())
       .then(ProjectID.make)
       .catch(() => undefined)
@@ -171,7 +171,7 @@ export namespace Project {
           id = roots[0] ? ProjectID.make(roots[0]) : undefined
           if (id) {
             // Write to common dir so the cache is shared across worktrees.
-            await Filesystem.write(path.join(worktree, ".git", "opencode"), id).catch(() => undefined)
+            await Filesystem.write(path.join(worktree, ".git", "astrocoder"), id).catch(() => undefined)
           }
         }
 

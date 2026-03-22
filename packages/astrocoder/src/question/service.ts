@@ -99,7 +99,7 @@ export namespace QuestionService {
 }
 
 export class QuestionService extends ServiceMap.Service<QuestionService, QuestionService.Service>()(
-  "@opencode/Question",
+  "@astrocoder/Question",
 ) {
   static readonly layer = Layer.effect(
     QuestionService,

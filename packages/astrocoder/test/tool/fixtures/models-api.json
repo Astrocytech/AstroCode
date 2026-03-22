@@ -20973,13 +20973,13 @@
       }
     }
   },
-  "opencode": {
-    "id": "opencode",
+  "astrocoder": {
+    "id": "astrocoder",
     "env": ["OPENCODE_API_KEY"],
     "npm": "@ai-sdk/openai-compatible",
-    "api": "https://opencode.ai/zen/v1",
-    "name": "OpenCode Zen",
-    "doc": "https://opencode.ai/docs/zen",
+    "api": "https://astrocoder.ai/zen/v1",
+    "name": "astrocoder Zen",
+    "doc": "https://astrocoder.ai/docs/zen",
     "models": {
       "glm-4.7": {
         "id": "glm-4.7",

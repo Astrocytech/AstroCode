@@ -1230,7 +1230,7 @@ export namespace LSPServer {
           }
         })(),
       )
-      const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), "opencode-jdtls-data"))
+      const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), "astrocoder-jdtls-data"))
       return {
         process: spawn(
           java,

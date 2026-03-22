@@ -19,12 +19,12 @@ afterEach(async () => {
   await fs.rm(managedConfigDir, { force: true, recursive: true }).catch(() => {})
 })
 
-async function writeManagedSettings(settings: object, filename = "opencode.json") {
+async function writeManagedSettings(settings: object, filename = "astrocoder.json") {
   await fs.mkdir(managedConfigDir, { recursive: true })
   await Filesystem.write(path.join(managedConfigDir, filename), JSON.stringify(settings))
 }
 
-async function writeConfig(dir: string, config: object, name = "opencode.json") {
+async function writeConfig(dir: string, config: object, name = "astrocoder.json") {
   await Filesystem.write(path.join(dir, name), JSON.stringify(config))
 }
 
@@ -37,7 +37,7 @@ async function check(map: (dir: string) => string) {
   Config.global.reset()
   try {
     await writeConfig(globalTmp.path, {
-      $schema: "https://opencode.ai/config.json",
+      $schema: "https://astrocoder.ai/config.json",
       snapshot: false,
     })
     await Instance.provide({
@@ -71,7 +71,7 @@ test("loads JSON config file", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await writeConfig(dir, {
-        $schema: "https://opencode.ai/config.json",
+        $schema: "https://astrocoder.ai/config.json",
         model: "test/model",
         username: "testuser",
       })
@@ -104,11 +104,11 @@ test("loads project config from Cygwin paths on Windows", async () => {
   })
 })
 
-test("ignores legacy tui keys in opencode config", async () => {
+test("ignores legacy tui keys in astrocoder config", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await writeConfig(dir, {
-        $schema: "https://opencode.ai/config.json",
+        $schema: "https://astrocoder.ai/config.json",
         model: "test/model",
         theme: "legacy",
         tui: { scroll_speed: 4 },
@@ -130,10 +130,10 @@ test("loads JSONC config file", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await Filesystem.write(
-        path.join(dir, "opencode.jsonc"),
+        path.join(dir, "astrocoder.jsonc"),
         `{
         // This is a comment
-        "$schema": "https://opencode.ai/config.json",
+        "$schema": "https://astrocoder.ai/config.json",
         "model": "test/model",
         "username": "testuser"
       }`,
@@ -156,14 +156,14 @@ test("merges multiple config files with correct precedence", async () => {
       await writeConfig(
         dir,
         {
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           model: "base",
           username: "base",
         },
-        "opencode.jsonc",
+        "astrocoder.jsonc",
       )
       await writeConfig(dir, {
-        $schema: "https://opencode.ai/config.json",
+        $schema: "https://astrocoder.ai/config.json",
         model: "override",
       })
     },
@@ -186,7 +186,7 @@ test("handles environment variable substitution", async () => {
     await using tmp = await tmpdir({
       init: async (dir) => {
         await writeConfig(dir, {
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           username: "{env:TEST_VAR}",
         })
       },
@@ -216,7 +216,7 @@ test("preserves env variables when adding $schema to config", async () => {
       init: async (dir) => {
         // Config without $schema - should trigger auto-add
         await Filesystem.write(
-          path.join(dir, "opencode.json"),
+          path.join(dir, "astrocoder.json"),
           JSON.stringify({
             username: "{env:PRESERVE_VAR}",
           }),
@@ -230,7 +230,7 @@ test("preserves env variables when adding $schema to config", async () => {
         expect(config.username).toBe("secret_value")
 
         // Read the file to verify the env variable was preserved
-        const content = await Filesystem.readText(path.join(tmp.path, "opencode.json"))
+        const content = await Filesystem.readText(path.join(tmp.path, "astrocoder.json"))
         expect(content).toContain("{env:PRESERVE_VAR}")
         expect(content).not.toContain("secret_value")
         expect(content).toContain("$schema")
@@ -260,7 +260,7 @@ test("resolves env templates in account config with account token", async () => 
 
   Account.config = mock(async () => ({
     provider: {
-      opencode: {
+      astrocoder: {
         options: {
           apiKey: "{env:OPENCODE_CONSOLE_TOKEN}",
         },
@@ -276,7 +276,7 @@ test("resolves env templates in account config with account token", async () => 
       directory: tmp.path,
       fn: async () => {
         const config = await Config.get()
-        expect(config.provider?.["opencode"]?.options?.apiKey).toBe("st_test_token")
+        expect(config.provider?.["astrocoder"]?.options?.apiKey).toBe("st_test_token")
       },
     })
   } finally {
@@ -296,7 +296,7 @@ test("handles file inclusion substitution", async () => {
     init: async (dir) => {
       await Filesystem.write(path.join(dir, "included.txt"), "test-user")
       await writeConfig(dir, {
-        $schema: "https://opencode.ai/config.json",
+        $schema: "https://astrocoder.ai/config.json",
         username: "{file:included.txt}",
       })
     },
@@ -315,7 +315,7 @@ test("handles file inclusion with replacement tokens", async () => {
     init: async (dir) => {
       await Filesystem.write(path.join(dir, "included.md"), "const out = await Bun.$`echo hi`")
       await writeConfig(dir, {
-        $schema: "https://opencode.ai/config.json",
+        $schema: "https://astrocoder.ai/config.json",
         username: "{file:included.md}",
       })
     },
@@ -333,7 +333,7 @@ test("validates config schema and throws on invalid fields", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await writeConfig(dir, {
-        $schema: "https://opencode.ai/config.json",
+        $schema: "https://astrocoder.ai/config.json",
         invalid_field: "should cause error",
       })
     },
@@ -350,7 +350,7 @@ test("validates config schema and throws on invalid fields", async () => {
 test("throws error for invalid JSON", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
-      await Filesystem.write(path.join(dir, "opencode.json"), "{ invalid json }")
+      await Filesystem.write(path.join(dir, "astrocoder.json"), "{ invalid json }")
     },
   })
   await Instance.provide({
@@ -365,7 +365,7 @@ test("handles agent configuration", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await writeConfig(dir, {
-        $schema: "https://opencode.ai/config.json",
+        $schema: "https://astrocoder.ai/config.json",
         agent: {
           test_agent: {
             model: "test/model",
@@ -395,7 +395,7 @@ test("treats agent variant as model-scoped setting (not provider option)", async
   await using tmp = await tmpdir({
     init: async (dir) => {
       await writeConfig(dir, {
-        $schema: "https://opencode.ai/config.json",
+        $schema: "https://astrocoder.ai/config.json",
         agent: {
           test_agent: {
             model: "openai/gpt-5.2",
@@ -426,7 +426,7 @@ test("handles command configuration", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await writeConfig(dir, {
-        $schema: "https://opencode.ai/config.json",
+        $schema: "https://astrocoder.ai/config.json",
         command: {
           test_command: {
             template: "test template",
@@ -454,9 +454,9 @@ test("migrates autoshare to share field", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await Filesystem.write(
-        path.join(dir, "opencode.json"),
+        path.join(dir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           autoshare: true,
         }),
       )
@@ -475,9 +475,9 @@ test("migrates mode field to agent field", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await Filesystem.write(
-        path.join(dir, "opencode.json"),
+        path.join(dir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           mode: {
             test_mode: {
               model: "test/model",
@@ -503,12 +503,12 @@ test("migrates mode field to agent field", async () => {
   })
 })
 
-test("loads config from .opencode directory", async () => {
+test("loads config from .astrocoder directory", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
-      const opencodeDir = path.join(dir, ".opencode")
-      await fs.mkdir(opencodeDir, { recursive: true })
-      const agentDir = path.join(opencodeDir, "agent")
+      const astrocoderDir = path.join(dir, ".astrocoder")
+      await fs.mkdir(astrocoderDir, { recursive: true })
+      const agentDir = path.join(astrocoderDir, "agent")
       await fs.mkdir(agentDir, { recursive: true })
 
       await Filesystem.write(
@@ -535,13 +535,13 @@ Test agent prompt`,
   })
 })
 
-test("loads agents from .opencode/agents (plural)", async () => {
+test("loads agents from .astrocoder/agents (plural)", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
-      const opencodeDir = path.join(dir, ".opencode")
-      await fs.mkdir(opencodeDir, { recursive: true })
+      const astrocoderDir = path.join(dir, ".astrocoder")
+      await fs.mkdir(astrocoderDir, { recursive: true })
 
-      const agentsDir = path.join(opencodeDir, "agents")
+      const agentsDir = path.join(astrocoderDir, "agents")
       await fs.mkdir(path.join(agentsDir, "nested"), { recursive: true })
 
       await Filesystem.write(
@@ -586,13 +586,13 @@ Nested agent prompt`,
   })
 })
 
-test("loads commands from .opencode/command (singular)", async () => {
+test("loads commands from .astrocoder/command (singular)", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
-      const opencodeDir = path.join(dir, ".opencode")
-      await fs.mkdir(opencodeDir, { recursive: true })
+      const astrocoderDir = path.join(dir, ".astrocoder")
+      await fs.mkdir(astrocoderDir, { recursive: true })
 
-      const commandDir = path.join(opencodeDir, "command")
+      const commandDir = path.join(astrocoderDir, "command")
       await fs.mkdir(path.join(commandDir, "nested"), { recursive: true })
 
       await Filesystem.write(
@@ -631,13 +631,13 @@ Nested command template`,
   })
 })
 
-test("loads commands from .opencode/commands (plural)", async () => {
+test("loads commands from .astrocoder/commands (plural)", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
-      const opencodeDir = path.join(dir, ".opencode")
-      await fs.mkdir(opencodeDir, { recursive: true })
+      const astrocoderDir = path.join(dir, ".astrocoder")
+      await fs.mkdir(astrocoderDir, { recursive: true })
 
-      const commandsDir = path.join(opencodeDir, "commands")
+      const commandsDir = path.join(astrocoderDir, "commands")
       await fs.mkdir(path.join(commandsDir, "nested"), { recursive: true })
 
       await Filesystem.write(
@@ -824,8 +824,8 @@ test("resolves scoped npm plugins in config", async () => {
       await Filesystem.write(path.join(pluginDir, "index.js"), "export default {}\n")
 
       await Filesystem.write(
-        path.join(dir, "opencode.json"),
-        JSON.stringify({ $schema: "https://opencode.ai/config.json", plugin: ["@scope/plugin"] }, null, 2),
+        path.join(dir, "astrocoder.json"),
+        JSON.stringify({ $schema: "https://astrocoder.ai/config.json", plugin: ["@scope/plugin"] }, null, 2),
       )
     },
   })
@@ -836,7 +836,7 @@ test("resolves scoped npm plugins in config", async () => {
       const config = await Config.get()
       const pluginEntries = config.plugin ?? []
 
-      const baseUrl = pathToFileURL(path.join(tmp.path, "opencode.json")).href
+      const baseUrl = pathToFileURL(path.join(tmp.path, "astrocoder.json")).href
       const expected = pathToFileURL(path.join(tmp.path, "node_modules", "@scope", "plugin", "index.js")).href
 
       expect(pluginEntries.includes(expected)).toBe(true)
@@ -851,25 +851,25 @@ test("resolves scoped npm plugins in config", async () => {
 test("merges plugin arrays from global and local configs", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
-      // Create a nested project structure with local .opencode config
+      // Create a nested project structure with local .astrocoder config
       const projectDir = path.join(dir, "project")
-      const opencodeDir = path.join(projectDir, ".opencode")
-      await fs.mkdir(opencodeDir, { recursive: true })
+      const astrocoderDir = path.join(projectDir, ".astrocoder")
+      await fs.mkdir(astrocoderDir, { recursive: true })
 
       // Global config with plugins
       await Filesystem.write(
-        path.join(dir, "opencode.json"),
+        path.join(dir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           plugin: ["global-plugin-1", "global-plugin-2"],
         }),
       )
 
-      // Local .opencode config with different plugins
+      // Local .astrocoder config with different plugins
       await Filesystem.write(
-        path.join(opencodeDir, "opencode.json"),
+        path.join(astrocoderDir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           plugin: ["local-plugin-1"],
         }),
       )
@@ -897,9 +897,9 @@ test("merges plugin arrays from global and local configs", async () => {
 test("does not error when only custom agent is a subagent", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
-      const opencodeDir = path.join(dir, ".opencode")
-      await fs.mkdir(opencodeDir, { recursive: true })
-      const agentDir = path.join(opencodeDir, "agent")
+      const astrocoderDir = path.join(dir, ".astrocoder")
+      await fs.mkdir(astrocoderDir, { recursive: true })
+      const agentDir = path.join(astrocoderDir, "agent")
       await fs.mkdir(agentDir, { recursive: true })
 
       await Filesystem.write(
@@ -930,21 +930,21 @@ test("merges instructions arrays from global and local configs", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       const projectDir = path.join(dir, "project")
-      const opencodeDir = path.join(projectDir, ".opencode")
-      await fs.mkdir(opencodeDir, { recursive: true })
+      const astrocoderDir = path.join(projectDir, ".astrocoder")
+      await fs.mkdir(astrocoderDir, { recursive: true })
 
       await Filesystem.write(
-        path.join(dir, "opencode.json"),
+        path.join(dir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           instructions: ["global-instructions.md", "shared-rules.md"],
         }),
       )
 
       await Filesystem.write(
-        path.join(opencodeDir, "opencode.json"),
+        path.join(astrocoderDir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           instructions: ["local-instructions.md"],
         }),
       )
@@ -969,21 +969,21 @@ test("deduplicates duplicate instructions from global and local configs", async 
   await using tmp = await tmpdir({
     init: async (dir) => {
       const projectDir = path.join(dir, "project")
-      const opencodeDir = path.join(projectDir, ".opencode")
-      await fs.mkdir(opencodeDir, { recursive: true })
+      const astrocoderDir = path.join(projectDir, ".astrocoder")
+      await fs.mkdir(astrocoderDir, { recursive: true })
 
       await Filesystem.write(
-        path.join(dir, "opencode.json"),
+        path.join(dir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           instructions: ["duplicate.md", "global-only.md"],
         }),
       )
 
       await Filesystem.write(
-        path.join(opencodeDir, "opencode.json"),
+        path.join(astrocoderDir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           instructions: ["duplicate.md", "local-only.md"],
         }),
       )
@@ -1010,25 +1010,25 @@ test("deduplicates duplicate instructions from global and local configs", async 
 test("deduplicates duplicate plugins from global and local configs", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
-      // Create a nested project structure with local .opencode config
+      // Create a nested project structure with local .astrocoder config
       const projectDir = path.join(dir, "project")
-      const opencodeDir = path.join(projectDir, ".opencode")
-      await fs.mkdir(opencodeDir, { recursive: true })
+      const astrocoderDir = path.join(projectDir, ".astrocoder")
+      await fs.mkdir(astrocoderDir, { recursive: true })
 
       // Global config with plugins
       await Filesystem.write(
-        path.join(dir, "opencode.json"),
+        path.join(dir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           plugin: ["duplicate-plugin", "global-plugin-1"],
         }),
       )
 
-      // Local .opencode config with some overlapping plugins
+      // Local .astrocoder config with some overlapping plugins
       await Filesystem.write(
-        path.join(opencodeDir, "opencode.json"),
+        path.join(astrocoderDir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           plugin: ["duplicate-plugin", "local-plugin-1"],
         }),
       )
@@ -1065,9 +1065,9 @@ test("migrates legacy tools config to permissions - allow", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await Filesystem.write(
-        path.join(dir, "opencode.json"),
+        path.join(dir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           agent: {
             test: {
               tools: {
@@ -1096,9 +1096,9 @@ test("migrates legacy tools config to permissions - deny", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await Filesystem.write(
-        path.join(dir, "opencode.json"),
+        path.join(dir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           agent: {
             test: {
               tools: {
@@ -1127,9 +1127,9 @@ test("migrates legacy write tool to edit permission", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await Filesystem.write(
-        path.join(dir, "opencode.json"),
+        path.join(dir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           agent: {
             test: {
               tools: {
@@ -1159,7 +1159,7 @@ test("managed settings override user settings", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await writeConfig(dir, {
-        $schema: "https://opencode.ai/config.json",
+        $schema: "https://astrocoder.ai/config.json",
         model: "user/model",
         username: "testuser",
       })
@@ -1167,7 +1167,7 @@ test("managed settings override user settings", async () => {
   })
 
   await writeManagedSettings({
-    $schema: "https://opencode.ai/config.json",
+    $schema: "https://astrocoder.ai/config.json",
     model: "managed/model",
   })
 
@@ -1185,7 +1185,7 @@ test("managed settings override project settings", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await writeConfig(dir, {
-        $schema: "https://opencode.ai/config.json",
+        $schema: "https://astrocoder.ai/config.json",
         autoupdate: true,
         disabled_providers: [],
       })
@@ -1193,7 +1193,7 @@ test("managed settings override project settings", async () => {
   })
 
   await writeManagedSettings({
-    $schema: "https://opencode.ai/config.json",
+    $schema: "https://astrocoder.ai/config.json",
     autoupdate: false,
     disabled_providers: ["openai"],
   })
@@ -1212,7 +1212,7 @@ test("missing managed settings file is not an error", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await writeConfig(dir, {
-        $schema: "https://opencode.ai/config.json",
+        $schema: "https://astrocoder.ai/config.json",
         model: "user/model",
       })
     },
@@ -1231,9 +1231,9 @@ test("migrates legacy edit tool to edit permission", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await Filesystem.write(
-        path.join(dir, "opencode.json"),
+        path.join(dir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           agent: {
             test: {
               tools: {
@@ -1260,9 +1260,9 @@ test("migrates legacy patch tool to edit permission", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await Filesystem.write(
-        path.join(dir, "opencode.json"),
+        path.join(dir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           agent: {
             test: {
               tools: {
@@ -1289,9 +1289,9 @@ test("migrates legacy multiedit tool to edit permission", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await Filesystem.write(
-        path.join(dir, "opencode.json"),
+        path.join(dir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           agent: {
             test: {
               tools: {
@@ -1318,9 +1318,9 @@ test("migrates mixed legacy tools config", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await Filesystem.write(
-        path.join(dir, "opencode.json"),
+        path.join(dir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           agent: {
             test: {
               tools: {
@@ -1353,9 +1353,9 @@ test("merges legacy tools with existing permission config", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await Filesystem.write(
-        path.join(dir, "opencode.json"),
+        path.join(dir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           agent: {
             test: {
               permission: {
@@ -1386,9 +1386,9 @@ test("permission config preserves key order", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       await Filesystem.write(
-        path.join(dir, "opencode.json"),
+        path.join(dir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           permission: {
             "*": "deny",
             edit: "ask",
@@ -1434,9 +1434,9 @@ test("project config can override MCP server enabled status", async () => {
     init: async (dir) => {
       // Simulates a base config (like from remote .well-known) with disabled MCP
       await Filesystem.write(
-        path.join(dir, "opencode.jsonc"),
+        path.join(dir, "astrocoder.jsonc"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           mcp: {
             jira: {
               type: "remote",
@@ -1453,9 +1453,9 @@ test("project config can override MCP server enabled status", async () => {
       )
       // Project config enables just jira
       await Filesystem.write(
-        path.join(dir, "opencode.json"),
+        path.join(dir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           mcp: {
             jira: {
               type: "remote",
@@ -1492,9 +1492,9 @@ test("MCP config deep merges preserving base config properties", async () => {
     init: async (dir) => {
       // Base config with full MCP definition
       await Filesystem.write(
-        path.join(dir, "opencode.jsonc"),
+        path.join(dir, "astrocoder.jsonc"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           mcp: {
             myserver: {
               type: "remote",
@@ -1509,9 +1509,9 @@ test("MCP config deep merges preserving base config properties", async () => {
       )
       // Override just enables it, should preserve other properties
       await Filesystem.write(
-        path.join(dir, "opencode.json"),
+        path.join(dir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           mcp: {
             myserver: {
               type: "remote",
@@ -1539,14 +1539,14 @@ test("MCP config deep merges preserving base config properties", async () => {
   })
 })
 
-test("local .opencode config can override MCP from project config", async () => {
+test("local .astrocoder config can override MCP from project config", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
       // Project config with disabled MCP
       await Filesystem.write(
-        path.join(dir, "opencode.json"),
+        path.join(dir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           mcp: {
             docs: {
               type: "remote",
@@ -1556,13 +1556,13 @@ test("local .opencode config can override MCP from project config", async () => 
           },
         }),
       )
-      // Local .opencode directory config enables it
-      const opencodeDir = path.join(dir, ".opencode")
-      await fs.mkdir(opencodeDir, { recursive: true })
+      // Local .astrocoder directory config enables it
+      const astrocoderDir = path.join(dir, ".astrocoder")
+      await fs.mkdir(astrocoderDir, { recursive: true })
       await Filesystem.write(
-        path.join(opencodeDir, "opencode.json"),
+        path.join(astrocoderDir, "astrocoder.json"),
         JSON.stringify({
-          $schema: "https://opencode.ai/config.json",
+          $schema: "https://astrocoder.ai/config.json",
           mcp: {
             docs: {
               type: "remote",
@@ -1588,7 +1588,7 @@ test("project config overrides remote well-known config", async () => {
   let fetchedUrl: string | undefined
   const mockFetch = mock((url: string | URL | Request) => {
     const urlStr = url.toString()
-    if (urlStr.includes(".well-known/opencode")) {
+    if (urlStr.includes(".well-known/astrocoder")) {
       fetchedUrl = urlStr
       return Promise.resolve(
         new Response(
@@ -1628,9 +1628,9 @@ test("project config overrides remote well-known config", async () => {
       init: async (dir) => {
         // Project config enables jira (overriding remote default)
         await Filesystem.write(
-          path.join(dir, "opencode.json"),
+          path.join(dir, "astrocoder.json"),
           JSON.stringify({
-            $schema: "https://opencode.ai/config.json",
+            $schema: "https://astrocoder.ai/config.json",
             mcp: {
               jira: {
                 type: "remote",
@@ -1647,7 +1647,7 @@ test("project config overrides remote well-known config", async () => {
       fn: async () => {
         const config = await Config.get()
         // Verify fetch was called for wellknown config
-        expect(fetchedUrl).toBe("https://example.com/.well-known/opencode")
+        expect(fetchedUrl).toBe("https://example.com/.well-known/astrocoder")
         // Project config (enabled: true) should override remote (enabled: false)
         expect(config.mcp?.jira?.enabled).toBe(true)
       },
@@ -1663,7 +1663,7 @@ test("wellknown URL with trailing slash is normalized", async () => {
   let fetchedUrl: string | undefined
   const mockFetch = mock((url: string | URL | Request) => {
     const urlStr = url.toString()
-    if (urlStr.includes(".well-known/opencode")) {
+    if (urlStr.includes(".well-known/astrocoder")) {
       fetchedUrl = urlStr
       return Promise.resolve(
         new Response(
@@ -1702,9 +1702,9 @@ test("wellknown URL with trailing slash is normalized", async () => {
       git: true,
       init: async (dir) => {
         await Filesystem.write(
-          path.join(dir, "opencode.json"),
+          path.join(dir, "astrocoder.json"),
           JSON.stringify({
-            $schema: "https://opencode.ai/config.json",
+            $schema: "https://astrocoder.ai/config.json",
           }),
         )
       },
@@ -1714,7 +1714,7 @@ test("wellknown URL with trailing slash is normalized", async () => {
       fn: async () => {
         await Config.get()
         // Trailing slash should be stripped — no double slash in the fetch URL
-        expect(fetchedUrl).toBe("https://example.com/.well-known/opencode")
+        expect(fetchedUrl).toBe("https://example.com/.well-known/astrocoder")
       },
     })
   } finally {
@@ -1731,14 +1731,14 @@ describe("getPluginName", () => {
   })
 
   test("extracts name from npm package with version", () => {
-    expect(Config.getPluginName("oh-my-opencode@2.4.3")).toBe("oh-my-opencode")
+    expect(Config.getPluginName("oh-my-astrocoder@2.4.3")).toBe("oh-my-astrocoder")
     expect(Config.getPluginName("some-plugin@1.0.0")).toBe("some-plugin")
     expect(Config.getPluginName("plugin@latest")).toBe("plugin")
   })
 
   test("extracts name from scoped npm package", () => {
     expect(Config.getPluginName("@scope/pkg@1.0.0")).toBe("@scope/pkg")
-    expect(Config.getPluginName("@opencode/plugin@2.0.0")).toBe("@opencode/plugin")
+    expect(Config.getPluginName("@astrocoder/plugin@2.0.0")).toBe("@astrocoder/plugin")
   })
 
   test("returns full string for package without version", () => {
@@ -1761,12 +1761,12 @@ describe("deduplicatePlugins", () => {
   })
 
   test("prefers local file over npm package with same name", () => {
-    const plugins = ["oh-my-opencode@2.4.3", "file:///project/.opencode/plugin/oh-my-opencode.js"]
+    const plugins = ["oh-my-astrocoder@2.4.3", "file:///project/.astrocoder/plugin/oh-my-astrocoder.js"]
 
     const result = Config.deduplicatePlugins(plugins)
 
     expect(result.length).toBe(1)
-    expect(result[0]).toBe("file:///project/.opencode/plugin/oh-my-opencode.js")
+    expect(result[0]).toBe("file:///project/.astrocoder/plugin/oh-my-astrocoder.js")
   })
 
   test("preserves order of remaining plugins", () => {
@@ -1777,18 +1777,18 @@ describe("deduplicatePlugins", () => {
     expect(result).toEqual(["a-plugin@1.0.0", "b-plugin@1.0.0", "c-plugin@1.0.0"])
   })
 
-  test("local plugin directory overrides global opencode.json plugin", async () => {
+  test("local plugin directory overrides global astrocoder.json plugin", async () => {
     await using tmp = await tmpdir({
       init: async (dir) => {
         const projectDir = path.join(dir, "project")
-        const opencodeDir = path.join(projectDir, ".opencode")
-        const pluginDir = path.join(opencodeDir, "plugin")
+        const astrocoderDir = path.join(projectDir, ".astrocoder")
+        const pluginDir = path.join(astrocoderDir, "plugin")
         await fs.mkdir(pluginDir, { recursive: true })
 
         await Filesystem.write(
-          path.join(dir, "opencode.json"),
+          path.join(dir, "astrocoder.json"),
           JSON.stringify({
-            $schema: "https://opencode.ai/config.json",
+            $schema: "https://astrocoder.ai/config.json",
             plugin: ["my-plugin@1.0.0"],
           }),
         )
@@ -1821,9 +1821,9 @@ describe("OPENCODE_DISABLE_PROJECT_CONFIG", () => {
         init: async (dir) => {
           // Create a project config that would normally be loaded
           await Filesystem.write(
-            path.join(dir, "opencode.json"),
+            path.join(dir, "astrocoder.json"),
             JSON.stringify({
-              $schema: "https://opencode.ai/config.json",
+              $schema: "https://astrocoder.ai/config.json",
               model: "project/model",
               username: "project-user",
             }),
@@ -1848,26 +1848,26 @@ describe("OPENCODE_DISABLE_PROJECT_CONFIG", () => {
     }
   })
 
-  test("skips project .opencode/ directories when flag is set", async () => {
+  test("skips project .astrocoder/ directories when flag is set", async () => {
     const originalEnv = process.env["OPENCODE_DISABLE_PROJECT_CONFIG"]
     process.env["OPENCODE_DISABLE_PROJECT_CONFIG"] = "true"
 
     try {
       await using tmp = await tmpdir({
         init: async (dir) => {
-          // Create a .opencode directory with a command
-          const opencodeDir = path.join(dir, ".opencode", "command")
-          await fs.mkdir(opencodeDir, { recursive: true })
-          await Filesystem.write(path.join(opencodeDir, "test-cmd.md"), "# Test Command\nThis is a test command.")
+          // Create a .astrocoder directory with a command
+          const astrocoderDir = path.join(dir, ".astrocoder", "command")
+          await fs.mkdir(astrocoderDir, { recursive: true })
+          await Filesystem.write(path.join(astrocoderDir, "test-cmd.md"), "# Test Command\nThis is a test command.")
         },
       })
       await Instance.provide({
         directory: tmp.path,
         fn: async () => {
           const directories = await Config.directories()
-          // Project .opencode should NOT be in directories list
-          const hasProjectOpencode = directories.some((d) => d.startsWith(tmp.path))
-          expect(hasProjectOpencode).toBe(false)
+          // Project .astrocoder should NOT be in directories list
+          const hasProjectAstrocoder = directories.some((d) => d.startsWith(tmp.path))
+          expect(hasProjectAstrocoder).toBe(false)
         },
       })
     } finally {
@@ -1916,9 +1916,9 @@ describe("OPENCODE_DISABLE_PROJECT_CONFIG", () => {
         init: async (dir) => {
           // Create a config with relative instruction path
           await Filesystem.write(
-            path.join(dir, "opencode.json"),
+            path.join(dir, "astrocoder.json"),
             JSON.stringify({
-              $schema: "https://opencode.ai/config.json",
+              $schema: "https://astrocoder.ai/config.json",
               instructions: ["./CUSTOM.md"],
             }),
           )
@@ -1962,9 +1962,9 @@ describe("OPENCODE_DISABLE_PROJECT_CONFIG", () => {
         init: async (dir) => {
           // Create config in the custom config dir
           await Filesystem.write(
-            path.join(dir, "opencode.json"),
+            path.join(dir, "astrocoder.json"),
             JSON.stringify({
-              $schema: "https://opencode.ai/config.json",
+              $schema: "https://astrocoder.ai/config.json",
               model: "configdir/model",
             }),
           )
@@ -1975,9 +1975,9 @@ describe("OPENCODE_DISABLE_PROJECT_CONFIG", () => {
         init: async (dir) => {
           // Create config in project (should be ignored)
           await Filesystem.write(
-            path.join(dir, "opencode.json"),
+            path.join(dir, "astrocoder.json"),
             JSON.stringify({
-              $schema: "https://opencode.ai/config.json",
+              $schema: "https://astrocoder.ai/config.json",
               model: "project/model",
             }),
           )
@@ -2016,7 +2016,7 @@ describe("OPENCODE_CONFIG_CONTENT token substitution", () => {
     const originalTestVar = process.env["TEST_CONFIG_VAR"]
     process.env["TEST_CONFIG_VAR"] = "test_api_key_12345"
     process.env["OPENCODE_CONFIG_CONTENT"] = JSON.stringify({
-      $schema: "https://opencode.ai/config.json",
+      $schema: "https://astrocoder.ai/config.json",
       username: "{env:TEST_CONFIG_VAR}",
     })
 
@@ -2051,7 +2051,7 @@ describe("OPENCODE_CONFIG_CONTENT token substitution", () => {
         init: async (dir) => {
           await Filesystem.write(path.join(dir, "api_key.txt"), "secret_key_from_file")
           process.env["OPENCODE_CONFIG_CONTENT"] = JSON.stringify({
-            $schema: "https://opencode.ai/config.json",
+            $schema: "https://astrocoder.ai/config.json",
             username: "{file:./api_key.txt}",
           })
         },

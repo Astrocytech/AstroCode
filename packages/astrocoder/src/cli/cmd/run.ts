@@ -649,7 +649,7 @@ export const command = cmd({
         const request = new Request(input, init)
         return Server.Default().fetch(request)
       }) as typeof globalThis.fetch
-      const sdk = createOpencodeClient({ baseUrl: "http://opencode.internal", fetch: fn })
+      const sdk = createOpencodeClient({ baseUrl: "http://astrocoder.internal", fetch: fn })
       await execute(sdk)
     })
   },

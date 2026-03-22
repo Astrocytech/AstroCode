@@ -537,7 +537,7 @@ function App() {
     {
       title: "View status",
       keybind: "status_view",
-      value: "opencode.status",
+      value: "astrocoder.status",
       slash: {
         name: "status",
       },

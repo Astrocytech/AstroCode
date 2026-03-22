@@ -1,5 +1,2 @@
-
-# Top comment added
-print("Hello World")
-
-NEW CONTENT
+# Edited at the top
+print('Hello World')

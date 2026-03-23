@@ -323,8 +323,19 @@ Reply ONLY with the reviewed/fixed Python code in a python code block. If no cha
 
       let promptPart = ""
       if (this.isSmallModel) {
-        // Check if this is a file creation task
         const isWriteTask = /write|create|save|make/i.test(userPrompt)
+        const isRenameTask = /rename|move\s+(it|the\s+file)|change\s+name/i.test(userPrompt)
+        const isCopyTask = /copy\s+(it|the\s+file)|duplicate/i.test(userPrompt)
+        const isDeleteTask = /delete\s+(it|the\s+file)|remove\s+(it|the\s+file)|erase/i.test(userPrompt)
+        
+        let fileOpInstruction = ""
+        if (isRenameTask) {
+          fileOpInstruction = `\nFor RENAME/MOVE: use 'mv old new' - DELETES original! Example: subprocess.run("mv a.txt b.txt", shell=True)`
+        } else if (isCopyTask) {
+          fileOpInstruction = `\nFor COPY: use 'cp src dst' - creates NEW file, keeps original! Example: subprocess.run("cp original.txt copy.txt", shell=True)`
+        } else if (isDeleteTask) {
+          fileOpInstruction = `\nFor DELETE: use 'rm filepath' - PERMANENTLY deletes! Example: subprocess.run("rm file.txt", shell=True)`
+        }
         const targetPathHint = targetFile 
           ? `Use path: ${targetDir}/${targetFile}` 
           : `Write to: ${PROJECT_ROOT}/output.txt`
@@ -336,7 +347,7 @@ Reply ONLY with the reviewed/fixed Python code in a python code block. If no cha
         // Simplified prompt for small models - less context to process
         promptPart = `${fileContents}
 TASK: ${userPrompt}
-${isCommandTask ? `Workdir: ${PROJECT_ROOT}` : `Workdir: ${targetDir || PROJECT_ROOT}`}${writeInstruction}
+${isCommandTask ? `Workdir: ${PROJECT_ROOT}` : `Workdir: ${targetDir || PROJECT_ROOT}`}${fileOpInstruction}${writeInstruction}
 STRICT: Write ONLY Python code in a code block. No explanations. Format:
 \`\`\`python
 # your code here
@@ -352,7 +363,9 @@ Examples:
 - List files: subprocess.run("ls -la", shell=True)
 - Run script: subprocess.run("python3 script.py", shell=True)
 - Check disk: subprocess.run("du -sh .", shell=True)
-- Git status: subprocess.run("git status", shell=True)
+- Rename/Move: subprocess.run("mv oldname newname", shell=True)
+- Copy file: subprocess.run("cp src dst", shell=True)
+- Delete file: subprocess.run("rm filepath", shell=True)
 
 STRICT OUTPUT FORMAT - You MUST follow this exactly:
 1. Start with \`\`\`python on its own line
@@ -362,6 +375,17 @@ STRICT OUTPUT FORMAT - You MUST follow this exactly:
       } else {
         const isFixTask = /fix|solve|correct|repair/i.test(userPrompt)
         const isDataTask = /parse|extract|filter|transform|sort|merge|split|convert|deduplicate/i.test(userPrompt)
+        const isRenameTask = /rename|move\s+(it|the\s+file)|change\s+name/i.test(userPrompt)
+        const isCopyTask = /copy\s+(it|the\s+file)|duplicate/i.test(userPrompt)
+        const isDeleteTask = /delete\s+(it|the\s+file)|remove\s+(it|the\s+file)|erase/i.test(userPrompt)
+        
+        const renameInstruction = isRenameTask
+          ? `- For RENAME: use os.rename(src, dst) - this MOVES the file and DELETES the original!\n  Example: os.rename("old.txt", "new.txt")\n`
+          : isCopyTask
+          ? `- For COPY: use shutil.copy2(src, dst) - this creates a NEW file, does NOT delete original!\n  Example: shutil.copy2("original.txt", "copy.txt")\n`
+          : isDeleteTask
+          ? `- For DELETE: use os.remove(filepath) - this PERMANENTLY deletes the file!\n  Example: os.remove("file.txt")\n  Or: subprocess.run("rm file.txt", shell=True)\n`
+          : ""
         const editInstruction = fileContents 
           ? `- The file content shown above is already read - use it as needed\n`
           : ""
@@ -374,7 +398,7 @@ STRICT OUTPUT FORMAT - You MUST follow this exactly:
         promptPart = `TASK: ${userPrompt}
 
 Write Python code to accomplish this task. 
-${editInstruction}${fixInstruction}${dataExamples}- Use the EXACT file paths from the task
+${renameInstruction}${editInstruction}${fixInstruction}${dataExamples}- Use the EXACT file paths from the task
 - For editing tasks (append, prepend, replace): read the file first, then modify
 - Create directories if needed: os.makedirs("${targetDir || PROJECT_ROOT}", exist_ok=True)
 - Write files using: with open("${targetFile || 'filename'}", 'w') as f: f.write(content)

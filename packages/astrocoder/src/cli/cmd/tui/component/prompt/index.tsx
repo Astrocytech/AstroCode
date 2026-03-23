@@ -30,6 +30,7 @@ import { createColors, createFrames } from "../../ui/spinner.ts"
 import { useDialog } from "@tui/ui/dialog"
 import { DialogProvider as DialogProviderConnect } from "../dialog-provider"
 import { DialogAlert } from "../../ui/dialog-alert"
+import { DialogSelfHeal } from "../../ui/dialog-self-heal"
 import { useToast } from "../../ui/toast"
 import { useKV } from "../../context/kv"
 import { useTextareaKeybindings } from "../textarea-keybindings"
@@ -596,6 +597,26 @@ export function Prompt(props: PromptProps) {
           modelID: selectedModel.modelID,
         },
         command: inputText,
+      }).catch(async (err: Error) => {
+        const previousAgent = local.agent.current().name
+        const confirmed = await DialogSelfHeal.show(
+          dialog,
+          err.message || String(err) || "Shell command failed",
+        )
+        if (confirmed === "fix") {
+          local.agent.set("self-heal")
+          const errorPrompt = `Fix this error in the codebase:\n\nError: ${err.message || String(err)}\n\nAnalyze the error and fix the bug that caused it.`
+          await sdk.client.session.prompt({
+            sessionID,
+            ...selectedModel,
+            messageID,
+            agent: "self-heal",
+            model: selectedModel,
+            parts: [{ id: PartID.ascending(), type: "text", text: errorPrompt }],
+          })
+        } else {
+          local.agent.set(previousAgent)
+        }
       })
       setStore("mode", "normal")
     } else if (
@@ -627,6 +648,26 @@ export function Prompt(props: PromptProps) {
             id: PartID.ascending(),
             ...x,
           })),
+      }).catch(async (err: Error) => {
+        const previousAgent = local.agent.current().name
+        const confirmed = await DialogSelfHeal.show(
+          dialog,
+          err.message || String(err) || "Command execution failed",
+        )
+        if (confirmed === "fix") {
+          local.agent.set("self-heal")
+          const errorPrompt = `Fix this error in the codebase:\n\nError: ${err.message || String(err)}\n\nAnalyze the error and fix the bug that caused it.`
+          await sdk.client.session.prompt({
+            sessionID,
+            ...selectedModel,
+            messageID,
+            agent: "self-heal",
+            model: selectedModel,
+            parts: [{ id: PartID.ascending(), type: "text", text: errorPrompt }],
+          })
+        } else {
+          local.agent.set(previousAgent)
+        }
       })
     } else {
       sdk.client.session
@@ -649,7 +690,27 @@ export function Prompt(props: PromptProps) {
             })),
           ],
         })
-        .catch(() => {})
+        .catch(async (err: Error) => {
+          const previousAgent = local.agent.current().name
+          const confirmed = await DialogSelfHeal.show(
+            dialog,
+            err.message || String(err) || "Unknown error occurred",
+          )
+          if (confirmed === "fix") {
+            local.agent.set("self-heal")
+            const errorPrompt = `Fix this error in the codebase:\n\nError: ${err.message || String(err)}\n\nAnalyze the error and fix the bug that caused it.`
+            await sdk.client.session.prompt({
+              sessionID,
+              ...selectedModel,
+              messageID,
+              agent: "self-heal",
+              model: selectedModel,
+              parts: [{ id: PartID.ascending(), type: "text", text: errorPrompt }],
+            })
+          } else {
+            local.agent.set(previousAgent)
+          }
+        })
     }
     history.append({
       ...store.prompt,
@@ -964,7 +1025,6 @@ export function Prompt(props: PromptProps) {
                       event.preventDefault()
                       const content = await Filesystem.readArrayBuffer(filepath)
                         .then((buffer) => Buffer.from(buffer).toString("base64"))
-                        .catch(() => {})
                       if (content) {
                         await pasteImage({
                           filename,

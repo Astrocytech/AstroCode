@@ -184,10 +184,11 @@ export namespace SessionPrompt {
       // Additional check for coding intent
       const codingKeywords = /\b(file|edit|create|write|read|code|function|class|debug|fix|implement|add|remove|refactor|search|grep|glob|build|run|test|install|configure|script|module|import|export|variable|bug|error|problem|issue)\b/gi
       const hasCodingIntent = codingKeywords.test(userText)
-
-    // Use WorkflowEngine only for actual coding tasks, not casual conversation
-    if (isOllama && userText.length > 10 && !isConversational && hasCodingIntent) {
-      log.info("Using WorkflowEngine for Ollama task", { modelID: model.modelID })
+      if (!hasCodingIntent) {
+        // Skip WorkflowEngine for non-coding tasks
+        log.info("Skipping WorkflowEngine - not a coding task", { userText: userText.slice(0, 50) })
+      } else {
+        log.info("Using WorkflowEngine for Ollama task", { modelID: model.modelID })
       const engine = new WorkflowEngine(model.modelID.replace("ollama/", "").replace("ollama_chat/", ""), false)
       const result = await engine.run(userText)
       

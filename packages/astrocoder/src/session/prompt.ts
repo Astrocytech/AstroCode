@@ -175,11 +175,18 @@ export namespace SessionPrompt {
     const isOllama = model.providerID === "ollama" || model.modelID.startsWith("ollama/") || model.modelID.startsWith("ollama_chat/")
 
     // Check if this looks like a coding task vs casual conversation
-    const codingKeywords = /\b(file|edit|create|write|read|code|function|class|debug|fix|implement|add|remove|refactor|search|grep|glob|build|run|test|install|configure|script|module|import|export|variable|bug|error|problem|issue|help|assist|task|project|generate|make|need)\b/gi
-    const hasCodingIntent = userText.match(codingKeywords)
+    // Skip WorkflowEngine for obvious conversational phrases
+    const conversationalPatterns = /^(hi|hello|hey|how are you|what's up|howdy|good morning|good evening|good afternoon|thanks|thank you|ok|okay|sure|yes|no|please|help|assist)/i
+    const isConversational = conversationalPatterns.test(userText.trim())
+    
+    // Only use WorkflowEngine for actual coding tasks
+    if (isOllama && userText.length > 10 && !isConversational) {
+      // Additional check for coding intent
+      const codingKeywords = /\b(file|edit|create|write|read|code|function|class|debug|fix|implement|add|remove|refactor|search|grep|glob|build|run|test|install|configure|script|module|import|export|variable|bug|error|problem|issue)\b/gi
+      const hasCodingIntent = codingKeywords.test(userText)
 
     // Use WorkflowEngine only for actual coding tasks, not casual conversation
-    if (isOllama && userText.length > 5 && hasCodingIntent) {
+    if (isOllama && userText.length > 10 && !isConversational && hasCodingIntent) {
       log.info("Using WorkflowEngine for Ollama task", { modelID: model.modelID })
       const engine = new WorkflowEngine(model.modelID.replace("ollama/", "").replace("ollama_chat/", ""), false)
       const result = await engine.run(userText)

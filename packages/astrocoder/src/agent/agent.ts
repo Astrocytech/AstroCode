@@ -14,7 +14,6 @@ import PROMPT_COMPACTION from "./prompt/compaction.txt"
 import PROMPT_EXPLORE from "./prompt/explore.txt"
 import PROMPT_SUMMARY from "./prompt/summary.txt"
 import PROMPT_TITLE from "./prompt/title.txt"
-import PROMPT_SELFHEAL from "./self-heal.txt"
 import { PermissionNext } from "@/permission/next"
 import { mergeDeep, pipe, sortBy, values } from "remeda"
 import { Global } from "@/global"
@@ -113,35 +112,6 @@ export namespace Agent {
         ),
         mode: "primary",
         native: true,
-      },
-      "self-heal": {
-        name: "self-heal",
-        description: "Self-heal mode. Analyzes errors and automatically fixes issues.",
-        options: {},
-        permission: PermissionNext.merge(
-          defaults,
-          PermissionNext.fromConfig({
-            question: "allow",
-            plan_enter: "allow",
-            edit: {
-              "/home/njonji/Desktop/ASTROCYTECH/AstroCode/packages/astrocoder/**": "allow",
-              "*": "deny",
-            },
-            apply_patch: {
-              "/home/njonji/Desktop/ASTROCYTECH/AstroCode/packages/astrocoder/**": "allow",
-              "*": "deny",
-            },
-            bash: {
-              "/home/njonji/Desktop/ASTROCYTECH/AstroCode/packages/astrocoder/**": "allow",
-              "*": "deny",
-            },
-          }),
-          user,
-        ),
-        mode: "primary",
-        native: true,
-        color: "success",
-        prompt: PROMPT_SELFHEAL,
       },
       general: {
         name: "general",

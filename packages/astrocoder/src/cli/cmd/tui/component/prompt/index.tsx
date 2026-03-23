@@ -30,7 +30,6 @@ import { createColors, createFrames } from "../../ui/spinner.ts"
 import { useDialog } from "@tui/ui/dialog"
 import { DialogProvider as DialogProviderConnect } from "../dialog-provider"
 import { DialogAlert } from "../../ui/dialog-alert"
-import { DialogSelfHeal } from "../../ui/dialog-self-heal"
 import { useToast } from "../../ui/toast"
 import { useKV } from "../../context/kv"
 import { useTextareaKeybindings } from "../textarea-keybindings"
@@ -598,25 +597,11 @@ export function Prompt(props: PromptProps) {
         },
         command: inputText,
       }).catch(async (err: Error) => {
-        const previousAgent = local.agent.current().name
-        const confirmed = await DialogSelfHeal.show(
-          dialog,
-          err.message || String(err) || "Shell command failed",
-        )
-        if (confirmed === "fix") {
-          local.agent.set("self-heal")
-          const errorPrompt = `Fix this error in the codebase:\n\nError: ${err.message || String(err)}\n\nAnalyze the error and fix the bug that caused it.`
-          await sdk.client.session.prompt({
-            sessionID,
-            ...selectedModel,
-            messageID,
-            agent: "self-heal",
-            model: selectedModel,
-            parts: [{ id: PartID.ascending(), type: "text", text: errorPrompt }],
-          })
-        } else {
-          local.agent.set(previousAgent)
-        }
+        const errorMsg = `[${new Date().toISOString()}] Shell Error: ${err.message || String(err)}\n`
+        const logFile = Bun.file("/home/njonji/Desktop/ASTROCYTECH/AstroCode/packages/astrocoder/error.log")
+        const existing = await logFile.text()
+        await logFile.write(existing + errorMsg)
+        toast.show({ variant: "error", message: `Error logged: ${err.message || String(err)}`, duration: 5000 })
       })
       setStore("mode", "normal")
     } else if (
@@ -649,25 +634,11 @@ export function Prompt(props: PromptProps) {
             ...x,
           })),
       }).catch(async (err: Error) => {
-        const previousAgent = local.agent.current().name
-        const confirmed = await DialogSelfHeal.show(
-          dialog,
-          err.message || String(err) || "Command execution failed",
-        )
-        if (confirmed === "fix") {
-          local.agent.set("self-heal")
-          const errorPrompt = `Fix this error in the codebase:\n\nError: ${err.message || String(err)}\n\nAnalyze the error and fix the bug that caused it.`
-          await sdk.client.session.prompt({
-            sessionID,
-            ...selectedModel,
-            messageID,
-            agent: "self-heal",
-            model: selectedModel,
-            parts: [{ id: PartID.ascending(), type: "text", text: errorPrompt }],
-          })
-        } else {
-          local.agent.set(previousAgent)
-        }
+        const errorMsg = `[${new Date().toISOString()}] Command Error: ${err.message || String(err)}\n`
+        const logFile = Bun.file("/home/njonji/Desktop/ASTROCYTECH/AstroCode/packages/astrocoder/error.log")
+        const existing = await logFile.text()
+        await logFile.write(existing + errorMsg)
+        toast.show({ variant: "error", message: `Error logged: ${err.message || String(err)}`, duration: 5000 })
       })
     } else {
       sdk.client.session
@@ -691,25 +662,11 @@ export function Prompt(props: PromptProps) {
           ],
         })
         .catch(async (err: Error) => {
-          const previousAgent = local.agent.current().name
-          const confirmed = await DialogSelfHeal.show(
-            dialog,
-            err.message || String(err) || "Unknown error occurred",
-          )
-          if (confirmed === "fix") {
-            local.agent.set("self-heal")
-            const errorPrompt = `Fix this error in the codebase:\n\nError: ${err.message || String(err)}\n\nAnalyze the error and fix the bug that caused it.`
-            await sdk.client.session.prompt({
-              sessionID,
-              ...selectedModel,
-              messageID,
-              agent: "self-heal",
-              model: selectedModel,
-              parts: [{ id: PartID.ascending(), type: "text", text: errorPrompt }],
-            })
-          } else {
-            local.agent.set(previousAgent)
-          }
+          const errorMsg = `[${new Date().toISOString()}] Prompt Error: ${err.message || String(err)}\n`
+          const logFile = Bun.file("/home/njonji/Desktop/ASTROCYTECH/AstroCode/packages/astrocoder/error.log")
+          const existing = await logFile.text()
+          await logFile.write(existing + errorMsg)
+          toast.show({ variant: "error", message: `Error logged: ${err.message || String(err)}`, duration: 5000 })
         })
     }
     history.append({

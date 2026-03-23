@@ -1,5 +1,5 @@
 import { createStore } from "solid-js/store"
-import { batch, createEffect, createMemo } from "solid-js"
+import { batch, createEffect, createMemo, createSignal } from "solid-js"
 import { useSync } from "@tui/context/sync"
 import { useTheme } from "@tui/context/theme"
 import { uniqueBy } from "remeda"
@@ -13,6 +13,9 @@ import { useArgs } from "./args"
 import { useSDK } from "./sdk"
 import { RGBA } from "@opentui/core"
 import { Filesystem } from "@/util/filesystem"
+import { Config } from "@/config/config"
+import { useDialog } from "@tui/ui/dialog"
+import { DialogModel } from "../component/dialog-model"
 
 export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
   name: "Local",
@@ -20,6 +23,34 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
     const sync = useSync()
     const sdk = useSDK()
     const toast = useToast()
+    const [pendingAgent, setPendingAgent] = createSignal<string | null>(null)
+
+    async function checkAndSelectModelForAgent(agentName: string) {
+      const cfg = await Config.get()
+      const agentConfig = cfg.agent as Record<string, { model?: { providerID: string; modelID: string } }> | undefined
+      
+      const configuredModel = agentConfig?.[agentName]?.model
+      if (configuredModel && isModelValid(configuredModel)) {
+        model.set(configuredModel, { recent: false })
+        toast.show({
+          variant: "info",
+          message: `Switched to ${agentName} model: ${configuredModel.modelID}`,
+          duration: 3000,
+        })
+      } else if (!configuredModel) {
+        const current = model.current()
+        toast.show({
+          variant: "info",
+          message: `No model configured for ${agentName}. Current: ${current?.modelID ?? "none"}`,
+          duration: 4000,
+        })
+      }
+      setPendingAgent(null)
+    }
+
+    function clearPendingAgent() {
+      setPendingAgent(null)
+    }
 
     function isModelValid(model: { providerID: string; modelID: string }) {
       const provider = sync.data.provider.find((x) => x.id === model.providerID)
@@ -67,6 +98,7 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
               duration: 3000,
             })
           setAgentStore("current", name)
+          checkAndSelectModelForAgent(name)
         },
         move(direction: 1 | -1) {
           batch(() => {
@@ -75,6 +107,7 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
             if (next >= agents().length) next = 0
             const value = agents()[next]
             setAgentStore("current", value.name)
+            checkAndSelectModelForAgent(value.name)
           })
         },
         color(name: string) {

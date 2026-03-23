@@ -175,7 +175,7 @@ export namespace SessionPrompt {
     const isOllama = model.providerID === "ollama" || model.modelID.startsWith("ollama/") || model.modelID.startsWith("ollama_chat/")
 
     // Check if this looks like a coding task vs casual conversation
-    const codingKeywords = /\b(file|edit|create|write|read|code|function|class|debug|fix|implement|add|remove|refactor|search|grep|glob|build|run|test|install|configure|script|module|import|export|variable|bug|error|problem|issue)\b/gi
+    const codingKeywords = /\b(file|edit|create|write|read|code|function|class|debug|fix|implement|add|remove|refactor|search|grep|glob|build|run|test|install|configure|script|module|import|export|variable|bug|error|problem|issue|help|assist|task|project|generate|make|need)\b/gi
     const hasCodingIntent = userText.match(codingKeywords)
 
     // Use WorkflowEngine only for actual coding tasks, not casual conversation

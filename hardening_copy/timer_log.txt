@@ -1,2 +1,0 @@
-Trace ID: 1774285735.00621
-Function 'example_function' executed in 0.1046s

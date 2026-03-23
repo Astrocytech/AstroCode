@@ -1,2 +1,0 @@
-Trace ID: 1774285734.902463
-Query results written to output_file.txt

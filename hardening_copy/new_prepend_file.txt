@@ -1,3 +1,0 @@
-Trace ID: 1774285735.015208
-Line to prepend
-Hello world!

@@ -1,2 +1,0 @@
-Prepended from function
-World

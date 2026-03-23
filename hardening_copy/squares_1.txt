@@ -1,2 +1,0 @@
-Trace ID: 1774285734.953636
-# Square of 1 is: 1

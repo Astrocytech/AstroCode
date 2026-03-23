@@ -1,3 +1,0 @@
-Trace ID: 1774285734.949255
-Prepend: <__main__.AstroType object at 0x7fc214a62650>
-New Data Added

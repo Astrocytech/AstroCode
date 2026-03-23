@@ -1,3 +1,0 @@
-Trace ID: 1774285734.899516
-1 Queen at position: (1, 1)
-4 Queen at position: (4, 1)

@@ -1,3 +1,0 @@
-Trace ID: 1774285734.941755
-New log message
-Tenant 1 log message

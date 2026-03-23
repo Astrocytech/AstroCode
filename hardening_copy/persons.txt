@@ -1,2 +1,0 @@
-Trace ID: 1774285734.964757
-{'name': 'Jane Smith', 'age': 25}

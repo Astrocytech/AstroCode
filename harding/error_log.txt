@@ -1,2 +1,0 @@
-Attempt 1 failed: error
-Attempt 2 failed: error

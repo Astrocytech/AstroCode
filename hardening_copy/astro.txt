@@ -1,4 +1,0 @@
-Trace ID: 1774285735.010628
-This is prepended content
-Hello World!
-And this is appended content

@@ -1,6 +1,0 @@
-Trace ID: 1774285734.968952
-2024-01-02 ERROR Failed
-
-Previous attempts failed:
-Attempt 1 failed: 
-Error (Critical): Unable to connect to database

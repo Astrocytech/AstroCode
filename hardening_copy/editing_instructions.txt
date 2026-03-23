@@ -1,3 +1,0 @@
-Trace ID: 1774285734.888264
-For adding new packages, edit requirements.txt and add the package name.
-Then run docker build .

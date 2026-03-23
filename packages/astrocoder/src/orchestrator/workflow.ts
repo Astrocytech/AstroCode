@@ -4,7 +4,6 @@ import fs from "fs/promises"
 import { writeFileSync } from "fs"
 
 const PROJECT_ROOT = "/home/njonji/Desktop/ASTROCYTECH/AstroCode"
-const HARDENING_DIR = "/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening"
 
 interface OllamaChatResponse {
   message?: { content?: string }

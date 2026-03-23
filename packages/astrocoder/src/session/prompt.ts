@@ -174,7 +174,7 @@ export namespace SessionPrompt {
     const model = input.model ?? agent.model ?? (await lastModel(input.sessionID))
     const isOllama = model.providerID === "ollama" || model.modelID.startsWith("ollama/") || model.modelID.startsWith("ollama_chat/")
 
-    // Use WorkflowEngine for Ollama models - same as hardening tests
+    // Use WorkflowEngine for Ollama models
     if (isOllama && userText.length > 5) {
       log.info("Using WorkflowEngine for Ollama task", { modelID: model.modelID })
       const engine = new WorkflowEngine(model.modelID.replace("ollama/", "").replace("ollama_chat/", ""), false)

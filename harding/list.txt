@@ -1,5 +1,0 @@
-?page=1&limit=10apple
-banana
-apple
-cherry
-banana

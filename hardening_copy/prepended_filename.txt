@@ -1,6 +1,0 @@
-Trace ID: 1774285734.851691
-New first line
-Hello, World!
-Hello, again!New first line
-Hello, World!
-Hello, again!Appended text

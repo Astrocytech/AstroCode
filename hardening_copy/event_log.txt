@@ -1,3 +1,0 @@
-Trace ID: 1774285734.894571
-Prepended Event 2
-New Event 3

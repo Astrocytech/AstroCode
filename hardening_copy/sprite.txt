@@ -1,1 +1,0 @@
-{"position": [100, 200], "size": [50, 50], "color": "red"}

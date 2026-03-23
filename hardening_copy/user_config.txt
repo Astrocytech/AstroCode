@@ -1,7 +1,0 @@
-Trace ID: 1774285735.028993
-
-[general]
-username=astrohardening
-password=temp123456
-full_name=Astronaut Hardening System
-

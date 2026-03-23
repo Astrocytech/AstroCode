@@ -1,7 +1,0 @@
-Trace ID: 1774285734.910916
-New line
-This line is prepended to the existing file.
-v2.0.0
-Service call detected. Latency: 100msThis line is prepended to the existing file.
-v2.0.0
-Service call detected. Latency: 100msAppended line

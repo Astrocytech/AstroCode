@@ -1,4 +1,0 @@
-New value
-Trace ID: 1774285734.989261
-new_string
-New value

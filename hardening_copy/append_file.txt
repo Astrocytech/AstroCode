@@ -1,3 +1,0 @@
-Trace ID: 1774285734.857749
-
-This is appended to append_file.txt

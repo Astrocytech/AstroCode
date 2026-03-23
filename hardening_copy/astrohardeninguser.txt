@@ -1,3 +1,0 @@
-Trace ID: 1774285735.009766
-Username: astrohardeninguser
-Password: TO_BE_SET (Please set securely elsewhere)

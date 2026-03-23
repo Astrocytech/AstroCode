@@ -1,7 +1,0 @@
-Trace ID: 1774285734.946607
-
-@timer_decorator
-def function_to_time():
-    import time
-    time.sleep(1)
-    

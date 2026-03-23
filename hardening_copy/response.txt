@@ -1,1 +1,0 @@
-Default response: This is a default response.

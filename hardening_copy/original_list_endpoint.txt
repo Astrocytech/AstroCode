@@ -1,2 +1,0 @@
-Trace ID: 1774285734.921937
-http://example.com/api/list?page=1&limit=10

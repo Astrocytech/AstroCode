@@ -1,2 +1,0 @@
-Trace ID: 1774285734.99206
-https://example.com/oauth2/auth?client_id=your_client_id&redirect_uri=/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/callback-url.txt&response_type=code

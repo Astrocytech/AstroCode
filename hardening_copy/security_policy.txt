@@ -1,2 +1,0 @@
-Trace ID: 1774285734.977194
-This is a sample row-level security content

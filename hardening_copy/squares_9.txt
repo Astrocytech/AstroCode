@@ -1,2 +1,0 @@
-Trace ID: 1774285734.970732
-# Square of 9 is: 81

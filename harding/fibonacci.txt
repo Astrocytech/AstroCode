@@ -1,3 +1,0 @@
-Fibonacci number: 55
-Trace ID: 1774285734.92744
-55

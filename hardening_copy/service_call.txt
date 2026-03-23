@@ -1,2 +1,0 @@
-1.5 None Trace ID: 1774285735.00995
-1.5 None Service call detected. Latency: 100ms

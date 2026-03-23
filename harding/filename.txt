@@ -1,3 +1,0 @@
-New line appended
-prepended contentReplaced content.appended content
-This is some new content

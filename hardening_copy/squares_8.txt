@@ -1,2 +1,0 @@
-Trace ID: 1774285734.936845
-# Square of 8 is: 64

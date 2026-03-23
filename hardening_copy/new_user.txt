@@ -1,1 +1,0 @@
-useradd -m -s /bin/bash newuser

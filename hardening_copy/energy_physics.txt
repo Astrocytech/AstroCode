@@ -1,1 +1,0 @@
-Energy-momentum equation: E^2 = p^2*c^2 + m^2*c^4

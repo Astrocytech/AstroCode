@@ -1,4 +1,0 @@
-import time
-while True:
-    print('Game loop running...')
-time.sleep(1)

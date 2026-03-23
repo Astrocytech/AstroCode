@@ -1,2 +1,0 @@
-Trace ID: 1774285734.872851
-# Square of 4 is: 16

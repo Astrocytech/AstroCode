@@ -1,2 +1,0 @@
-Trace ID: 1774285734.876144
-Tenant 1 sensitive data

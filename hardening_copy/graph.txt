@@ -1,7 +1,0 @@
-Trace ID: 1774285735.014675
-A -> B, C
-B -> A, D
-C -> A, F
-D -> B, E
-E -> D, F
-F -> C, E

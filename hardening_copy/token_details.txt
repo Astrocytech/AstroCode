@@ -1,5 +1,0 @@
-Trace ID: 1774285735.005757
-Token Name: AstroToken
-Symbol: ATK
-Total Supply: 1000000
-Decimals: 18

@@ -1,3 +1,0 @@
-Trace ID: 1774285734.850346
-Example query data
-

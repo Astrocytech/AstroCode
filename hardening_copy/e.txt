@@ -1,2 +1,0 @@
-Trace ID: 1774285734.8566
-Service call detected. Latency: 100ms

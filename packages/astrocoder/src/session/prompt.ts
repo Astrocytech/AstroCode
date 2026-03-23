@@ -185,43 +185,44 @@ export namespace SessionPrompt {
       const codingKeywords = /\b(file|edit|create|write|read|code|function|class|debug|fix|implement|add|remove|refactor|search|grep|glob|build|run|test|install|configure|script|module|import|export|variable|bug|error|problem|issue)\b/gi
       const hasCodingIntent = codingKeywords.test(userText)
       if (!hasCodingIntent) {
-        // Skip WorkflowEngine for non-coding tasks
+        // Skip WorkflowEngine for non-coding tasks - continue to normal processing
         log.info("Skipping WorkflowEngine - not a coding task", { userText: userText.slice(0, 50) })
       } else {
         log.info("Using WorkflowEngine for Ollama task", { modelID: model.modelID })
-      const engine = new WorkflowEngine(model.modelID.replace("ollama/", "").replace("ollama_chat/", ""), false)
-      const result = await engine.run(userText)
-      
-      // Create assistant message with result
-      const assistantMsg: MessageV2.Assistant = {
-        id: MessageID.ascending(),
-        sessionID: input.sessionID,
-        role: "assistant",
-        agent: agent.name,
-        modelID: model.modelID,
-        providerID: model.providerID,
-        mode: agent.name,
-        parentID: MessageID.ascending(),
-        path: { cwd: Instance.directory, root: Instance.worktree },
-        cost: 0,
-        tokens: { input: 0, output: 0, reasoning: 0, cache: { read: 0, write: 0 } },
-        time: { created: Date.now(), completed: Date.now() },
-        finish: "stop",
-      }
-      await Session.updateMessage(assistantMsg)
-      
-      const textPart: MessageV2.TextPart = {
-        id: PartID.ascending(),
-        messageID: assistantMsg.id,
-        sessionID: input.sessionID,
-        type: "text",
-        text: result.finalSummary,
-      }
-      await Session.updatePart(textPart)
-      
-      return {
-        info: assistantMsg,
-        parts: [textPart],
+        const engine = new WorkflowEngine(model.modelID.replace("ollama/", "").replace("ollama_chat/", ""), false)
+        const result = await engine.run(userText)
+        
+        // Create assistant message with result
+        const assistantMsg: MessageV2.Assistant = {
+          id: MessageID.ascending(),
+          sessionID: input.sessionID,
+          role: "assistant",
+          agent: agent.name,
+          modelID: model.modelID,
+          providerID: model.providerID,
+          mode: agent.name,
+          parentID: MessageID.ascending(),
+          path: { cwd: Instance.directory, root: Instance.worktree },
+          cost: 0,
+          tokens: { input: 0, output: 0, reasoning: 0, cache: { read: 0, write: 0 } },
+          time: { created: Date.now(), completed: Date.now() },
+          finish: "stop",
+        }
+        await Session.updateMessage(assistantMsg)
+        
+        const textPart: MessageV2.TextPart = {
+          id: PartID.ascending(),
+          messageID: assistantMsg.id,
+          sessionID: input.sessionID,
+          type: "text",
+          text: result.finalSummary,
+        }
+        await Session.updatePart(textPart)
+        
+        return {
+          info: assistantMsg,
+          parts: [textPart],
+        }
       }
     }
 

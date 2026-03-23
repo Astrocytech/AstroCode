@@ -101,6 +101,20 @@ export class WorkflowEngine {
     return { blocked: false, dangerous: false, message: "" }
   }
 
+  private fixCommonTypos(code: string): string {
+    let result = code
+    result = result.replace(/\bimport request\b/g, "import requests")
+    result = result.replace(/\bimportt\b/g, "import")
+    result = result.replace(/from bs4 impor\b/g, "from bs4 import")
+    result = result.replace(/from PIL impor\b/g, "from PIL import")
+    result = result.replace(/from bs4 import$/gm, "from bs4 import")
+    result = result.replace(/from PIL import$/gm, "from PIL import")
+    result = result.replace(/import request$/gm, "import requests")
+    result = result.replace(/importt$/gm, "import")
+    result = result.replace(/from\s+\w+\s+impor(?!\w)/g, (match) => match.replace('impor', 'import'))
+    return result
+  }
+
   private async reviewCode(code: string, task: string): Promise<string> {
     const prompt = `Review this Python code for correctness and bugs. If issues found, fix them.
 
@@ -406,8 +420,8 @@ ${context}${dirInstruction}${promptPart}`
           ? `import os\nos.makedirs("${targetDir}", exist_ok=True)\n`
           : ""
         
-        const codeWithShebang = `#!/usr/bin/env python3\nimport sys\nsys.path.insert(0, '/home/njonji/Desktop/IZBR')\n${dirSetup}${combinedCode}`
-        
+        const fixedCode = this.fixCommonTypos(combinedCode)
+        const codeWithShebang = `#!/usr/bin/env python3\nimport sys\nsys.path.insert(0, '/home/njonji/Desktop/IZBR')\n${dirSetup}${fixedCode}`
         writeFileSync(scriptPath, codeWithShebang)
         runResult = await this.runBash(`timeout 30 python3 "${scriptPath}" 2>&1`)
         
@@ -430,7 +444,7 @@ Write CORRECTED Python code that fixes this error. Only output the code in a pyt
           const fixedOutput = await this.callOllama(fixPrompt)
           const fixedBlocks = this.extractCode(fixedOutput)
           if (fixedBlocks.length > 0) {
-            combinedCode = fixedBlocks.join('\n\n')
+            combinedCode = this.fixCommonTypos(fixedBlocks.join('\n\n'))
           }
         }
         

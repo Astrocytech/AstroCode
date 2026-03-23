@@ -1,0 +1,6 @@
+NEW CONTENT FOR FILE1.TXT
+
+Line 3
+Line 1 from file 1
+Line 2 from file 1New line appended to File 1
+New line appended to File 1

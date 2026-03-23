@@ -1,1 +1,1 @@
-print('New content')
+print("New content")

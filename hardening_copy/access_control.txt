@@ -1,0 +1,1 @@
+SELECT * FROM public.table_name WHERE user_id = CURRENT_USER;

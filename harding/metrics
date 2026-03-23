@@ -1,4 +1,0 @@
-# HELP metric1 Metric 1
-metric1 42
-# HELP metric2 Metric 2
-metric2 24

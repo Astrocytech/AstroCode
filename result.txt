@@ -1,0 +1,11 @@
+Modified Prepend mode
+Line 1 from file 2
+Line 2 from file 2New line appended
+New line appendedNew line appended
+
+Appended Content
+Prepend mode
+Line 1 from file 2
+Line 2 from file 2New line appended
+New line appendedNew line appended
+ new data

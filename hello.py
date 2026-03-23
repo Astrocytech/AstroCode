@@ -1,5 +1,1 @@
-New text
-
-# New comment
-# New comment
-print('New content')
+print('Hello World')

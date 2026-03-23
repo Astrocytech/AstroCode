@@ -1,6 +1,5 @@
-username
-password
-api_key
-username
-password
-api_key
+[DEFAULT]
+value1 = value
+value2 = value
+value3 = value
+

@@ -1,0 +1,9 @@
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: destination-rule
+spec:
+  defaultBackend:
+    serviceName: svc-name
+    servicePort: 8080

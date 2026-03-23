@@ -1,3 +1,8 @@
-Prepended line.
-Hello, World!
-This is an appended line.
+This is a new file.
+New line added
+This is some new text to be prepended to the files.
+This is some new text to be prepended to the files.
+This is some new text to be prepended to the files.
+NEW CONTENT FOR FILE1.TXT
+
+New line appended to File 1

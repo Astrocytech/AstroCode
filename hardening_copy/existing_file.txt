@@ -1,0 +1,18 @@
+This is prepended content.try:
+New line added
+This is some new text to be prepended to the files.
+This is some new text to be prepended to the files.
+This is some new text to be prepended to the files.
+NEW CONTENT FOR FILE1.TXT
+
+New line appended to File 1
+
+except Exception as e:
+  print(f"Error in {file2_path}: {e}")New line added
+This is some new text to be prepended to the files.
+This is some new text to be prepended to the files.
+This is some new text to be prepended to the files.
+NEW CONTENT FOR FILE1.TXT
+
+New line appended to File 1
+This is appended content.

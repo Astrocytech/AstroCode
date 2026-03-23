@@ -1,0 +1,4 @@
+Modified contentNew Content
+Line 1 from file 1
+Line 2 from file 1Append mode - 2026-03-23 14:00:27
+ new data

@@ -1,7 +1,3 @@
-from function import app
-if __name__ == "__main__":
-    app.run(debug=True)
-from flask import Flask
-swagger = Swagger(app)
-
-NEW CONTENT
+#!/usr/bin/env python3
+import handler
+handler.lambda_handler(None, None)

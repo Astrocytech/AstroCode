@@ -1,0 +1,450 @@
+TEST: 050 image.png to 200x200 using PIL
+PROMPT: Resize image.png to 200x200 using PIL
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 108 transaction to insert multiple records atomically
+PROMPT: Use transaction to insert multiple records atomically
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 117 password using bcrypt
+PROMPT: Hash password using bcrypt
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 118 bcrypt hash matches password
+PROMPT: Verify bcrypt hash matches password
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 195 up -d
+PROMPT: docker-compose up -d
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 196 deployment.yaml to k8s cluster
+PROMPT: Apply deployment.yaml to k8s cluster
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 197 terraform configuration
+PROMPT: Plan terraform configuration
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 198 ansible-playbook site.yml
+PROMPT: Run ansible-playbook site.yml
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 208 cron job to run script daily
+PROMPT: Add cron job to run script daily
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 210 port 8080 in firewall
+PROMPT: Allow port 8080 in firewall
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 211 file to S3 bucket
+PROMPT: Upload file to S3 bucket
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 219 narrower_64 from /home/njonji/Desktop/IZBR/curve_hack4.py
+PROMPT: Import narrower_64 from /home/njonji/Desktop/IZBR/curve_hack4.py
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 221 narrower_64 with 48-char hex string
+PROMPT: Call narrower_64 with 48-char hex string
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 234 circular import in Python
+PROMPT: Fix circular import in Python
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 235 backup script that tars /home directory
+PROMPT: Create backup script that tars /home directory
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 270 API.md documenting all endpoints
+PROMPT: Create API.md documenting all endpoints
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 282 message to RabbitMQ queue
+PROMPT: Publish message to RabbitMQ queue
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 284 gRPC server with GetUser method
+PROMPT: Create gRPC server with GetUser method
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 285 gRPC client that calls GetUser
+PROMPT: Create gRPC client that calls GetUser
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 287 WebSocket server that echoes messages
+PROMPT: Create WebSocket server that echoes messages
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 288 to WebSocket and send message
+PROMPT: Connect to WebSocket and send message
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 302 directory for file changes using watchdog
+PROMPT: Watch directory for file changes using watchdog
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 308 JWT token with payload
+PROMPT: Create JWT token with payload
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 309 JWT token signature
+PROMPT: Verify JWT token signature
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 317 file to S3 bucket
+PROMPT: Upload file to S3 bucket
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 318 file from S3
+PROMPT: Download file from S3
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 320 and Get item from DynamoDB
+PROMPT: Put and Get item from DynamoDB
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 324 to RDS PostgreSQL
+PROMPT: Connect to RDS PostgreSQL
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 326 BigQuery table
+PROMPT: Query BigQuery table
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 329 and deploy to Cloud Run
+PROMPT: Containerize and deploy to Cloud Run
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 330 to Azure Blob storage
+PROMPT: Upload to Azure Blob storage
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 331 and query Cosmos DB
+PROMPT: Insert and query Cosmos DB
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 332 message to Service Bus
+PROMPT: Send message to Service Bus
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 334 Terraform configuration for AWS EC2
+PROMPT: Create Terraform configuration for AWS EC2
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 335 reusable Terraform module
+PROMPT: Create reusable Terraform module
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 336 Pulumi program for S3 bucket
+PROMPT: Create Pulumi program for S3 bucket
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 338 reusable Ansible role
+PROMPT: Create reusable Ansible role
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 339 Vagrantfile for development VM
+PROMPT: Create Vagrantfile for development VM
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 346 secret.yaml for passwords
+PROMPT: Create secret.yaml for passwords
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 347 Helm chart structure
+PROMPT: Create Helm chart structure
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 388 Tkinter window with button
+PROMPT: Create Tkinter window with button
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 421 text from image using OCR
+PROMPT: Extract text from image using OCR
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 424 simple neural network with PyTorch
+PROMPT: Build simple neural network with PyTorch
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 427 LSTM for sequence prediction
+PROMPT: Create LSTM for sequence prediction
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 429 simple GAN
+PROMPT: Create simple GAN
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 432 Airflow DAG with tasks
+PROMPT: Create Airflow DAG with tasks
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 433 PySpark job
+PROMPT: Create PySpark job
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 434 messages to Kafka
+PROMPT: Produce messages to Kafka
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 435 from Kafka
+PROMPT: Consume from Kafka
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 436 table in BigQuery
+PROMPT: Create table in BigQuery
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 437 chat with WebSocket
+PROMPT: Create chat with WebSocket
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 441 GraphQL schema
+PROMPT: Define GraphQL schema
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 449 Istio virtual service
+PROMPT: Create Istio virtual service
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 451 Linkerd service mesh
+PROMPT: Configure Linkerd service mesh
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 453 Azure Function
+PROMPT: Create Azure Function
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 455 function to OpenFaaS
+PROMPT: Deploy function to OpenFaaS
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 456 and get from Redis
+PROMPT: Set and get from Redis
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 457 and subscribe with Redis
+PROMPT: Publish and subscribe with Redis
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 458 Memcached for caching
+PROMPT: Use Memcached for caching
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 462 documents to Meilisearch
+PROMPT: Add documents to Meilisearch
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 463 with Typesense
+PROMPT: Search with Typesense
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 464 Celery task with retry
+PROMPT: Create Celery task with retry
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 465 Celery tasks
+PROMPT: Chain Celery tasks
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 466 Temporal workflow
+PROMPT: Create Temporal workflow
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 467 Prefect flow
+PROMPT: Create Prefect flow
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 469 rate limiting in gateway
+PROMPT: Configure rate limiting in gateway
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 470 JWT validation in gateway
+PROMPT: Add JWT validation in gateway
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 474 automated backup script
+PROMPT: Create automated backup script
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 478 load test with Locust
+PROMPT: Create load test with Locust
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 479 test API
+PROMPT: Stress test API
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 481 K6 load test
+PROMPT: Create K6 load test
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 492 to private PyPI
+PROMPT: Upload to private PyPI
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 498 Nomad job file
+PROMPT: Create Nomad job file
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 499 Marathon app definition
+PROMPT: Create Marathon app definition
+REASON: Pattern matched skip rules
+
+---
+
+TEST: 500 workload in Rancher
+PROMPT: Deploy workload in Rancher
+REASON: Pattern matched skip rules
+
+---
+

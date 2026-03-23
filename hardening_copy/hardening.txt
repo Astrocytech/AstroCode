@@ -1,0 +1,416 @@
+TEST_080: print statements to trace variable values
+PROMPT: Add print statements to trace variable values
+EXPECTED: Debug output shown
+
+TEST_145: file line by line using while read
+PROMPT: Read file line by line using while read
+EXPECTED: Lines read
+
+TEST_149: /tmp && pwd)
+PROMPT: (cd /tmp && pwd)
+EXPECTED: Subshell works
+
+
+
+
+
+
+
+
+TEST_183: config.yaml using PyYAML
+PROMPT: Read config.yaml using PyYAML
+EXPECTED: Parsed
+
+TEST_188: parquet file using pyarrow
+PROMPT: Read parquet file using pyarrow
+EXPECTED: Read
+
+TEST_192: simple linear regression model
+PROMPT: Train simple linear regression model
+EXPECTED: Trained
+
+TEST_197: terraform configuration
+PROMPT: Plan terraform configuration
+EXPECTED: Planned
+
+TEST_198: ansible-playbook site.yml
+PROMPT: Run ansible-playbook site.yml
+EXPECTED: Playbook runs
+
+TEST_199: git repo in new directory
+PROMPT: Initialize git repo in new directory
+EXPECTED: Initialized
+
+
+TEST_202: feature branch into main
+PROMPT: Merge feature branch into main
+EXPECTED: Merged
+
+TEST_203: on main
+PROMPT: Rebase on main
+EXPECTED: Rebased
+
+TEST_205: specific commit
+PROMPT: Cherry-pick specific commit
+EXPECTED: Picked
+
+TEST_208: cron job to run script daily
+PROMPT: Add cron job to run script daily
+EXPECTED: Added
+
+TEST_210: port 8080 in firewall
+PROMPT: Allow port 8080 in firewall
+EXPECTED: Allowed
+
+TEST_219: narrower_64 from /home/njonji/Desktop/IZBR/curve_hack4.py
+PROMPT: Import narrower_64 from /home/njonji/Desktop/IZBR/curve_hack4.py
+EXPECTED: Imported
+
+TEST_221: narrower_64 with 48-char hex string
+PROMPT: Call narrower_64 with 48-char hex string
+EXPECTED: Returns 64-char
+
+TEST_226: binary.png and extract size
+PROMPT: Read binary.png and extract size
+EXPECTED: Size shown
+
+TEST_227: 1GB file line by line without loading into memory
+PROMPT: Process 1GB file line by line without loading into memory
+EXPECTED: Processed
+
+TEST_234: circular import in Python
+PROMPT: Fix circular import in Python
+EXPECTED: Fixed
+
+TEST_235: backup script that tars /home directory
+PROMPT: Create backup script that tars /home directory
+EXPECTED: Backup works
+
+TEST_240: 1000 files in batch
+PROMPT: Process 1000 files in batch
+EXPECTED: All processed
+
+TEST_243: Bearer token auth to endpoint
+PROMPT: Add Bearer token auth to endpoint
+EXPECTED: Auth works
+
+TEST_244: rate limit of 10 requests/minute
+PROMPT: Add rate limit of 10 requests/minute
+EXPECTED: Limited
+
+TEST_247: ?page=1&limit=10 to list endpoint
+PROMPT: Add ?page=1&limit=10 to list endpoint
+EXPECTED: Paginated
+
+TEST_249: type hints to all functions in module
+PROMPT: Add type hints to all functions in module
+EXPECTED: Typed
+
+TEST_254: error messages to be descriptive
+PROMPT: Improve error messages to be descriptive
+EXPECTED: Improved
+
+TEST_256: long function into smaller ones
+PROMPT: Refactor long function into smaller ones
+EXPECTED: Refactored
+
+TEST_257: profiling to find bottleneck
+PROMPT: Add profiling to find bottleneck
+EXPECTED: Bottleneck found
+
+TEST_258: nested loops using list comprehension
+PROMPT: Optimize nested loops using list comprehension
+EXPECTED: Optimized
+
+TEST_259: manual sum with sum() built-in
+PROMPT: Replace manual sum with sum() built-in
+EXPECTED: Faster
+
+TEST_265: .github/workflows/ci.yml that runs tests
+PROMPT: Create .github/workflows/ci.yml that runs tests
+EXPECTED: Runs
+
+TEST_267: Jenkinsfile with build and test stages
+PROMPT: Create Jenkinsfile with build and test stages
+EXPECTED: Works
+
+TEST_275: SHA256 of file
+PROMPT: Calculate SHA256 of file
+EXPECTED: Calculated
+
+TEST_280: encode special characters
+PROMPT: URL encode special characters
+EXPECTED: Encoded
+
+TEST_302: directory for file changes using watchdog
+PROMPT: Watch directory for file changes using watchdog
+EXPECTED: Detects changes
+
+TEST_308: JWT token with payload
+PROMPT: Create JWT token with payload
+EXPECTED: Token created
+
+TEST_309: JWT token signature
+PROMPT: Verify JWT token signature
+EXPECTED: Verified
+
+TEST_320: and Get item from DynamoDB
+PROMPT: Put and Get item from DynamoDB
+EXPECTED: Works
+
+TEST_322: and receive message from SQS
+PROMPT: Send and receive message from SQS
+EXPECTED: Works
+
+TEST_326: BigQuery table
+PROMPT: Query BigQuery table
+EXPECTED: Results
+
+TEST_329: and deploy to Cloud Run
+PROMPT: Containerize and deploy to Cloud Run
+EXPECTED: Deployed
+
+TEST_331: and query Cosmos DB
+PROMPT: Insert and query Cosmos DB
+EXPECTED: Works
+
+TEST_332: message to Service Bus
+PROMPT: Send message to Service Bus
+EXPECTED: Sent
+
+TEST_335: reusable Terraform module
+PROMPT: Create reusable Terraform module
+EXPECTED: Works
+
+TEST_338: reusable Ansible role
+PROMPT: Create reusable Ansible role
+EXPECTED: Works
+
+TEST_339: Vagrantfile for development VM
+PROMPT: Create Vagrantfile for development VM
+EXPECTED: Works
+
+TEST_346: secret.yaml for passwords
+PROMPT: Create secret.yaml for passwords
+EXPECTED: Created
+
+TEST_347: Helm chart structure
+PROMPT: Create Helm chart structure
+EXPECTED: Created
+
+TEST_358: across services
+PROMPT: Trace across services
+EXPECTED: Traced
+
+TEST_359: spans to Jaeger
+PROMPT: Send spans to Jaeger
+EXPECTED: Sent
+
+TEST_360: latency into service call
+PROMPT: Inject latency into service call
+EXPECTED: Injected
+
+TEST_361: terminate container
+PROMPT: Randomly terminate container
+EXPECTED: Terminates
+
+TEST_362: network partition
+PROMPT: Simulate network partition
+EXPECTED: Simulated
+
+TEST_381: functor for custom type
+PROMPT: Implement functor for custom type
+EXPECTED: Works
+
+TEST_388: Tkinter window with button
+PROMPT: Create Tkinter window with button
+EXPECTED: Works
+
+TEST_394: photo with camera
+PROMPT: Capture photo with camera
+EXPECTED: Captured
+
+TEST_395: accelerometer data
+PROMPT: Read accelerometer data
+EXPECTED: Data read
+
+TEST_396: push notification
+PROMPT: Send push notification
+EXPECTED: Sent
+
+TEST_399: and send transaction
+PROMPT: Sign and send transaction
+EXPECTED: Sent
+
+TEST_401: ERC-20 token
+PROMPT: Create ERC-20 token
+EXPECTED: Created
+
+TEST_404: to MQTT topic
+PROMPT: Subscribe to MQTT topic
+EXPECTED: Subscribed
+
+TEST_406: from serial port
+PROMPT: Read from serial port
+EXPECTED: Read
+
+TEST_407: audio file with playsound
+PROMPT: Play audio file with playsound
+EXPECTED: Plays
+
+TEST_408: audio with microphone
+PROMPT: Record audio with microphone
+EXPECTED: Records
+
+TEST_410: video from webcam
+PROMPT: Capture video from webcam
+EXPECTED: Captures
+
+TEST_412: video with ffmpeg
+PROMPT: Stream video with ffmpeg
+EXPECTED: Streams
+
+TEST_413: sentiment of text
+PROMPT: Analyze sentiment of text
+EXPECTED: Analyzed
+
+TEST_414: NER from text
+PROMPT: Extract NER from text
+EXPECTED: Extracted
+
+TEST_415: text using transformers
+PROMPT: Translate text using transformers
+EXPECTED: Translated
+
+TEST_416: long text
+PROMPT: Summarize long text
+EXPECTED: Summarized
+
+TEST_420: image with ResNet
+PROMPT: Classify image with ResNet
+EXPECTED: Classified
+
+TEST_421: text from image using OCR
+PROMPT: Extract text from image using OCR
+EXPECTED: Extracted
+
+TEST_422: image with U-Net
+PROMPT: Segment image with U-Net
+EXPECTED: Segmented
+
+TEST_423: artistic style to image
+PROMPT: Apply artistic style to image
+EXPECTED: Applied
+
+TEST_427: LSTM for sequence prediction
+PROMPT: Create LSTM for sequence prediction
+EXPECTED: Works
+
+TEST_429: simple GAN
+PROMPT: Create simple GAN
+EXPECTED: Generates
+
+TEST_430: agent with Q-learning
+PROMPT: Train agent with Q-learning
+EXPECTED: Trains
+
+TEST_432: Airflow DAG with tasks
+PROMPT: Create Airflow DAG with tasks
+EXPECTED: Works
+
+TEST_433: PySpark job
+PROMPT: Create PySpark job
+EXPECTED: Works
+
+TEST_436: table in BigQuery
+PROMPT: Create table in BigQuery
+EXPECTED: Created
+
+TEST_440: to SSE endpoint
+PROMPT: Connect to SSE endpoint
+EXPECTED: Connected
+
+TEST_441: GraphQL schema
+PROMPT: Define GraphQL schema
+EXPECTED: Defined
+
+TEST_449: Istio virtual service
+PROMPT: Create Istio virtual service
+EXPECTED: Created
+
+TEST_451: Linkerd service mesh
+PROMPT: Configure Linkerd service mesh
+EXPECTED: Configured
+
+TEST_455: function to OpenFaaS
+PROMPT: Deploy function to OpenFaaS
+EXPECTED: Deployed
+
+TEST_458: Memcached for caching
+PROMPT: Use Memcached for caching
+EXPECTED: Cached
+
+TEST_461: documents
+PROMPT: Query documents
+EXPECTED: Results
+
+TEST_462: documents to Meilisearch
+PROMPT: Add documents to Meilisearch
+EXPECTED: Added
+
+TEST_463: with Typesense
+PROMPT: Search with Typesense
+EXPECTED: Works
+
+TEST_464: Celery task with retry
+PROMPT: Create Celery task with retry
+EXPECTED: Works
+
+TEST_465: Celery tasks
+PROMPT: Chain Celery tasks
+EXPECTED: Chained
+
+TEST_466: Temporal workflow
+PROMPT: Create Temporal workflow
+EXPECTED: Works
+
+TEST_467: Prefect flow
+PROMPT: Create Prefect flow
+EXPECTED: Works
+
+TEST_469: rate limiting in gateway
+PROMPT: Configure rate limiting in gateway
+EXPECTED: Limited
+
+TEST_470: JWT validation in gateway
+PROMPT: Add JWT validation in gateway
+EXPECTED: Validated
+
+TEST_474: automated backup script
+PROMPT: Create automated backup script
+EXPECTED: Works
+
+TEST_478: load test with Locust
+PROMPT: Create load test with Locust
+EXPECTED: Works
+
+TEST_481: K6 load test
+PROMPT: Create K6 load test
+EXPECTED: Works
+
+TEST_492: to private PyPI
+PROMPT: Upload to private PyPI
+EXPECTED: Uploaded
+
+TEST_498: Nomad job file
+PROMPT: Create Nomad job file
+EXPECTED: Created
+
+TEST_499: Marathon app definition
+PROMPT: Create Marathon app definition
+EXPECTED: Created
+
+TEST_500: workload in Rancher
+PROMPT: Deploy workload in Rancher
+EXPECTED: Deployed
+

@@ -1,0 +1,2 @@
+2024-01-01 ERROR Failed
+2024-01-02 ERROR Crashed

@@ -1,3 +1,2 @@
-flask
-
-NEW CONTENT
+Boto3==1.24.30
+Botocore==1.27.33

@@ -1,3 +1,3 @@
+greet() { echo "Hello $1"; }
 
-greet John
-NEW CONTENT
+greet()

@@ -1,0 +1,1 @@
+New contentprepended contentReplaced content.appended content

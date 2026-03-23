@@ -1,3 +1,1 @@
-Prepended text
-New Line Added
-NEW CONTENT
+Line 3

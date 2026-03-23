@@ -1,2 +1,0 @@
-Key: my_key
-Value: my_value

@@ -1,4 +1,2 @@
-New text
-
-import non_existent_module
+Module not found: invalid syntax (broken.py, line 1)
 print("Hello")

@@ -1,0 +1,5 @@
+2026-03-23 12:12:56,879 - INFO - Starting
+DEBUG:root:Previous attempts failed. Attempt 1 failed.
+INFO:root:Entering append file: /home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/file_to_edit_append.txt
+ERROR:root:File not found: /home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/file_to_edit_append.txt
+ERROR:root:Error appending to file: [Errno 2] No such file or directory: '/home/njonji/Desktop/ASTROCYTECH/AstroCode/hardening/file_to_edit_append.txt'

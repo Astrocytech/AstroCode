@@ -189,6 +189,11 @@ export namespace SessionPrompt {
         log.info("Skipping WorkflowEngine - not a coding task", { userText: userText.slice(0, 50) })
       } else {
         log.info("Using WorkflowEngine for Ollama task", { modelID: model.modelID })
+        
+        // Create user message first so it appears in chat
+        const userMessage = await createUserMessage(input)
+        await Session.touch(input.sessionID)
+        
         const engine = new WorkflowEngine(model.modelID.replace("ollama/", "").replace("ollama_chat/", ""), false)
         const result = await engine.run(userText)
         

@@ -223,7 +223,7 @@ Reply ONLY with the reviewed/fixed Python code in a python code block. If no cha
     const relativeRegex = /(?:^|[^\w\/])([\w\-]*\.(?:py|txt|js|ts|json|html|yaml|yml|md|xml|css|sh|log)(?!\w))/g
     while ((match = relativeRegex.exec(text)) !== null) {
       const p = match[1]
-      const fullPath = path.join(HARDENING_DIR, p)
+      const fullPath = path.join(PROJECT_ROOT, p)
       if (!paths.includes(fullPath) && !paths.includes(p)) {
         paths.push(fullPath)
       }
@@ -279,7 +279,7 @@ Reply ONLY with the reviewed/fixed Python code in a python code block. If no cha
     const isCommandTask = /^(run|execute|install|list|check|show|get|create\s+dir|delete|remove|copy|move|start|stop|kill)/i.test(userPrompt) && 
       !/create\s+.*file|save|write/i.test(userPrompt)
     
-    let targetDir = isCommandTask ? PROJECT_ROOT : HARDENING_DIR
+    let targetDir = isCommandTask ? PROJECT_ROOT : PROJECT_ROOT
     let targetFile = null
     
     if (targetPath) {
@@ -300,7 +300,7 @@ Reply ONLY with the reviewed/fixed Python code in a python code block. If no cha
     for (const fp of filePaths) {
       let content = await this.readFileContent(fp)
       if (!content) {
-        content = await this.readFileContent(path.join(HARDENING_DIR, path.basename(fp)))
+        content = await this.readFileContent(path.join(PROJECT_ROOT, path.basename(fp)))
       }
       if (content) {
         fileContents += `\n\n=== FILE: ${path.basename(fp)} ===\n${content}\n`
@@ -318,7 +318,7 @@ Reply ONLY with the reviewed/fixed Python code in a python code block. If no cha
       const dirInstruction = !isCommandTask && targetDir !== PROJECT_ROOT
         ? `\nIMPORTANT: Files are in: ${targetDir}\nUse full paths like: ${targetDir}/filename\n`
         : fileContents 
-          ? `\nIMPORTANT: Working directory is: ${HARDENING_DIR}\nUse full paths: ${HARDENING_DIR}/filename\n`
+          ? `\nIMPORTANT: Working directory is: ${PROJECT_ROOT}\nUse full paths: ${PROJECT_ROOT}/filename\n`
           : ""
 
       let promptPart = ""
@@ -326,7 +326,7 @@ Reply ONLY with the reviewed/fixed Python code in a python code block. If no cha
         // Simplified prompt for small models - less context to process
         promptPart = `${fileContents}
 TASK: ${userPrompt}
-${isCommandTask ? `Workdir: ${PROJECT_ROOT}` : `Workdir: ${targetDir || HARDENING_DIR}`}
+${isCommandTask ? `Workdir: ${PROJECT_ROOT}` : `Workdir: ${targetDir || PROJECT_ROOT}`}
 Write Python code. Output: \`\`\`python\\ncode\\n\`\`\``
       } else if (isCommandTask) {
         promptPart = `TASK: ${userPrompt}
@@ -363,7 +363,7 @@ STRICT OUTPUT FORMAT - You MUST follow this exactly:
 Write Python code to accomplish this task. 
 ${editInstruction}${fixInstruction}${dataExamples}- Use the EXACT file paths from the task
 - For editing tasks (append, prepend, replace): read the file first, then modify
-- Create directories if needed: os.makedirs("${targetDir || HARDENING_DIR}", exist_ok=True)
+- Create directories if needed: os.makedirs("${targetDir || PROJECT_ROOT}", exist_ok=True)
 - Write files using: with open("${targetFile || 'filename'}", 'w') as f: f.write(content)
 - For append: use 'a' mode, for prepend: read first then write new+old
 
@@ -466,13 +466,13 @@ Write CORRECTED Python code that fixes this error. Only output the code in a pyt
       let targetFilePath = targetPath
       
       if (!targetFilePath && targetFile) {
-        targetFilePath = path.join(HARDENING_DIR, targetFile)
+        targetFilePath = path.join(PROJECT_ROOT, targetFile)
       }
       
       let targetForCheck = targetPath
       if (!targetForCheck || (!targetForCheck.startsWith('/'))) {
         const tf = targetFile || (targetForCheck || "")
-        targetForCheck = tf ? path.join(HARDENING_DIR, tf) : HARDENING_DIR
+        targetForCheck = tf ? path.join(PROJECT_ROOT, tf) : PROJECT_ROOT
       }
       
       if (targetForCheck) {

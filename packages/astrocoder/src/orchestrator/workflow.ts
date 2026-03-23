@@ -323,12 +323,25 @@ Reply ONLY with the reviewed/fixed Python code in a python code block. If no cha
 
       let promptPart = ""
       if (this.isSmallModel) {
+        // Check if this is a file creation task
+        const isWriteTask = /write|create|save|make/i.test(userPrompt)
+        const targetPathHint = targetFile 
+          ? `Use path: ${targetDir}/${targetFile}` 
+          : `Write to: ${PROJECT_ROOT}/output.txt`
+        
+        const writeInstruction = isWriteTask
+          ? `\n${targetPathHint}\nExample: with open("${targetFile || 'output.txt'}", 'w') as f: f.write("your content")`
+          : ""
+          
         // Simplified prompt for small models - less context to process
         promptPart = `${fileContents}
 TASK: ${userPrompt}
-${isCommandTask ? `Workdir: ${PROJECT_ROOT}` : `Workdir: ${targetDir || PROJECT_ROOT}`}
-Write Python code. Output: \`\`\`python\\ncode\\n\`\`\``
-      } else if (isCommandTask) {
+${isCommandTask ? `Workdir: ${PROJECT_ROOT}` : `Workdir: ${targetDir || PROJECT_ROOT}`}${writeInstruction}
+STRICT: Write ONLY Python code in a code block. No explanations. Format:
+\`\`\`python
+# your code here
+\`\`\`
+`
         promptPart = `TASK: ${userPrompt}
 
 Execute this task using Python subprocess or os.system.

@@ -174,8 +174,12 @@ export namespace SessionPrompt {
     const model = input.model ?? agent.model ?? (await lastModel(input.sessionID))
     const isOllama = model.providerID === "ollama" || model.modelID.startsWith("ollama/") || model.modelID.startsWith("ollama_chat/")
 
-    // Use WorkflowEngine for Ollama models
-    if (isOllama && userText.length > 5) {
+    // Check if this looks like a coding task vs casual conversation
+    const codingKeywords = /file|edit|create|write|read|code|function|class|debug|fix|implement|add|remove|refactor|search|grep|glob|build|run|test|install|configure|script|module|import|export|variable|function|bug|error|problem|issue|help|explain|understand|what|how|why|when|where|which|who/gi
+    const hasCodingIntent = userText.match(codingKeywords)
+
+    // Use WorkflowEngine only for actual coding tasks, not casual conversation
+    if (isOllama && userText.length > 5 && hasCodingIntent) {
       log.info("Using WorkflowEngine for Ollama task", { modelID: model.modelID })
       const engine = new WorkflowEngine(model.modelID.replace("ollama/", "").replace("ollama_chat/", ""), false)
       const result = await engine.run(userText)

@@ -10,19 +10,35 @@ interface OllamaChatResponse {
   message?: { content?: string }
 }
 
+export function isSmallOllamaModel(modelID: string): boolean {
+  const id = modelID.toLowerCase()
+  return id.includes("3b") || id.includes("1b") || id.includes("0.5b") || 
+         id.includes("q2_") || id.includes("q3_") || id.includes("q4_0") ||
+         id.includes("-1b") || id.includes("-3b")
+}
+
 export class WorkflowEngine {
   private modelID: string
   private history: string[]
   private quiet: boolean
+  private isSmallModel: boolean
 
   constructor(modelID = "llama3.1:8b-instruct-q4_K_M", quiet = false) {
     this.modelID = modelID
     this.history = []
     this.quiet = quiet
+    
+    // Detect small models (3B or smaller) for optimizations
+    this.isSmallModel = isSmallOllamaModel(modelID)
   }
 
   private async callOllama(prompt: string): Promise<string> {
     const baseUrl = "http://localhost:11434"
+    
+    // Simplified system prompt for small models - shorter is better
+    const systemPrompt = this.isSmallModel
+      ? "You are a coding assistant. Write Python code. Output ONLY ```python\\n[code]\\n```"
+      : "You are an autonomous coding assistant. Your ONLY job is to write and execute Python code. CRITICAL RULES: 1) Output EXACTLY ```python on its own line, then your code, then ``` on its own line. 2) NO explanations, NO tutorials, NO markdown text outside code blocks. 3) Start with ```python and end with ```. 4) The code will be executed directly. Write ONLY code that can run."
 
     const response = await fetch(`${baseUrl}/api/chat`, {
       method: "POST",
@@ -30,7 +46,7 @@ export class WorkflowEngine {
       body: JSON.stringify({
         model: this.modelID,
         messages: [
-          { role: "system", content: "You are an autonomous coding assistant. Your ONLY job is to write and execute Python code. CRITICAL RULES: 1) Output EXACTLY ```python on its own line, then your code, then ``` on its own line. 2) NO explanations, NO tutorials, NO markdown text outside code blocks. 3) Start with ```python and end with ```. 4) The code will be executed directly. Write ONLY code that can run." },
+          { role: "system", content: systemPrompt },
           { role: "user", content: prompt }
         ],
         temperature: 0.0,
@@ -98,6 +114,11 @@ Reply ONLY with the reviewed/fixed Python code in a python code block. If no cha
   }
 
   private async consensusCode(code: string, task: string): Promise<{ code: string; consensus: boolean }> {
+    // Skip consensus for small models - too expensive
+    if (this.isSmallModel) {
+      return { code, consensus: false }
+    }
+    
     const review = await this.reviewCode(code, task)
     const blocks = this.extractCode(review)
     const reviewedCode = blocks.join('\n\n').trim()
@@ -237,7 +258,8 @@ Reply ONLY with the reviewed/fixed Python code in a python code block. If no cha
 
   async run(userPrompt: string, sessionHistory: string[] = []): Promise<{ success: boolean; finalSummary: string }> {
     this.history = sessionHistory || []
-    const maxAttempts = 5
+    // Reduced attempts for small models - faster but fewer retries
+    const maxAttempts = this.isSmallModel ? 3 : 5
 
     const targetPath = this.extractTargetPath(userPrompt)
     
@@ -273,9 +295,12 @@ Reply ONLY with the reviewed/fixed Python code in a python code block. If no cha
     }
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      const context = this.history.length > 0 
-        ? `\nPrevious attempts failed:\n${this.history.join('\n')}\n\nIMPORTANT: Fix the errors from previous attempts. Do not repeat the same mistakes.\n`
-        : ""
+      // Simplified context for small models - fewer tokens to process
+      const context = this.isSmallModel
+        ? (this.history.length > 0 ? `\nPrev error: ${this.history[this.history.length - 1].slice(0, 100)}\n` : "")
+        : (this.history.length > 0 
+            ? `\nPrevious attempts failed:\n${this.history.join('\n')}\n\nIMPORTANT: Fix the errors from previous attempts. Do not repeat the same mistakes.\n`
+            : "")
 
       const dirInstruction = !isCommandTask && targetDir !== PROJECT_ROOT
         ? `\nIMPORTANT: Files are in: ${targetDir}\nUse full paths like: ${targetDir}/filename\n`
@@ -284,7 +309,13 @@ Reply ONLY with the reviewed/fixed Python code in a python code block. If no cha
           : ""
 
       let promptPart = ""
-      if (isCommandTask) {
+      if (this.isSmallModel) {
+        // Simplified prompt for small models - less context to process
+        promptPart = `${fileContents}
+TASK: ${userPrompt}
+${isCommandTask ? `Workdir: ${PROJECT_ROOT}` : `Workdir: ${targetDir || HARDENING_DIR}`}
+Write Python code. Output: \`\`\`python\\ncode\\n\`\`\``
+      } else if (isCommandTask) {
         promptPart = `TASK: ${userPrompt}
 
 Execute this task using Python subprocess or os.system.
@@ -366,7 +397,9 @@ ${context}${dirInstruction}${promptPart}`
       let runResult = { stdout: "", stderr: "", exitCode: 0 }
 
       // Execute with execution-based healing fallback
-      for (let healAttempt = 0; healAttempt < 3; healAttempt++) {
+      // Fewer healing attempts for small models
+      const maxHealAttempts = this.isSmallModel ? 1 : 3
+      for (let healAttempt = 0; healAttempt < maxHealAttempts; healAttempt++) {
         const scriptPath = path.join(PROJECT_ROOT, `temp_workflow_${attempt}_${healAttempt}.py`)
         
         const dirSetup = targetDir !== PROJECT_ROOT 
@@ -463,7 +496,9 @@ Write CORRECTED Python code that fixes this error. Only output the code in a pyt
         }
       }
 
-      const verifyPrompt = `Task was: "${userPrompt}"
+      // Skip verification prompt for small models - too expensive
+      if (!this.isSmallModel) {
+        const verifyPrompt = `Task was: "${userPrompt}"
 
 Code execution result:
 - stdout: ${runResult.stdout.slice(0, 500)}
@@ -474,13 +509,14 @@ Code execution result:
 Based on the output above, did the code successfully accomplish the task? 
 Look for: successful execution, no errors, expected output, or file modifications.
 Reply ONLY YES or NO.`
-      
-      const verification = await this.callOllama(verifyPrompt)
-      
-      if (verification.toUpperCase().includes("YES")) {
-        return { 
-          success: true, 
-          finalSummary: `Task completed: ${userPrompt}\n\nResults:\n${results}\n\nVerification: ${verification.slice(0, 200)}` 
+        
+        const verification = await this.callOllama(verifyPrompt)
+        
+        if (verification.toUpperCase().includes("YES")) {
+          return { 
+            success: true, 
+            finalSummary: `Task completed: ${userPrompt}\n\nResults:\n${results}\n\nVerification: ${verification.slice(0, 200)}` 
+          }
         }
       }
 

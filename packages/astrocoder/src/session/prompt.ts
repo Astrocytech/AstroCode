@@ -709,7 +709,7 @@ export namespace SessionPrompt {
       await Plugin.trigger("experimental.chat.messages.transform", {}, { messages: msgs })
 
       // Build system prompt, adding structured output instruction if needed
-      const skills = await SystemPrompt.skills(agent)
+      const skills = await SystemPrompt.skills(agent, model.id)
       const system = [
         ...(await SystemPrompt.environment(model)),
         ...(skills ? [skills] : []),
@@ -815,6 +815,16 @@ export namespace SessionPrompt {
       return tools
     }
 
+    // Small models: use only essential tools to reduce prompt size
+    const isSmallModel = input.model.id.toLowerCase().includes("3b") || 
+                         input.model.id.toLowerCase().includes("1b") ||
+                         input.model.id.toLowerCase().includes("0.5b") ||
+                         input.model.id.toLowerCase().includes("q2_") ||
+                         input.model.id.toLowerCase().includes("q3_")
+    const essentialTools = isSmallModel 
+      ? new Set(["bash", "read", "write", "edit", "glob", "grep", "invalid"]) 
+      : null
+
     const context = (args: any, options: ToolCallOptions): Tool.Context => ({
       sessionID: input.session.id,
       abort: options.abortSignal!,
@@ -854,6 +864,11 @@ export namespace SessionPrompt {
       { modelID: ModelID.make(input.model.api.id), providerID: input.model.providerID },
       input.agent,
     )) {
+      // Small models: skip non-essential tools
+      if (essentialTools && !essentialTools.has(item.id)) {
+        continue
+      }
+      
       const schema = ProviderTransform.schema(input.model, z.toJSONSchema(item.parameters))
       tools[item.id] = tool({
         id: item.id as any,

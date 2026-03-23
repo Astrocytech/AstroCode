@@ -1,3 +1,3 @@
 from .status import Statusfrom .ErrorClass import CustomError
 
-NEW CONTENT
+NEW CONTENTfrom .square import square

@@ -1,2 +1,1 @@
-# Edited at the top
-print('Hello World')
+print('New content')

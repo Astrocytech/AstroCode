@@ -118,6 +118,11 @@ export namespace InstructionPrompt {
     const config = await Config.get()
     const paths = await systemPaths()
 
+    // Small models: skip loading instruction files to reduce context
+    if (paths.size === 0 && (!config.instructions || config.instructions.length === 0)) {
+      return []
+    }
+
     const files = Array.from(paths).map(async (p) => {
       const content = await Filesystem.readText(p).catch(() => "")
       return content ? "Instructions from: " + p + "\n" + content : ""

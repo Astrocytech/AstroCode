@@ -16,6 +16,13 @@ import { Config } from "@/config/config"
 import { ProviderTransform } from "@/provider/transform"
 import { ModelID, ProviderID } from "@/provider/schema"
 
+function isSmallModel(modelID: string): boolean {
+  const id = modelID.toLowerCase()
+  return id.includes("3b") || id.includes("1b") || id.includes("0.5b") || 
+         id.includes("q2_") || id.includes("q3_") || id.includes("q4_0") ||
+         id.includes("-1b") || id.includes("-3b")
+}
+
 export namespace SessionCompaction {
   const log = Log.create({ service: "session.compaction" })
 
@@ -29,6 +36,7 @@ export namespace SessionCompaction {
   }
 
   const COMPACTION_BUFFER = 20_000
+  const SMALL_MODEL_BUFFER = 4096  // Earlier compaction for small models
 
   export async function isOverflow(input: { tokens: MessageV2.Assistant["tokens"]; model: Provider.Model }) {
     const config = await Config.get()
@@ -40,8 +48,11 @@ export namespace SessionCompaction {
       input.tokens.total ||
       input.tokens.input + input.tokens.output + input.tokens.cache.read + input.tokens.cache.write
 
+    // Small models need earlier compaction - they have smaller context
+    const smallModel = isSmallModel(input.model.id)
+    const buffer = smallModel ? SMALL_MODEL_BUFFER : COMPACTION_BUFFER
     const reserved =
-      config.compaction?.reserved ?? Math.min(COMPACTION_BUFFER, ProviderTransform.maxOutputTokens(input.model))
+      config.compaction?.reserved ?? Math.min(buffer, ProviderTransform.maxOutputTokens(input.model))
     const usable = input.model.limit.input
       ? input.model.limit.input - reserved
       : context - ProviderTransform.maxOutputTokens(input.model)
@@ -50,13 +61,14 @@ export namespace SessionCompaction {
 
   export const PRUNE_MINIMUM = 20_000
   export const PRUNE_PROTECT = 40_000
+  export const SMALL_MODEL_PRUNE_PROTECT = 8192  // Less protection for small models
 
   const PRUNE_PROTECTED_TOOLS = ["skill"]
 
   // goes backwards through parts until there are 40_000 tokens worth of tool
   // calls. then erases output of previous tool calls. idea is to throw away old
   // tool calls that are no longer relevant.
-  export async function prune(input: { sessionID: SessionID }) {
+  export async function prune(input: { sessionID: SessionID; modelID?: string }) {
     const config = await Config.get()
     if (config.compaction?.prune === false) return
     log.info("pruning")
@@ -65,6 +77,11 @@ export namespace SessionCompaction {
     let pruned = 0
     const toPrune = []
     let turns = 0
+
+    // Small models need less history protection
+    const protectLimit = input.modelID && isSmallModel(input.modelID) 
+      ? SMALL_MODEL_PRUNE_PROTECT 
+      : PRUNE_PROTECT
 
     loop: for (let msgIndex = msgs.length - 1; msgIndex >= 0; msgIndex--) {
       const msg = msgs[msgIndex]
@@ -80,14 +97,14 @@ export namespace SessionCompaction {
             if (part.state.time.compacted) break loop
             const estimate = Token.estimate(part.state.output)
             total += estimate
-            if (total > PRUNE_PROTECT) {
+            if (total > protectLimit) {
               pruned += estimate
               toPrune.push(part)
             }
           }
       }
     }
-    log.info("found", { pruned, total })
+    log.info("found", { pruned, total, protectLimit })
     if (pruned > PRUNE_MINIMUM) {
       for (const part of toPrune) {
         if (part.state.status === "completed") {
@@ -171,6 +188,10 @@ export namespace SessionCompaction {
       { sessionID: input.sessionID },
       { context: [], prompt: undefined },
     )
+    
+    // Simplified prompt for small models
+    const smallModelPrompt = `Summarize this conversation briefly. Include: goal, what was done, files worked on, what's left to do.`
+    
     const defaultPrompt = `Provide a detailed prompt for continuing our conversation above.
 Focus on information that would be helpful for continuing the conversation, including what we did, what we're doing, which files we're working on, and what we're going to do next.
 The summary that you construct will be used so that another agent can read it and continue the work.
@@ -198,8 +219,13 @@ When constructing the summary, try to stick to this template:
 
 [Construct a structured list of relevant files that have been read, edited, or created that pertain to the task at hand. If all the files in a directory are relevant, include the path to the directory.]
 ---`
+    
+    const compactPrompt = compacting.prompt ?? (
+      isSmallModel(model.id) 
+        ? smallModelPrompt 
+        : [defaultPrompt, ...compacting.context].join("\n\n")
+    )
 
-    const promptText = compacting.prompt ?? [defaultPrompt, ...compacting.context].join("\n\n")
     const result = await processor.process({
       user: userMessage,
       agent,
@@ -214,7 +240,7 @@ When constructing the summary, try to stick to this template:
           content: [
             {
               type: "text",
-              text: promptText,
+              text: compactPrompt,
             },
           ],
         },

@@ -238,13 +238,14 @@ async function runTests() {
         console.log(`PASS ${test.id}`)
         passed++
       } else {
-        console.log(`FAIL ${test.id}`)
+        console.log(`FAIL ${test.id}: ${result.finalSummary.slice(0, 100)}`)
         failed++
         failedOutput += `TEST: ${test.id}\nPROMPT: ${test.prompt}\nERROR: ${result.finalSummary.slice(0, 300)}\n\n---\n\n`
       }
     } catch (e: any) {
-      console.log(`ERROR ${test.id}: ${e.message?.slice(0, 80)}`)
+      console.log(`ERROR ${test.id}: ${e.message?.slice(0, 100)}`)
       failed++
+      failedOutput += `TEST: ${test.id}\nPROMPT: ${test.prompt}\nEXCEPTION: ${e.message}\n\n---\n\n`
     }
   }
   

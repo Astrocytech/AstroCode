@@ -9,9 +9,20 @@ import { Filesystem } from "../util/filesystem"
 import { Glob } from "../util/glob"
 import { ToolID } from "./schema"
 
+function isSmallModel(modelID?: string | { modelID?: string }): boolean {
+  const id = typeof modelID === "string" ? modelID : modelID?.modelID ?? ""
+  const lower = id.toLowerCase()
+  return lower.includes("3b") || lower.includes("1b") || lower.includes("0.5b") || 
+         lower.includes("q2_") || lower.includes("q3_") || lower.includes("q4_0") ||
+         lower.includes("-1b") || lower.includes("-3b")
+}
+
 export namespace Truncate {
   export const MAX_LINES = 2000
   export const MAX_BYTES = 50 * 1024
+  // Smaller limits for small models
+  export const SMALL_MODEL_MAX_LINES = 500
+  export const SMALL_MODEL_MAX_BYTES = 10 * 1024
   export const DIR = path.join(Global.Path.data, "tool-output")
   export const GLOB = path.join(DIR, "*")
   const RETENTION_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
@@ -50,8 +61,10 @@ export namespace Truncate {
   }
 
   export async function output(text: string, options: Options = {}, agent?: Agent.Info): Promise<Result> {
-    const maxLines = options.maxLines ?? MAX_LINES
-    const maxBytes = options.maxBytes ?? MAX_BYTES
+    // Small models get stricter limits
+    const smallModel = isSmallModel(agent?.model)
+    const maxLines = options.maxLines ?? (smallModel ? SMALL_MODEL_MAX_LINES : MAX_LINES)
+    const maxBytes = options.maxBytes ?? (smallModel ? SMALL_MODEL_MAX_BYTES : MAX_BYTES)
     const direction = options.direction ?? "head"
     const lines = text.split("\n")
     const totalBytes = Buffer.byteLength(text, "utf-8")

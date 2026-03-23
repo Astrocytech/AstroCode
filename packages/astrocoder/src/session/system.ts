@@ -7,6 +7,7 @@ import PROMPT_ANTHROPIC_WITHOUT_TODO from "./prompt/qwen.txt"
 import PROMPT_BEAST from "./prompt/beast.txt"
 import PROMPT_GEMINI from "./prompt/gemini.txt"
 import PROMPT_OLLAMA from "./prompt/ollama.txt"
+import PROMPT_OLLAMA_SMALL from "./prompt/ollama-small.txt"
 
 import PROMPT_CODEX from "./prompt/codex_header.txt"
 import PROMPT_TRINITY from "./prompt/trinity.txt"
@@ -15,13 +16,27 @@ import type { Agent } from "@/agent/agent"
 import { PermissionNext } from "@/permission/next"
 import { Skill } from "@/skill"
 
+function isSmallModel(modelID: string): boolean {
+  const id = modelID.toLowerCase()
+  return id.includes("3b") || id.includes("1b") || id.includes("0.5b") || 
+         id.includes("q2_") || id.includes("q3_") || id.includes("q4_0") ||
+         id.includes("-1b") || id.includes("-3b")
+}
+
 export namespace SystemPrompt {
   export function instructions() {
     return PROMPT_CODEX.trim()
   }
 
   export function provider(model: Provider.Model) {
-    if (model.providerID === "ollama" || model.id.startsWith("ollama/") || model.id.startsWith("ollama_chat/")) return [PROMPT_OLLAMA]
+    const isOllama = model.providerID === "ollama" || model.id.startsWith("ollama/") || model.id.startsWith("ollama_chat/")
+    if (isOllama) {
+      // Use simplified prompt for small models
+      if (isSmallModel(model.id)) {
+        return [PROMPT_OLLAMA_SMALL]
+      }
+      return [PROMPT_OLLAMA]
+    }
     if (model.api.id.includes("gpt-5")) return [PROMPT_CODEX]
     if (model.api.id.includes("gpt-") || model.api.id.includes("o1") || model.api.id.includes("o3"))
       return [PROMPT_BEAST]
@@ -33,6 +48,15 @@ export namespace SystemPrompt {
 
   export async function environment(model: Provider.Model) {
     const project = Instance.project
+    
+    // Small models get minimal environment info
+    if (isSmallModel(model.id)) {
+      return [
+        `cwd: ${Instance.directory}`,
+        `root: ${Instance.worktree}`,
+      ]
+    }
+    
     return [
       [
         `You are powered by the model named ${model.api.id}. The exact model ID is ${model.providerID}/${model.api.id}`,
@@ -58,7 +82,12 @@ export namespace SystemPrompt {
     ]
   }
 
-  export async function skills(agent: Agent.Info) {
+  export async function skills(agent: Agent.Info, modelID?: string) {
+    // Skip skills for small models - they don't need specialized instructions
+    if (modelID && isSmallModel(modelID)) {
+      return undefined
+    }
+    
     if (PermissionNext.disabled(["skill"], agent.permission).has("skill")) return
 
     const list = await Skill.available(agent)

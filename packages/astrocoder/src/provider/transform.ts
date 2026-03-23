@@ -17,8 +17,16 @@ function mimeToModality(mime: string): Modality | undefined {
   return undefined
 }
 
+function isSmallModel(modelID: string): boolean {
+  const id = modelID.toLowerCase()
+  return id.includes("3b") || id.includes("1b") || id.includes("0.5b") || 
+         id.includes("q2_") || id.includes("q3_") || id.includes("q4_0") ||
+         id.includes("-1b") || id.includes("-3b")
+}
+
 export namespace ProviderTransform {
   export const OUTPUT_TOKEN_MAX = Flag.OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX || 32_000
+  export const SMALL_MODEL_OUTPUT_MAX = 4096  // Limit output for small models
 
   // Maps npm package to the key the AI SDK expects for providerOptions
   function sdkKey(npm: string): string | undefined {
@@ -49,6 +57,19 @@ export namespace ProviderTransform {
     model: Provider.Model,
     options: Record<string, unknown>,
   ): ModelMessage[] {
+    // Small models: limit message history to reduce context
+    if (isSmallModel(model.id)) {
+      const systemMsgs = msgs.filter((msg) => msg.role === "system")
+      const userMsgs = msgs.filter((msg) => msg.role === "user").slice(-3)  // Keep last 3 user messages
+      const assistantMsgs = msgs.filter((msg) => msg.role === "assistant").slice(-3)  // Keep last 3 assistant
+      msgs = [...systemMsgs, ...userMsgs, ...assistantMsgs].sort((a, b) => {
+        // Re-sort by original position
+        const aIdx = msgs.indexOf(a)
+        const bIdx = msgs.indexOf(b)
+        return aIdx - bIdx
+      })
+    }
+
     // Anthropic rejects messages with empty content - filter out empty string messages
     // and remove empty text/reasoning parts from array content
     if (model.api.npm === "@ai-sdk/anthropic" || model.api.npm === "@ai-sdk/amazon-bedrock") {
@@ -291,6 +312,12 @@ export namespace ProviderTransform {
 
   export function temperature(model: Provider.Model) {
     const id = model.id.toLowerCase()
+    
+    // Small models benefit from lower temperature for consistent code generation
+    if (isSmallModel(model.id)) {
+      return 0.1  // Very low temp for deterministic output
+    }
+    
     if (id.includes("qwen")) return 0.55
     if (id.includes("claude")) return undefined
     if (id.includes("gemini")) return 1.0
@@ -309,7 +336,12 @@ export namespace ProviderTransform {
 
   export function topP(model: Provider.Model) {
     const id = model.id.toLowerCase()
-    if (id.includes("qwen")) return 1
+    
+    // Small models: slightly lower topP for more focused output
+    if (isSmallModel(model.id)) {
+      return 0.9
+    }
+    
     if (["minimax-m2", "gemini", "kimi-k2.5", "kimi-k2p5", "kimi-k2-5"].some((s) => id.includes(s))) {
       return 0.95
     }
@@ -318,6 +350,12 @@ export namespace ProviderTransform {
 
   export function topK(model: Provider.Model) {
     const id = model.id.toLowerCase()
+    
+    // Small models: limit topK for faster, more deterministic output
+    if (isSmallModel(model.id)) {
+      return 20
+    }
+    
     if (id.includes("minimax-m2")) {
       if (["m2.", "m25", "m21"].some((s) => id.includes(s))) return 40
       return 20
@@ -830,6 +868,17 @@ export namespace ProviderTransform {
   }
 
   export function smallOptions(model: Provider.Model) {
+    // Small Ollama models: minimal options for speed
+    if (model.providerID === "ollama" || model.id.startsWith("ollama/")) {
+      if (isSmallModel(model.id)) {
+        return { 
+          num_predict: 4096,
+          repeat_penalty: 1.1,
+          temperature: 0.1,
+        }
+      }
+    }
+
     if (
       model.providerID === "openai" ||
       model.api.npm === "@ai-sdk/openai" ||
@@ -906,6 +955,10 @@ export namespace ProviderTransform {
   }
 
   export function maxOutputTokens(model: Provider.Model): number {
+    // Small models have reduced output limits
+    if (isSmallModel(model.id)) {
+      return Math.min(model.limit.output, SMALL_MODEL_OUTPUT_MAX) || SMALL_MODEL_OUTPUT_MAX
+    }
     return Math.min(model.limit.output, OUTPUT_TOKEN_MAX) || OUTPUT_TOKEN_MAX
   }
 

@@ -84,8 +84,16 @@ export namespace Provider {
     return modelID.startsWith("ollama/") || modelID.startsWith("ollama_chat/")
   }
 
-  function calculateOllamaContext(contextLength: number = 0, extraTokens: number = 8192): number {
-    return Math.ceil(contextLength * 1.25) + extraTokens
+  function isSmallOllamaModel(modelID: string): boolean {
+    const id = modelID.toLowerCase()
+    return id.includes("3b") || id.includes("1b") || id.includes("0.5b") || 
+           id.includes("q2_") || id.includes("q3_") || id.includes("q4_0") ||
+           id.includes("-1b") || id.includes("-3b")
+  }
+
+  function calculateOllamaContext(modelID: string, contextLength: number = 0, extraTokens: number = 8192): number {
+    const buffer = isSmallOllamaModel(modelID) ? 2048 : extraTokens
+    return Math.ceil(contextLength * 1.25) + buffer
   }
 
   async function checkNvidiaGpu(): Promise<boolean> {
@@ -305,7 +313,7 @@ export namespace Provider {
           tool_call: false,
           cost: { input: 0, output: 0, cache: { read: 0, write: 0 } },
           limit: { context: context, output: 4096 },
-          options: { num_ctx: calculateOllamaContext(context) },
+          options: { num_ctx: calculateOllamaContext(modelName, context) },
           headers: {},
           status: "active",
           capabilities: {
@@ -826,9 +834,16 @@ export namespace Provider {
         const env = Env.get("OLLAMA_CONTEXT_LENGTH")
         const context = model.limit.context || (env ? parseInt(env, 10) : 4096)
         if (!options["num_ctx"]) {
-          options["num_ctx"] = calculateOllamaContext(context)
+          options["num_ctx"] = calculateOllamaContext(model.id, context)
         }
-        log.info("ollama-context", { modelId: model.id, numCtx: options["num_ctx"] })
+        
+        // Small models: limit output tokens to prevent runaway generation
+        if (isSmallOllamaModel(model.id)) {
+          options["num_predict"] = 4096  // Cap output at 4K tokens
+          options["repeat_penalty"] = 1.1  // Slight penalty for repetition
+        }
+        
+        log.info("ollama-context", { modelId: model.id, numCtx: options["num_ctx"], isSmall: isSmallOllamaModel(model.id), options: Object.keys(options) })
       }
 
       const url = iife(() => {

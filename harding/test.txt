@@ -1,2 +1,5 @@
+new
+
 appended text
-NEW CONTENT
+NEW CONTENTtest content
+appended text

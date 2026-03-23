@@ -1,0 +1,8 @@
+2026-03-23 09:34:48,858 - root - DEBUG - Debug message
+2026-03-23 09:34:48,858 - root - DEBUG - Another debug message
+2026-03-23 09:34:48,858 - root - INFO - Info message
+2026-03-23 09:34:48,858 - root - INFO - Another info message
+2026-03-23 09:34:48,858 - root - WARNING - Warning message
+2026-03-23 09:34:48,858 - root - WARNING - Another warning message
+2026-03-23 09:34:48,858 - root - ERROR - Error message
+2026-03-23 09:34:48,858 - root - ERROR - Another error message

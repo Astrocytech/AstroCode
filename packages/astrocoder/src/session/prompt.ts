@@ -190,12 +190,19 @@ export namespace SessionPrompt {
       } else {
         log.info("Using WorkflowEngine for Ollama task", { modelID: model.modelID })
         
+        // Get session messages for conversation history
+        const sessionHistory = await Session.messages({ sessionID: input.sessionID })
+        const historyText = sessionHistory
+          .filter(m => m.info.role === "user" || m.info.role === "assistant")
+          .map(m => `${m.info.role}: ${m.parts?.map(p => (p as any).text ?? "").join(" ") ?? ""}`)
+          .join("\n")
+        
         // Create user message first so it appears in chat
         const userMessage = await createUserMessage(input)
         await Session.touch(input.sessionID)
         
         const engine = new WorkflowEngine(model.modelID.replace("ollama/", "").replace("ollama_chat/", ""), false)
-        const result = await engine.run(userText)
+        const result = await engine.run(userText, [historyText])
         
         // Create assistant message with result
         const assistantMsg: MessageV2.Assistant = {

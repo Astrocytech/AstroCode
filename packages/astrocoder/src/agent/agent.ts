@@ -75,9 +75,9 @@ export namespace Agent {
     const user = PermissionNext.fromConfig(cfg.permission ?? {})
 
     const result: Record<string, Info> = {
-      build: {
-        name: "build",
-        description: "The default agent. Executes tools based on configured permissions.",
+      instruct: {
+        name: "instruct",
+        description: "Instruct mode. Executes tools based on configured permissions with full instruction following.",
         options: {},
         permission: PermissionNext.merge(
           defaults,
@@ -90,9 +90,9 @@ export namespace Agent {
         mode: "primary",
         native: true,
       },
-      plan: {
-        name: "plan",
-        description: "Plan mode. Disallows all edit tools.",
+      plain: {
+        name: "plain",
+        description: "Plain mode. No instruction following - just answers questions without editing files.",
         options: {},
         permission: PermissionNext.merge(
           defaults,
@@ -260,7 +260,7 @@ export namespace Agent {
     return pipe(
       await state(),
       values(),
-      sortBy([(x) => (cfg.default_agent ? x.name === cfg.default_agent : x.name === "build"), "desc"]),
+      sortBy([(x) => (cfg.default_agent ? x.name === cfg.default_agent : x.name === "instruct"), "desc"]),
     )
   }
 

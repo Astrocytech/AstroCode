@@ -1,5 +1,6 @@
+<!-- UPDATED: Mon 23 Mar 2026 10:26:37 PM EDT -->
 <system-reminder>
-Your operational mode has changed from plan to build.
+Your operational mode has changed from plain to instruct.
 You are no longer in read-only mode.
-You are permitted to make file changes, run shell commands, and utilize your arsenal of tools as needed.
+You are permitted to make file changes, run shell commands, and utilize my arsenal of tools as needed.
 </system-reminder>

@@ -34,7 +34,15 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
       const provider = sync.data.provider.find((x) => x.id === model.providerID)
       return !!provider?.models[model.modelID]
     }
-
+    
+    function normalizeModelID(modelID: string): string {
+      return modelID.replace(/^(ollama|ollama_chat)\//, "")
+    }
+    
+    function modelEquals(a: { providerID: string; modelID: string }, b: { providerID: string; modelID: string }) {
+      return a.providerID === b.providerID && normalizeModelID(a.modelID) === normalizeModelID(b.modelID)
+    }
+    
     function getFirstValidModel(...modelFns: (() => { providerID: string; modelID: string } | undefined)[]) {
       for (const modelFn of modelFns) {
         const model = modelFn()
@@ -300,7 +308,33 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
               })
               return
             }
-            setModelStore("model", agent.current().name, model)
+            
+            const current = currentModel()
+            const agentName = agent.current().name
+            
+            // Switch Ollama models if needed
+            if (model.providerID === "ollama" && current?.providerID === "ollama") {
+              if (model.modelID !== current.modelID) {
+                const oldName = normalizeModelID(current.modelID)
+                const newName = normalizeModelID(model.modelID)
+                try { Bun.spawn(["ollama", "stop", oldName]) } catch {}
+                try {
+                  const proc = Bun.spawn(["ollama", "run", newName])
+                  setTimeout(() => proc.kill(), 3000)
+                } catch {}
+              }
+            } else if (model.providerID === "ollama" && current?.providerID !== "ollama") {
+              const newName = normalizeModelID(model.modelID)
+              try {
+                const proc = Bun.spawn(["ollama", "run", newName])
+                setTimeout(() => proc.kill(), 3000)
+              } catch {}
+            } else if (current?.providerID === "ollama" && model.providerID !== "ollama") {
+              const oldName = normalizeModelID(current.modelID)
+              try { Bun.spawn(["ollama", "stop", oldName]) } catch {}
+            }
+            
+            setModelStore("model", agentName, model)
             save()
             if (options?.recent) {
               const uniq = uniqueBy([model, ...modelStore.recent], (x) => `${x.providerID}/${x.modelID}`)
@@ -380,45 +414,37 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
           const configuredModelStr = agentConfig?.[agentName]?.model
           const oldConfiguredModelStr = oldAgentName ? agentConfig?.[oldAgentName]?.model : null
           
-          if (!configuredModelStr) {
-            const curModel = currentModel()
-            toast.show({
-              variant: "info",
-              message: `No model configured for ${agentName}. Current: ${curModel?.modelID ?? "none"}`,
-              duration: 4000,
-            })
-            return
-          }
+          if (!configuredModelStr) return
           
           const configuredModel = Provider.parseModel(configuredModelStr)
           const oldModel = oldConfiguredModelStr ? Provider.parseModel(oldConfiguredModelStr) : null
-          
           const storedModel = modelStore.model[agentName]
           
-          if (!storedModel && isModelValid(configuredModel)) {
-            const oldModelName = oldModel?.modelID ?? "none"
-            const newModelName = configuredModel.modelID
-            const isOllama = configuredModel.providerID === "ollama" || configuredModel.modelID.startsWith("ollama/")
-            
-            if (oldModel && (oldModel.providerID === "ollama" || oldModel.modelID.startsWith("ollama/"))) {
-              const oldModelNameOnly = oldModel.modelID.replace("ollama/", "").replace("ollama_chat/", "")
-              try {
-                await Bun.spawn(["ollama", "stop", oldModelNameOnly])
-                toast.show({ variant: "info", message: `Freed GPU memory: ${oldModelName}`, duration: 3000 })
-              } catch {}
-            }
-            
-            setModelStore("model", agentName, configuredModel)
-            save()
-            
-            if (isOllama) {
-              const newModelNameOnly = configuredModel.modelID.replace("ollama/", "").replace("ollama_chat/", "")
-              try {
-                await Bun.spawn(["ollama", "run", newModelNameOnly, "-n", "0"])
-              } catch {}
-            }
-            
-            toast.show({ variant: "info", message: `${agentName}: ${configuredModel.modelID} ready`, duration: 3000 })
+          const needsSwitch = !storedModel || !modelEquals(storedModel, configuredModel)
+          
+          if (!needsSwitch) return
+          
+          if (!isModelValid(configuredModel)) return
+          
+          // Stop old Ollama model
+          if (oldModel && oldModel.providerID === "ollama") {
+            const oldName = normalizeModelID(oldModel.modelID)
+            try {
+              await Bun.spawn(["ollama", "stop", oldName])
+            } catch {}
+          }
+          
+          // Update stored model
+          setModelStore("model", agentName, configuredModel)
+          save()
+          
+          // Preload new Ollama model
+          if (configuredModel.providerID === "ollama") {
+            const newName = normalizeModelID(configuredModel.modelID)
+            try {
+              const proc = Bun.spawn(["ollama", "run", newName])
+              setTimeout(() => proc.kill(), 3000)
+            } catch {}
           }
         },
       }

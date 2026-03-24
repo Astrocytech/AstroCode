@@ -50,7 +50,7 @@ export const PlanExitTool = Tool.define("plan_exit", {
       time: {
         created: Date.now(),
       },
-      agent: "build",
+      agent: "instruct",
       model,
     }
     await Session.updateMessage(userMsg)
@@ -108,7 +108,7 @@ export const PlanEnterTool = Tool.define("plan_enter", {
       time: {
         created: Date.now(),
       },
-      agent: "plan",
+      agent: "plain",
       model,
     }
     await Session.updateMessage(userMsg)

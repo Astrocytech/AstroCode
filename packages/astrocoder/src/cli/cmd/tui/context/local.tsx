@@ -14,6 +14,7 @@ import { useSDK } from "./sdk"
 import { RGBA } from "@opentui/core"
 import { Filesystem } from "@/util/filesystem"
 import { Config } from "@/config/config"
+import { PartID } from "@/session/schema"
 import { useDialog } from "@tui/ui/dialog"
 import { DialogModel } from "../component/dialog-model"
 
@@ -24,29 +25,6 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
     const sdk = useSDK()
     const toast = useToast()
     const [pendingAgent, setPendingAgent] = createSignal<string | null>(null)
-
-    async function checkAndSelectModelForAgent(agentName: string) {
-      const cfg = await Config.get()
-      const agentConfig = cfg.agent as Record<string, { model?: { providerID: string; modelID: string } }> | undefined
-      
-      const configuredModel = agentConfig?.[agentName]?.model
-      if (configuredModel && isModelValid(configuredModel)) {
-        model.set(configuredModel, { recent: false })
-        toast.show({
-          variant: "info",
-          message: `Switched to ${agentName} model: ${configuredModel.modelID}`,
-          duration: 3000,
-        })
-      } else if (!configuredModel) {
-        const current = model.current()
-        toast.show({
-          variant: "info",
-          message: `No model configured for ${agentName}. Current: ${current?.modelID ?? "none"}`,
-          duration: 4000,
-        })
-      }
-      setPendingAgent(null)
-    }
 
     function clearPendingAgent() {
       setPendingAgent(null)
@@ -97,8 +75,9 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
               message: `Agent not found: ${name}`,
               duration: 3000,
             })
+          const oldAgent = agentStore.current
           setAgentStore("current", name)
-          checkAndSelectModelForAgent(name)
+          model.checkAndSelectModelForAgent(name, oldAgent)
         },
         move(direction: 1 | -1) {
           batch(() => {
@@ -106,8 +85,9 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
             if (next < 0) next = agents().length - 1
             if (next >= agents().length) next = 0
             const value = agents()[next]
+            const oldAgent = agentStore.current
             setAgentStore("current", value.name)
-            checkAndSelectModelForAgent(value.name)
+            model.checkAndSelectModelForAgent(value.name, oldAgent)
           })
         },
         color(name: string) {
@@ -168,6 +148,7 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
           recent: modelStore.recent,
           favorite: modelStore.favorite,
           variant: modelStore.variant,
+          model: modelStore.model,
         })
       }
 
@@ -176,6 +157,7 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
           if (Array.isArray(x.recent)) setModelStore("recent", x.recent)
           if (Array.isArray(x.favorite)) setModelStore("favorite", x.favorite)
           if (typeof x.variant === "object" && x.variant !== null) setModelStore("variant", x.variant)
+          if (typeof x.model === "object" && x.model !== null) setModelStore("model", x.model)
         })
         .catch(() => {})
         .finally(() => {
@@ -319,6 +301,7 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
               return
             }
             setModelStore("model", agent.current().name, model)
+            save()
             if (options?.recent) {
               const uniq = uniqueBy([model, ...modelStore.recent], (x) => `${x.providerID}/${x.modelID}`)
               if (uniq.length > 10) uniq.pop()
@@ -326,7 +309,6 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
                 "recent",
                 uniq.map((x) => ({ providerID: x.providerID, modelID: x.modelID })),
               )
-              save()
             }
           })
         },
@@ -390,6 +372,54 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
             }
             this.set(variants[index + 1])
           },
+        },
+        checkAndSelectModelForAgent: async function(agentName: string, oldAgentName?: string) {
+          const cfg = await Config.get()
+          const agentConfig = cfg.agent as Record<string, { model?: string }> | undefined
+          
+          const configuredModelStr = agentConfig?.[agentName]?.model
+          const oldConfiguredModelStr = oldAgentName ? agentConfig?.[oldAgentName]?.model : null
+          
+          if (!configuredModelStr) {
+            const curModel = currentModel()
+            toast.show({
+              variant: "info",
+              message: `No model configured for ${agentName}. Current: ${curModel?.modelID ?? "none"}`,
+              duration: 4000,
+            })
+            return
+          }
+          
+          const configuredModel = Provider.parseModel(configuredModelStr)
+          const oldModel = oldConfiguredModelStr ? Provider.parseModel(oldConfiguredModelStr) : null
+          
+          const storedModel = modelStore.model[agentName]
+          
+          if (!storedModel && isModelValid(configuredModel)) {
+            const oldModelName = oldModel?.modelID ?? "none"
+            const newModelName = configuredModel.modelID
+            const isOllama = configuredModel.providerID === "ollama" || configuredModel.modelID.startsWith("ollama/")
+            
+            if (oldModel && (oldModel.providerID === "ollama" || oldModel.modelID.startsWith("ollama/"))) {
+              const oldModelNameOnly = oldModel.modelID.replace("ollama/", "").replace("ollama_chat/", "")
+              try {
+                await Bun.spawn(["ollama", "stop", oldModelNameOnly])
+                toast.show({ variant: "info", message: `Freed GPU memory: ${oldModelName}`, duration: 3000 })
+              } catch {}
+            }
+            
+            setModelStore("model", agentName, configuredModel)
+            save()
+            
+            if (isOllama) {
+              const newModelNameOnly = configuredModel.modelID.replace("ollama/", "").replace("ollama_chat/", "")
+              try {
+                await Bun.spawn(["ollama", "run", newModelNameOnly, "-n", "0"])
+              } catch {}
+            }
+            
+            toast.show({ variant: "info", message: `${agentName}: ${configuredModel.modelID} ready`, duration: 3000 })
+          }
         },
       }
     })
